@@ -14,16 +14,16 @@ public static class ResultExtensions
     public static Result<TOut> Map<TIn, TOut>(this Result<TIn> result, Func<TIn, TOut> func)
     {
         if (result.IsFailure)
-            return Result.Failure<TOut>(result.Error);
+            return Result.Failure<TOut>(result.Error!);
 
         try
         {
             var value = func(result.Value!);
             return Result.Success(value);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return Result.Failure<TOut>(ex.Message);
+            return Result.Failure<TOut>(ErrorCodes.SYSTEM_UNKNOWN_ERROR);
         }
     }
 
@@ -33,16 +33,16 @@ public static class ResultExtensions
     public static async Task<Result<TOut>> MapAsync<TIn, TOut>(this Result<TIn> result, Func<TIn, Task<TOut>> func)
     {
         if (result.IsFailure)
-            return Result.Failure<TOut>(result.Error);
+            return Result.Failure<TOut>(result.Error!);
 
         try
         {
             var value = await func(result.Value!);
             return Result.Success(value);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return Result.Failure<TOut>(ex.Message);
+            return Result.Failure<TOut>(ErrorCodes.SYSTEM_UNKNOWN_ERROR);
         }
     }
 
@@ -52,7 +52,7 @@ public static class ResultExtensions
     public static Result<TOut> Bind<TIn, TOut>(this Result<TIn> result, Func<TIn, Result<TOut>> func)
     {
         if (result.IsFailure)
-            return Result.Failure<TOut>(result.Error);
+            return Result.Failure<TOut>(result.Error!);
 
         return func(result.Value!);
     }
@@ -63,7 +63,7 @@ public static class ResultExtensions
     public static async Task<Result<TOut>> BindAsync<TIn, TOut>(this Result<TIn> result, Func<TIn, Task<Result<TOut>>> func)
     {
         if (result.IsFailure)
-            return Result.Failure<TOut>(result.Error);
+            return Result.Failure<TOut>(result.Error!);
 
         return await func(result.Value!);
     }
@@ -104,7 +104,7 @@ public static class ResultExtensions
     public static T ValueOrThrow<T>(this Result<T> result)
     {
         if (result.IsFailure)
-            throw new InvalidOperationException(result.Error);
+            throw new InvalidOperationException(result.Error?.Code ?? "Unknown error");
 
         return result.Value!;
     }
@@ -112,9 +112,9 @@ public static class ResultExtensions
     /// <summary>
     /// Executes an action if the result is failed
     /// </summary>
-    public static Result<T> OnFailure<T>(this Result<T> result, Action<string> action)
+    public static Result<T> OnFailure<T>(this Result<T> result, Action<ErrorDetail> action)
     {
-        if (result.IsFailure)
+        if (result.IsFailure && result.Error != null)
             action(result.Error);
 
         return result;
@@ -123,9 +123,9 @@ public static class ResultExtensions
     /// <summary>
     /// Executes an async action if the result is failed
     /// </summary>
-    public static async Task<Result<T>> OnFailureAsync<T>(this Result<T> result, Func<string, Task> action)
+    public static async Task<Result<T>> OnFailureAsync<T>(this Result<T> result, Func<ErrorDetail, Task> action)
     {
-        if (result.IsFailure)
+        if (result.IsFailure && result.Error != null)
             await action(result.Error);
 
         return result;

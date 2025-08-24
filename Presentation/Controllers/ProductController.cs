@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Business.Services;
 using Infrastructure.Common;
 using Infrastructure.Models;
+using Presentation.Extensions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,14 +29,7 @@ public class ProductController : ControllerBase
     public async Task<IActionResult> GetProduct(int id, CancellationToken cancellationToken)
     {
         var result = await _productService.GetProductByIdAsync(id, cancellationToken);
-        
-        if (result.IsFailure)
-            return BadRequest(new { error = result.Error });
-
-        if (result.Value == null)
-            return NotFound();
-
-        return Ok(result.Value);
+        return result.ToActionResult();
     }
 
     /// <summary>
@@ -48,14 +42,13 @@ public class ProductController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         if (page < 1 || pageSize < 1 || pageSize > 100)
-            return BadRequest(new { error = "Invalid pagination parameters" });
+        {
+            var validationResult = Result.Failure<PaginatedResult<Product>>(ErrorCodes.PAGINATION_INVALID_PAGE_SIZE);
+            return validationResult.ToActionResult();
+        }
 
         var result = await _productService.GetProductsAsync(page, pageSize, cancellationToken);
-        
-        if (result.IsFailure)
-            return BadRequest(new { error = result.Error });
-
-        return Ok(result.Value);
+        return result.ToActionResult();
     }
 
     /// <summary>
@@ -69,11 +62,7 @@ public class ProductController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var result = await _productService.GetProductsByCategoryAsync(categoryId, page, pageSize, cancellationToken);
-        
-        if (result.IsFailure)
-            return BadRequest(new { error = result.Error });
-
-        return Ok(result.Value);
+        return result.ToActionResult();
     }
 
     /// <summary>
@@ -85,7 +74,10 @@ public class ProductController : ControllerBase
         CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+        {
+            var validationResult = Result.Failure<Product>(ErrorCodes.VALIDATION_REQUIRED_FIELD);
+            return validationResult.ToActionResult();
+        }
 
         var result = await _productService.CreateProductAsync(
             request.Name,
@@ -96,13 +88,16 @@ public class ProductController : ControllerBase
             request.Description,
             cancellationToken);
 
-        if (result.IsFailure)
-            return BadRequest(new { error = result.Error });
+        if (result.IsSuccess)
+        {
+            var apiResponse = result.ToApiResponse();
+            return CreatedAtAction(
+                nameof(GetProduct), 
+                new { id = result.Value!.Id }, 
+                apiResponse);
+        }
 
-        return CreatedAtAction(
-            nameof(GetProduct), 
-            new { id = result.Value!.Id }, 
-            result.Value);
+        return result.ToActionResult();
     }
 
     /// <summary>
@@ -115,15 +110,21 @@ public class ProductController : ControllerBase
         CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+        {
+            var validationResult = Result.Failure(ErrorCodes.VALIDATION_REQUIRED_FIELD);
+            return validationResult.ToActionResult();
+        }
 
         // First get the existing product
         var existingResult = await _productService.GetProductByIdAsync(id, cancellationToken);
         if (existingResult.IsFailure)
-            return BadRequest(new { error = existingResult.Error });
+            return existingResult.ToActionResult();
 
         if (existingResult.Value == null)
-            return NotFound();
+        {
+            var notFoundResult = Result.Failure(ErrorCodes.PRODUCT_NOT_FOUND);
+            return notFoundResult.ToActionResult();
+        }
 
         // Update the product
         var product = existingResult.Value;
@@ -134,11 +135,7 @@ public class ProductController : ControllerBase
         product.Description = request.Description;
 
         var result = await _productService.UpdateProductAsync(product, cancellationToken);
-
-        if (result.IsFailure)
-            return BadRequest(new { error = result.Error });
-
-        return Ok(new { message = "Product updated successfully" });
+        return result.ToActionResult();
     }
 
     /// <summary>
@@ -151,14 +148,13 @@ public class ProductController : ControllerBase
         CancellationToken cancellationToken)
     {
         if (request.Quantity < 0)
-            return BadRequest(new { error = "Quantity cannot be negative" });
+        {
+            var validationResult = Result.Failure(ErrorCodes.PRODUCT_INVALID_QUANTITY);
+            return validationResult.ToActionResult();
+        }
 
         var result = await _productService.UpdateProductQuantityAsync(id, request.Quantity, cancellationToken);
-
-        if (result.IsFailure)
-            return BadRequest(new { error = result.Error });
-
-        return Ok(new { message = "Quantity updated successfully" });
+        return result.ToActionResult();
     }
 
     /// <summary>
@@ -168,11 +164,7 @@ public class ProductController : ControllerBase
     public async Task<IActionResult> DeleteProduct(int id, CancellationToken cancellationToken)
     {
         var result = await _productService.DeleteProductAsync(id, cancellationToken);
-
-        if (result.IsFailure)
-            return BadRequest(new { error = result.Error });
-
-        return Ok(new { message = "Product deleted successfully" });
+        return result.ToActionResult();
     }
 
     /// <summary>
@@ -185,11 +177,15 @@ public class ProductController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var result = await _productService.IsProductAvailableAsync(id, quantity, cancellationToken);
+        
+        if (result.IsSuccess)
+        {
+            var availabilityData = new { available = result.Value, productId = id, requestedQuantity = quantity };
+            var successResult = Result<object>.Success(availabilityData);
+            return successResult.ToActionResult();
+        }
 
-        if (result.IsFailure)
-            return BadRequest(new { error = result.Error });
-
-        return Ok(new { available = result.Value, productId = id, requestedQuantity = quantity });
+        return result.ToActionResult();
     }
 }
 

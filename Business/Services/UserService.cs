@@ -2,11 +2,11 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
 using Infrastructure.Common;
 using Infrastructure.Interfaces;
 using Infrastructure.Models;
 using Business.Common;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace Business.Services;
 
@@ -36,7 +36,7 @@ public class UserService : IUserService
     public async Task<Result<User?>> GetUserByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
-            return Result.Failure<User?>("Invalid user ID");
+            return Result.Failure<User?>(ErrorCodes.USER_INVALID_ID);
 
         // Cache-aside pattern: Check cache first
         return await _cache.GetOrSetAsync(
@@ -60,10 +60,10 @@ public class UserService : IUserService
     {
         // Validation
         if (string.IsNullOrWhiteSpace(email))
-            return Result.Failure<User>("Email is required");
+            return Result.Failure<User>(ErrorCodes.USER_EMAIL_REQUIRED);
 
         if (string.IsNullOrWhiteSpace(passwordHash))
-            return Result.Failure<User>("Password hash is required");
+            return Result.Failure<User>(ErrorCodes.USER_PASSWORD_REQUIRED);
 
         // Check if user already exists
         var existingUserResult = await _unitOfWork.Users.GetFirstOrDefaultAsync(
@@ -74,7 +74,7 @@ public class UserService : IUserService
             return Result.Failure<User>(existingUserResult.Error);
 
         if (existingUserResult.Value != null)
-            return Result.Failure<User>("User with this email already exists");
+            return Result.Failure<User>(ErrorCodes.USER_EMAIL_EXISTS);
 
         // Validate location if provided
         if (locationId.HasValue)
@@ -87,7 +87,7 @@ public class UserService : IUserService
                 return Result.Failure<User>(locationExistsResult.Error);
 
             if (!locationExistsResult.Value)
-                return Result.Failure<User>("Invalid location ID");
+                return Result.Failure<User>(ErrorCodes.LOCATION_INVALID_ID);
         }
 
         // Create user
@@ -115,7 +115,7 @@ public class UserService : IUserService
     public async Task<Result> UpdateUserAsync(User user, CancellationToken cancellationToken = default)
     {
         if (user == null)
-            return Result.Failure("User cannot be null");
+            return Result.Failure(ErrorCodes.VALIDATION_REQUIRED_FIELD);
 
         // Validate that user exists
         var existingUserResult = await _unitOfWork.Users.GetByIdAsync(user.Id, cancellationToken);
@@ -123,7 +123,7 @@ public class UserService : IUserService
             return Result.Failure(existingUserResult.Error);
 
         if (existingUserResult.Value == null)
-            return Result.Failure("User not found");
+            return Result.Failure(ErrorCodes.USER_NOT_FOUND);
 
         // Validate location if provided
         if (user.LocationId.HasValue)
@@ -136,7 +136,7 @@ public class UserService : IUserService
                 return Result.Failure(locationExistsResult.Error);
 
             if (!locationExistsResult.Value)
-                return Result.Failure("Invalid location ID");
+                return Result.Failure(ErrorCodes.LOCATION_INVALID_ID);
         }
 
         var updateResult = _unitOfWork.Users.Update(user);
@@ -158,7 +158,7 @@ public class UserService : IUserService
     public async Task<Result> DeleteUserAsync(int id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
-            return Result.Failure("Invalid user ID");
+            return Result.Failure(ErrorCodes.USER_INVALID_ID);
 
         // Begin transaction for complex deletion
         var beginTransactionResult = await _unitOfWork.BeginTransactionAsync(cancellationToken);
@@ -178,7 +178,7 @@ public class UserService : IUserService
             if (userResult.Value == null)
             {
                 await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-                return Result.Failure("User not found");
+                return Result.Failure(ErrorCodes.USER_NOT_FOUND);
             }
 
             // Check for dependencies (orders, posts, etc.)
@@ -192,7 +192,7 @@ public class UserService : IUserService
             if (hasOrdersResult.Value)
             {
                 await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-                return Result.Failure("Cannot delete user with existing orders");
+                return Result.Failure(ErrorCodes.USER_HAS_DEPENDENCIES);
             }
 
             // Remove user

@@ -39,7 +39,7 @@ public class ProductService : IProductService
     public async Task<Result<Product?>> GetProductByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
-            return Result.Failure<Product?>("Invalid product ID");
+            return Result.Failure<Product?>(ErrorCodes.PRODUCT_INVALID_ID);
 
         // Cache-aside pattern: Check cache first
         return await _cache.GetOrSetAsync(
@@ -69,7 +69,7 @@ public class ProductService : IProductService
     public async Task<Result<PaginatedResult<Product>>> GetProductsByCategoryAsync(int categoryId, int page, int pageSize, CancellationToken cancellationToken = default)
     {
         if (categoryId <= 0)
-            return Result.Failure<PaginatedResult<Product>>("Invalid category ID");
+            return Result.Failure<PaginatedResult<Product>>(ErrorCodes.CATEGORY_NOT_FOUND);
 
         var cacheKey = CacheKeys.ProductsByCategory(categoryId);
         
@@ -90,19 +90,19 @@ public class ProductService : IProductService
     {
         // Validation
         if (string.IsNullOrWhiteSpace(name))
-            return Result.Failure<Product>("Product name is required");
+            return Result.Failure<Product>(ErrorCodes.PRODUCT_NAME_REQUIRED);
 
         if (categoryId <= 0)
-            return Result.Failure<Product>("Invalid category ID");
+            return Result.Failure<Product>(ErrorCodes.PRODUCT_INVALID_CATEGORY);
 
         if (providerId <= 0)
-            return Result.Failure<Product>("Invalid provider ID");
+            return Result.Failure<Product>(ErrorCodes.PRODUCT_INVALID_PROVIDER);
 
         if (price < 0)
-            return Result.Failure<Product>("Price cannot be negative");
+            return Result.Failure<Product>(ErrorCodes.PRODUCT_INVALID_PRICE);
 
         if (quantity < 0)
-            return Result.Failure<Product>("Quantity cannot be negative");
+            return Result.Failure<Product>(ErrorCodes.PRODUCT_INVALID_QUANTITY);
 
         // Validate category exists
         var categoryExistsResult = await _unitOfWork.Categories.AnyAsync(c => c.Id == categoryId, cancellationToken);
@@ -110,7 +110,7 @@ public class ProductService : IProductService
             return Result.Failure<Product>(categoryExistsResult.Error);
 
         if (!categoryExistsResult.Value)
-            return Result.Failure<Product>("Category not found");
+            return Result.Failure<Product>(ErrorCodes.CATEGORY_NOT_FOUND);
 
         // Validate provider exists
         var providerExistsResult = await _unitOfWork.Providers.AnyAsync(p => p.UserId == providerId, cancellationToken);
@@ -118,7 +118,7 @@ public class ProductService : IProductService
             return Result.Failure<Product>(providerExistsResult.Error);
 
         if (!providerExistsResult.Value)
-            return Result.Failure<Product>("Provider not found");
+            return Result.Failure<Product>(ErrorCodes.PROVIDER_NOT_FOUND);
 
         // Create product
         var product = new Product
@@ -148,10 +148,10 @@ public class ProductService : IProductService
     public async Task<Result> UpdateProductAsync(Product product, CancellationToken cancellationToken = default)
     {
         if (product == null)
-            return Result.Failure("Product cannot be null");
+            return Result.Failure(ErrorCodes.VALIDATION_REQUIRED_FIELD);
 
         if (string.IsNullOrWhiteSpace(product.Name))
-            return Result.Failure("Product name is required");
+            return Result.Failure(ErrorCodes.PRODUCT_NAME_REQUIRED);
 
         // Get existing product to compare changes
         var existingProductResult = await _unitOfWork.Products.GetByIdAsync(product.Id, cancellationToken);
@@ -159,7 +159,7 @@ public class ProductService : IProductService
             return Result.Failure(existingProductResult.Error);
 
         if (existingProductResult.Value == null)
-            return Result.Failure("Product not found");
+            return Result.Failure(ErrorCodes.PRODUCT_NOT_FOUND);
 
         var existingProduct = existingProductResult.Value;
 
@@ -186,7 +186,7 @@ public class ProductService : IProductService
     public async Task<Result> DeleteProductAsync(int id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
-            return Result.Failure("Invalid product ID");
+            return Result.Failure(ErrorCodes.PRODUCT_INVALID_ID);
 
         // Get product first to know which caches to invalidate
         var productResult = await _unitOfWork.Products.GetByIdAsync(id, cancellationToken);
@@ -215,17 +215,17 @@ public class ProductService : IProductService
     public async Task<Result> UpdateProductQuantityAsync(int productId, int newQuantity, CancellationToken cancellationToken = default)
     {
         if (productId <= 0)
-            return Result.Failure("Invalid product ID");
+            return Result.Failure(ErrorCodes.PRODUCT_INVALID_ID);
 
         if (newQuantity < 0)
-            return Result.Failure("Quantity cannot be negative");
+            return Result.Failure(ErrorCodes.PRODUCT_INVALID_QUANTITY);
 
         var productResult = await _unitOfWork.Products.GetByIdAsync(productId, cancellationToken);
         if (productResult.IsFailure)
             return Result.Failure(productResult.Error);
 
         if (productResult.Value == null)
-            return Result.Failure("Product not found");
+            return Result.Failure(ErrorCodes.PRODUCT_NOT_FOUND);
 
         var product = productResult.Value;
         product.Quantity = newQuantity;
@@ -247,17 +247,17 @@ public class ProductService : IProductService
     public async Task<Result<bool>> IsProductAvailableAsync(int productId, int requestedQuantity, CancellationToken cancellationToken = default)
     {
         if (productId <= 0)
-            return Result.Failure<bool>("Invalid product ID");
+            return Result.Failure<bool>(ErrorCodes.PRODUCT_INVALID_ID);
 
         if (requestedQuantity <= 0)
-            return Result.Failure<bool>("Requested quantity must be greater than 0");
+            return Result.Failure<bool>(ErrorCodes.PRODUCT_INVALID_QUANTITY);
 
         var productResult = await GetProductByIdAsync(productId, cancellationToken);
         if (productResult.IsFailure)
             return Result.Failure<bool>(productResult.Error);
 
         if (productResult.Value == null)
-            return Result.Failure<bool>("Product not found");
+            return Result.Failure<bool>(ErrorCodes.PRODUCT_NOT_FOUND);
 
         var isAvailable = productResult.Value.Quantity >= requestedQuantity;
         return Result<bool>.Success(isAvailable);
