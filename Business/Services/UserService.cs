@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Infrastructure.Common;
 using Infrastructure.Interfaces;
 using Infrastructure.Models;
+using Business.Common;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Business.Services;
 
@@ -23,10 +25,12 @@ public interface IUserService
 public class UserService : IUserService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMemoryCache _cache;
 
-    public UserService(IUnitOfWork unitOfWork)
+    public UserService(IUnitOfWork unitOfWork, IMemoryCache cache)
     {
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _cache = cache ?? throw new ArgumentNullException(nameof(cache));
     }
 
     public async Task<Result<User?>> GetUserByIdAsync(int id, CancellationToken cancellationToken = default)
@@ -34,7 +38,12 @@ public class UserService : IUserService
         if (id <= 0)
             return Result.Failure<User?>("Invalid user ID");
 
-        return await _unitOfWork.Users.GetByIdAsync(id, cancellationToken);
+        // Cache-aside pattern: Check cache first
+        return await _cache.GetOrSetAsync(
+            CacheKeys.User(id),
+            async () => await _unitOfWork.Users.GetByIdAsync(id, cancellationToken),
+            CacheHelper.ExpirationTimes.Medium
+        );
     }
 
     public async Task<Result<PaginatedResult<User>>> GetUsersAsync(int page, int pageSize, CancellationToken cancellationToken = default)
@@ -97,6 +106,9 @@ public class UserService : IUserService
         if (saveResult.IsFailure)
             return Result.Failure<User>(saveResult.Error);
 
+        // Cache invalidation: Clear related cache entries
+        _cache.Remove(CacheKeys.ALL_USERS);
+
         return Result<User>.Success(addResult.Value!);
     }
 
@@ -132,6 +144,14 @@ public class UserService : IUserService
             return Result.Failure(updateResult.Error);
 
         var saveResult = await _unitOfWork.SaveChangesAsync(cancellationToken);
+        
+        if (saveResult.IsSuccess)
+        {
+            // Cache invalidation
+            _cache.Remove(CacheKeys.User(user.Id));
+            _cache.Remove(CacheKeys.ALL_USERS);
+        }
+
         return saveResult.IsFailure ? Result.Failure(saveResult.Error) : Result.Success();
     }
 
@@ -191,6 +211,14 @@ public class UserService : IUserService
             }
 
             var commitResult = await _unitOfWork.CommitTransactionAsync(cancellationToken);
+            
+            if (commitResult.IsSuccess)
+            {
+                // Cache invalidation
+                _cache.Remove(CacheKeys.User(id));
+                _cache.Remove(CacheKeys.ALL_USERS);
+            }
+            
             return commitResult.IsFailure ? Result.Failure(commitResult.Error) : Result.Success();
         }
         catch (System.Exception ex)
