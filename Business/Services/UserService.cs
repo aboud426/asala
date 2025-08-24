@@ -2,8 +2,8 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Business.Common;
-using Business.Interfaces;
+using Infrastructure.Common;
+using Infrastructure.Interfaces;
 using Infrastructure.Models;
 
 namespace Business.Services;
@@ -97,7 +97,7 @@ public class UserService : IUserService
         if (saveResult.IsFailure)
             return Result.Failure<User>(saveResult.Error);
 
-        return Result<User>.Success(addResult.Value);
+        return Result<User>.Success(addResult.Value!);
     }
 
     public async Task<Result> UpdateUserAsync(User user, CancellationToken cancellationToken = default)

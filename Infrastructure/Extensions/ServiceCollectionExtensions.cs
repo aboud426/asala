@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
-using Business.Interfaces;
+using Infrastructure.Interfaces;
 using Infrastructure.Models;
 using Infrastructure.Repository;
 

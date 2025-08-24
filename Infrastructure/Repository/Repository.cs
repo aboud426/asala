@@ -5,8 +5,8 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Business.Common;
-using Business.Interfaces;
+using Infrastructure.Common;
+using Infrastructure.Interfaces;
 using Infrastructure.Models;
 
 namespace Infrastructure.Repository;

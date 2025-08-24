@@ -1,9 +1,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Business.Common;
+using Infrastructure.Common;
 
-namespace Business.Interfaces;
+namespace Infrastructure.Interfaces;
 
 /// <summary>
 /// Unit of Work pattern interface for managing database transactions and repository access

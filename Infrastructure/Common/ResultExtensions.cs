@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Business.Common;
+namespace Infrastructure.Common;
 
 /// <summary>
 /// Extension methods for Result types to provide fluent API

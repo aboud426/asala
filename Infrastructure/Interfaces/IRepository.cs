@@ -4,9 +4,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Business.Common;
+using Infrastructure.Common;
 
-namespace Business.Interfaces;
+namespace Infrastructure.Interfaces;
 
 /// <summary>
 /// Generic repository interface for common data operations

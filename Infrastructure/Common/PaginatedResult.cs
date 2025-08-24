@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Business.Common;
+namespace Infrastructure.Common;
 
 /// <summary>
 /// Represents a paginated result with metadata for pagination

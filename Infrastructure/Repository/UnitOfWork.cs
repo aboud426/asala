@@ -4,9 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using Business.Common;
-using Business.Interfaces;
 using Infrastructure.Models;
+using Infrastructure.Interfaces;
+using Infrastructure.Common;
 
 namespace Infrastructure.Repository;
 

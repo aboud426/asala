@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Business.Common;
+namespace Infrastructure.Common;
 
 /// <summary>
 /// Represents the result of an operation without return data
@@ -29,6 +29,11 @@ public class Result
     public static Result Success() => new(true);
     public static Result Failure(string error) => new(false, error);
     public static Result Failure(List<string> errors) => new(false, errors.ToArray());
+    
+    // Generic factory methods
+    public static Result<T> Success<T>(T value) => Result<T>.Success(value);
+    public static Result<T> Failure<T>(string error) => new(default, false, error);
+    public static Result<T> Failure<T>(List<string> errors) => new(default, false, errors.ToArray());
 }
 
 /// <summary>
