@@ -69,6 +69,14 @@ public static class ErrorCodes
     // Location errors
     public const string LOCATION_INVALID_ID = "ERR_901";
     public const string LOCATION_COORDINATES_INVALID = "ERR_902";
+
+    // Message errors
+    public const string MESSAGE_INVALID_ID = "ERR_A01";
+    public const string MESSAGE_CODE_REQUIRED = "ERR_A02";
+    public const string MESSAGE_CODE_EXISTS = "ERR_A03";
+    public const string MESSAGE_NOT_FOUND = "ERR_A04";
+    public const string MESSAGE_INVALID_LANGUAGE = "ERR_A05";
+    public const string MESSAGE_TEXT_REQUIRED = "ERR_A06";
 }
 
 /// <summary>

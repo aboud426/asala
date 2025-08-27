@@ -43,6 +43,10 @@ public partial class TourTradeDbContext : DbContext
 
     public virtual DbSet<Medium> Media { get; set; }
 
+    public virtual DbSet<Message> Messages { get; set; }
+
+    public virtual DbSet<MessageLocalized> MessageLocalizeds { get; set; }
+
     public virtual DbSet<Order> Orders { get; set; }
 
     public virtual DbSet<OrderActivity> OrderActivities { get; set; }
@@ -98,10 +102,6 @@ public partial class TourTradeDbContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<UserRole> UserRoles { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=DESKTOP-0JE77H7\\SQLEXPRESS;Database=TourTradeDB;Trusted_Connection=True;TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -240,6 +240,30 @@ public partial class TourTradeDbContext : DbContext
             entity.HasOne(d => d.MediaType).WithMany(p => p.Media)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Media_Media_Type");
+        });
+
+        modelBuilder.Entity<Message>(entity =>
+        {
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(100);
+
+            entity.HasIndex(e => e.Code, "IX_Message_Code")
+                .IsUnique();
+        });
+
+        modelBuilder.Entity<MessageLocalized>(entity =>
+        {
+            entity.Property(e => e.LocalizedText).IsRequired().HasMaxLength(1000);
+
+            entity.HasOne(d => d.Language).WithMany(p => p.MessageLocalizeds)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MessageLocalized_Language");
+
+            entity.HasOne(d => d.Message).WithMany(p => p.MessageLocalizeds)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MessageLocalized_Message");
+
+            entity.HasIndex(e => new { e.MessageId, e.LanguageId }, "IX_MessageLocalized_MessageId_LanguageId")
+                .IsUnique();
         });
 
         modelBuilder.Entity<Order>(entity =>

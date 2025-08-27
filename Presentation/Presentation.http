@@ -4,3 +4,67 @@ GET {{Presentation_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+# Message API Tests
+
+### Create a new message
+POST {{Presentation_HostAddress}}/api/message
+Content-Type: application/json
+
+{
+  "code": "WELCOME_MESSAGE"
+}
+
+###
+
+### Get message by ID (use the ID from the created message)
+GET {{Presentation_HostAddress}}/api/message/1
+Accept: application/json
+
+###
+
+### Get message by code
+GET {{Presentation_HostAddress}}/api/message/code/WELCOME_MESSAGE
+Accept: application/json
+
+###
+
+### Add localized text for the message (replace messageId with actual ID)
+POST {{Presentation_HostAddress}}/api/message/1/localized
+Content-Type: application/json
+
+{
+  "languageId": 1,
+  "text": "Welcome to our application!"
+}
+
+###
+
+### Add Arabic localized text for the message (replace messageId with actual ID)
+POST {{Presentation_HostAddress}}/api/message/1/localized
+Content-Type: application/json
+
+{
+  "languageId": 2,
+  "text": "مرحبا بكم في تطبيقنا!"
+}
+
+###
+
+### Get localized message (English)
+GET {{Presentation_HostAddress}}/api/message/localized/WELCOME_MESSAGE?languageId=1
+Accept: application/json
+
+###
+
+### Get localized message (Arabic)
+GET {{Presentation_HostAddress}}/api/message/localized/WELCOME_MESSAGE?languageId=2
+Accept: application/json
+
+###
+
+### Get paginated messages
+GET {{Presentation_HostAddress}}/api/message?page=1&pageSize=10
+Accept: application/json
+
+###
