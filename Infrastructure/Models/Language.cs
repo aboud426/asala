@@ -12,6 +12,7 @@ public partial class Language : BaseEntity<int>
 
     [StringLength(20)]
     public string Name { get; set; } = null!;
+    public string Code { get; set; } = null!;
 
     [InverseProperty("Language")]
     public virtual ICollection<CategoryLocalized> CategoryLocalizeds { get; set; } = new List<CategoryLocalized>();
@@ -30,4 +31,7 @@ public partial class Language : BaseEntity<int>
 
     [InverseProperty("Language")]
     public virtual ICollection<ProductLocalized> ProductLocalizeds { get; set; } = new List<ProductLocalized>();
+
+    [InverseProperty("Language")]
+    public virtual ICollection<MessageLocalized> MessageLocalizeds { get; set; } = new List<MessageLocalized>();
 }

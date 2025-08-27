@@ -18,6 +18,8 @@ public partial class ProductCategory : BaseEntity<int>
 
     public int? ParentId { get; set; }
 
+    public bool IsActive { get; set; } = true;
+
     [InverseProperty("Parent")]
     public virtual ICollection<ProductCategory> InverseParent { get; set; } = new List<ProductCategory>();
 

@@ -13,6 +13,8 @@ public partial class ProviderCategory : BaseEntity<int>
 
     public int ProviderId { get; set; }
 
+    public bool IsActive { get; set; } = true;
+
     [ForeignKey("CategoryId")]
     [InverseProperty("ProviderCategories")]
     public virtual Category Category { get; set; } = null!;

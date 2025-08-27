@@ -15,6 +15,8 @@ public partial class Category : BaseEntity<int>
 
     public int? ParentId { get; set; }
 
+    public bool IsActive { get; set; } = true;
+
     [InverseProperty("Category")]
     public virtual ICollection<CategoryLocalized> CategoryLocalizeds { get; set; } = new List<CategoryLocalized>();
 
