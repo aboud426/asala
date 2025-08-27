@@ -7,10 +7,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Models;
 
 [Table("Product_Localized")]
-public partial class ProductLocalized
+public partial class ProductLocalized : BaseEntity<int>
 {
-    [Key]
-    public int Id { get; set; }
 
     [Column("Language_Id")]
     public int LanguageId { get; set; }

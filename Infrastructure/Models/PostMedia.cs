@@ -7,10 +7,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Models;
 
 [Table("Post_Medias")]
-public partial class PostMedia
+public partial class PostMedia : BaseEntity<int>
 {
-    [Key]
-    public int Id { get; set; }
 
     [Column("Post_Id")]
     public int PostId { get; set; }

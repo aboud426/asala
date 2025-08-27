@@ -7,10 +7,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Models;
 
 [Table("Location_Localized")]
-public partial class LocationLocalized
+public partial class LocationLocalized : BaseEntity<int>
 {
-    [Key]
-    public int Id { get; set; }
 
     public int LocationId { get; set; }
 

@@ -7,17 +7,11 @@ using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Models;
 
 [Table("Follower")]
-public partial class Follower
+public partial class Follower : BaseEntity<int>
 {
-    [Key]
-    public int Id { get; set; }
-
     public int FollowerId { get; set; }
 
     public int FollowingId { get; set; }
-
-    [Column(TypeName = "datetime")]
-    public DateTime CreatedAt { get; set; }
 
     [ForeignKey("FollowerId")]
     [InverseProperty("FollowerFollowerNavigations")]

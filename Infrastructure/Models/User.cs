@@ -7,10 +7,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Models;
 
 [Table("User")]
-public partial class User
+public partial class User : BaseEntity<int>
 {
-    [Key]
-    public int Id { get; set; }
 
     [StringLength(100)]
     [Unicode(false)]

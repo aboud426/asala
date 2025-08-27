@@ -7,17 +7,11 @@ using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Models;
 
 [Table("Favorite")]
-public partial class Favorite
+public partial class Favorite : BaseEntity<int>
 {
-    [Key]
-    public int Id { get; set; }
-
     public int UserId { get; set; }
 
     public int ProductId { get; set; }
-
-    [Column(TypeName = "datetime")]
-    public DateTime CreatedAt { get; set; }
 
     [ForeignKey("ProductId")]
     [InverseProperty("Favorites")]

@@ -7,19 +7,13 @@ using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Models;
 
 [Table("Reaction")]
-public partial class Reaction
+public partial class Reaction : BaseEntity<long>
 {
-    [Key]
-    public long Id { get; set; }
-
     public int UserId { get; set; }
 
     public int PostId { get; set; }
 
     public int ReactionTypeId { get; set; }
-
-    [Column(TypeName = "datetime")]
-    public DateTime CreatedAt { get; set; }
 
     [ForeignKey("PostId")]
     [InverseProperty("Reactions")]

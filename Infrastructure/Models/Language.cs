@@ -7,10 +7,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Models;
 
 [Table("Language")]
-public partial class Language
+public partial class Language : BaseEntity<int>
 {
-    [Key]
-    public int Id { get; set; }
 
     [StringLength(20)]
     public string Name { get; set; } = null!;

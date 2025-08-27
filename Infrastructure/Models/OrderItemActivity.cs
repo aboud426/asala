@@ -7,15 +7,9 @@ using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Models;
 
 [Table("OrderItemActivity")]
-public partial class OrderItemActivity
+public partial class OrderItemActivity : BaseEntity<int>
 {
-    [Key]
-    public int Id { get; set; }
-
     public int OrderItemStatusId { get; set; }
-
-    [Column(TypeName = "datetime")]
-    public DateTime CreatedAt { get; set; }
 
     public int OrderItemId { get; set; }
 

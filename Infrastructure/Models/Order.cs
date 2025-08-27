@@ -7,15 +7,9 @@ using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Models;
 
 [Table("Order")]
-public partial class Order
+public partial class Order : BaseEntity<int>
 {
-    [Key]
-    public int Id { get; set; }
-
     public int UserId { get; set; }
-
-    [Column(TypeName = "datetime")]
-    public DateTime CreatedAt { get; set; }
 
     [Column(TypeName = "decimal(10, 2)")]
     public decimal TotalAmount { get; set; }

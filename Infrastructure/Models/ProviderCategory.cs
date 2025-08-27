@@ -6,10 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Models;
 
-public partial class ProviderCategory
+public partial class ProviderCategory : BaseEntity<int>
 {
-    [Key]
-    public int Id { get; set; }
 
     public int CategoryId { get; set; }
 

@@ -7,10 +7,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Models;
 
 [Table("Region")]
-public partial class Region
+public partial class Region : BaseEntity<int>
 {
-    [Key]
-    public int Id { get; set; }
 
     [StringLength(10)]
     public string Name { get; set; } = null!;

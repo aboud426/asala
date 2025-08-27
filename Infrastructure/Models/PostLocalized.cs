@@ -7,10 +7,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Models;
 
 [Table("Post_Localized")]
-public partial class PostLocalized
+public partial class PostLocalized : BaseEntity<int>
 {
-    [Key]
-    public int Id { get; set; }
 
     [Column("Description_Localized")]
     [StringLength(500)]

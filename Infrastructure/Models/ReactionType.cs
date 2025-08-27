@@ -7,10 +7,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Models;
 
 [Table("ReactionType")]
-public partial class ReactionType
+public partial class ReactionType : BaseEntity<int>
 {
-    [Key]
-    public int Id { get; set; }
 
     [StringLength(10)]
     public string Name { get; set; } = null!;

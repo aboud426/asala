@@ -6,10 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Models;
 
-public partial class Medium
+public partial class Medium : BaseEntity<int>
 {
-    [Key]
-    public int Id { get; set; }
 
     [Column("Media_Type_Id")]
     public int MediaTypeId { get; set; }

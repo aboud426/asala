@@ -7,10 +7,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Models;
 
 [Table("Role_Permissions")]
-public partial class RolePermission
+public partial class RolePermission : BaseEntity<int>
 {
-    [Key]
-    public int Id { get; set; }
 
     public int RoleId { get; set; }
 

@@ -7,10 +7,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Models;
 
 [Table("Cart_Item")]
-public partial class CartItem
+public partial class CartItem : BaseEntity<int>
 {
-    [Key]
-    public int Id { get; set; }
 
     public int ProductId { get; set; }
 

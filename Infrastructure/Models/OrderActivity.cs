@@ -7,17 +7,11 @@ using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Models;
 
 [Table("OrderActivity")]
-public partial class OrderActivity
+public partial class OrderActivity : BaseEntity<int>
 {
-    [Key]
-    public int Id { get; set; }
-
     public int OrderStatusId { get; set; }
 
     public int OrderId { get; set; }
-
-    [Column(TypeName = "datetime")]
-    public DateTime CreatedAt { get; set; }
 
     [ForeignKey("OrderId")]
     [InverseProperty("OrderActivities")]

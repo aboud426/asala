@@ -7,20 +7,14 @@ using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Models;
 
 [Table("Post")]
-public partial class Post
+public partial class Post : BaseEntity<int>
 {
-    [Key]
-    public int Id { get; set; }
-
     public int UserId { get; set; }
 
     [StringLength(500)]
     public string? Description { get; set; }
 
     public int? NumberOfReactions { get; set; }
-
-    [Column(TypeName = "datetime")]
-    public DateTime CreatedAt { get; set; }
 
     [InverseProperty("Post")]
     public virtual ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();

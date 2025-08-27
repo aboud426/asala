@@ -6,10 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Models;
 
-public partial class UserRole
+public partial class UserRole : BaseEntity<int>
 {
-    [Key]
-    public int Id { get; set; }
 
     public int UserId { get; set; }
 
