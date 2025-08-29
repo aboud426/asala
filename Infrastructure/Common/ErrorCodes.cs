@@ -77,6 +77,15 @@ public static class ErrorCodes
     public const string MESSAGE_NOT_FOUND = "ERR_A04";
     public const string MESSAGE_INVALID_LANGUAGE = "ERR_A05";
     public const string MESSAGE_TEXT_REQUIRED = "ERR_A06";
+
+    // Language errors
+    public const string LANGUAGE_INVALID_ID = "ERR_B01";
+    public const string LANGUAGE_NAME_REQUIRED = "ERR_B02";
+    public const string LANGUAGE_CODE_REQUIRED = "ERR_B03";
+    public const string LANGUAGE_CODE_EXISTS = "ERR_B04";
+    public const string LANGUAGE_NOT_FOUND = "ERR_B05";
+    public const string LANGUAGE_NAME_EXISTS = "ERR_B06";
+    public const string LANGUAGE_INVALID_CODE_FORMAT = "ERR_B07";
 }
 
 /// <summary>

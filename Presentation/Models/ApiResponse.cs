@@ -1,4 +1,5 @@
 using Infrastructure.Common;
+using Business.Services;
 
 namespace Presentation.Models;
 
@@ -144,4 +145,179 @@ public class PaginationData<T>
     public int TotalPages { get; set; }
     public bool HasNextPage { get; set; }
     public bool HasPreviousPage { get; set; }
+}
+
+/// <summary>
+/// Localized API error with resolved message text
+/// </summary>
+public class LocalizedApiError : ApiError
+{
+    public string? LocalizedMessage { get; set; }
+    public int LanguageId { get; set; }
+
+    public LocalizedApiError() : base()
+    {
+    }
+
+    public LocalizedApiError(string code, int languageId) : base(code)
+    {
+        LanguageId = languageId;
+    }
+
+    public LocalizedApiError(string code, string message, int languageId) : base(code, message)
+    {
+        LocalizedMessage = message;
+        LanguageId = languageId;
+    }
+
+    public LocalizedApiError(string code, string message, Dictionary<string, object> parameters, int languageId) 
+        : base(code, message, parameters)
+    {
+        LocalizedMessage = message;
+        LanguageId = languageId;
+    }
+}
+
+/// <summary>
+/// Localized API response with language support and selective field inclusion
+/// </summary>
+public class LocalizedApiResponse : ApiResponse
+{
+    public int LanguageId { get; set; }
+    public new List<LocalizedApiError> Errors { get; set; } = [];
+    public HashSet<string>? IncludeFields { get; set; }
+    public HashSet<string>? ExcludeFields { get; set; }
+
+    public LocalizedApiResponse() : base()
+    {
+    }
+
+    public LocalizedApiResponse(int languageId) : base()
+    {
+        LanguageId = languageId;
+    }
+
+    public LocalizedApiResponse(object data, int languageId) : base(data)
+    {
+        LanguageId = languageId;
+    }
+
+    public LocalizedApiResponse(List<LocalizedApiError> errors, int languageId) : base()
+    {
+        Success = false;
+        Errors = errors;
+        LanguageId = languageId;
+    }
+
+    public LocalizedApiResponse(LocalizedApiError error, int languageId) : base()
+    {
+        Success = false;
+        Errors = [error];
+        LanguageId = languageId;
+    }
+
+    /// <summary>
+    /// Include only specific fields in the response data
+    /// </summary>
+    public LocalizedApiResponse WithFields(params string[] fields)
+    {
+        IncludeFields = new HashSet<string>(fields);
+        return this;
+    }
+
+    /// <summary>
+    /// Exclude specific fields from the response data
+    /// </summary>
+    public LocalizedApiResponse WithoutFields(params string[] fields)
+    {
+        ExcludeFields = new HashSet<string>(fields);
+        return this;
+    }
+}
+
+/// <summary>
+/// Generic localized API response with typed data
+/// </summary>
+/// <typeparam name="T">Type of the response data</typeparam>
+public class LocalizedApiResponse<T> : LocalizedApiResponse
+{
+    public new T? Data { get; set; }
+
+    public LocalizedApiResponse() : base()
+    {
+    }
+
+    public LocalizedApiResponse(int languageId) : base(languageId)
+    {
+    }
+
+    public LocalizedApiResponse(T data, int languageId) : base(languageId)
+    {
+        Success = true;
+        Data = data;
+    }
+
+    public LocalizedApiResponse(List<LocalizedApiError> errors, int languageId) : base(errors, languageId)
+    {
+    }
+
+    public LocalizedApiResponse(LocalizedApiError error, int languageId) : base(error, languageId)
+    {
+    }
+
+    /// <summary>
+    /// Include only specific fields in the response data
+    /// </summary>
+    public new LocalizedApiResponse<T> WithFields(params string[] fields)
+    {
+        IncludeFields = new HashSet<string>(fields);
+        return this;
+    }
+
+    /// <summary>
+    /// Exclude specific fields from the response data
+    /// </summary>
+    public new LocalizedApiResponse<T> WithoutFields(params string[] fields)
+    {
+        ExcludeFields = new HashSet<string>(fields);
+        return this;
+    }
+}
+
+/// <summary>
+/// Paginated localized API response
+/// </summary>
+/// <typeparam name="T">Type of the items in the paginated response</typeparam>
+public class LocalizedPaginatedApiResponse<T> : LocalizedApiResponse<PaginationData<T>>
+{
+    public LocalizedPaginatedApiResponse() : base()
+    {
+    }
+
+    public LocalizedPaginatedApiResponse(int languageId) : base(languageId)
+    {
+    }
+
+    public LocalizedPaginatedApiResponse(PaginatedResult<T> paginatedResult, int languageId) : base(languageId)
+    {
+        Success = true;
+        Data = new PaginationData<T>
+        {
+            Items = paginatedResult.Items,
+            TotalCount = paginatedResult.TotalCount,
+            Page = paginatedResult.Page,
+            PageSize = paginatedResult.PageSize,
+            TotalPages = paginatedResult.TotalPages,
+            HasNextPage = paginatedResult.HasNextPage,
+            HasPreviousPage = paginatedResult.HasPreviousPage
+        };
+    }
+
+    public LocalizedPaginatedApiResponse(List<LocalizedApiError> errors, int languageId) : base(errors, languageId)
+    {
+    }
+
+    public LocalizedPaginatedApiResponse(LocalizedApiError error, int languageId) : base(error, languageId)
+    {
+    }
 }

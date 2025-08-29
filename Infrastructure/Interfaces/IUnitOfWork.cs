@@ -46,6 +46,11 @@ public interface IUnitOfWork : IDisposable
     IRepository<Infrastructure.Models.Location> Locations { get; }
 
     /// <summary>
+    /// Repository for Language entities
+    /// </summary>
+    IRepository<Infrastructure.Models.Language> Languages { get; }
+
+    /// <summary>
     /// Begins a new database transaction
     /// </summary>
     Task<Result> BeginTransactionAsync(CancellationToken cancellationToken = default);

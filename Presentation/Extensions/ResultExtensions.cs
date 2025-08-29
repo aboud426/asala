@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Infrastructure.Common;
 using Presentation.Models;
+using Business.Services;
+using System.Reflection;
 
 namespace Presentation.Extensions;
 
@@ -172,5 +174,254 @@ public static class ResultExtensions
             // Default to 400 for unknown errors
             _ => 400
         };
+    }
+
+    /// <summary>
+    /// Converts a Result to a LocalizedApiResponse with message localization
+    /// </summary>
+    public static async Task<LocalizedApiResponse> ToLocalizedApiResponseAsync(
+        this Result result, 
+        int languageId, 
+        IMessageService messageService,
+        string[]? includeFields = null,
+        string[]? excludeFields = null)
+    {
+        if (result.IsSuccess)
+        {
+            var response = new LocalizedApiResponse(languageId);
+            if (includeFields != null) response.WithFields(includeFields);
+            if (excludeFields != null) response.WithoutFields(excludeFields);
+            return response;
+        }
+
+        var localizedErrors = new List<LocalizedApiError>();
+        
+        foreach (var error in result.Errors)
+        {
+            var localizedError = new LocalizedApiError(error.Code, languageId)
+            {
+                Parameters = error.Parameters
+            };
+
+            // Try to get localized message
+            var messageResult = await messageService.GetLocalizedMessageAsync(error.Code, languageId);
+            if (messageResult.IsSuccess && !string.IsNullOrEmpty(messageResult.Value))
+            {
+                localizedError.LocalizedMessage = messageResult.Value;
+            }
+
+            localizedErrors.Add(localizedError);
+        }
+
+        var errorResponse = new LocalizedApiResponse(localizedErrors, languageId);
+        if (includeFields != null) errorResponse.WithFields(includeFields);
+        if (excludeFields != null) errorResponse.WithoutFields(excludeFields);
+        return errorResponse;
+    }
+
+    /// <summary>
+    /// Converts a Result<T> to a LocalizedApiResponse<T> with message localization
+    /// </summary>
+    public static async Task<LocalizedApiResponse<T>> ToLocalizedApiResponseAsync<T>(
+        this Result<T> result, 
+        int languageId, 
+        IMessageService messageService,
+        string[]? includeFields = null,
+        string[]? excludeFields = null)
+    {
+        if (result.IsSuccess)
+        {
+            var filteredData = FilterObject(result.Value, includeFields, excludeFields);
+            var response = new LocalizedApiResponse<T>((T)filteredData!, languageId);
+            if (includeFields != null) response.WithFields(includeFields);
+            if (excludeFields != null) response.WithoutFields(excludeFields);
+            return response;
+        }
+
+        var localizedErrors = new List<LocalizedApiError>();
+        
+        foreach (var error in result.Errors)
+        {
+            var localizedError = new LocalizedApiError(error.Code, languageId)
+            {
+                Parameters = error.Parameters
+            };
+
+            // Try to get localized message
+            var messageResult = await messageService.GetLocalizedMessageAsync(error.Code, languageId);
+            if (messageResult.IsSuccess && !string.IsNullOrEmpty(messageResult.Value))
+            {
+                localizedError.LocalizedMessage = messageResult.Value;
+            }
+
+            localizedErrors.Add(localizedError);
+        }
+
+        var errorResponse = new LocalizedApiResponse<T>(localizedErrors, languageId);
+        if (includeFields != null) errorResponse.WithFields(includeFields);
+        if (excludeFields != null) errorResponse.WithoutFields(excludeFields);
+        return errorResponse;
+    }
+
+    /// <summary>
+    /// Converts a paginated result to a LocalizedPaginatedApiResponse with message localization
+    /// </summary>
+    public static async Task<LocalizedPaginatedApiResponse<T>> ToLocalizedPaginatedApiResponseAsync<T>(
+        this Result<PaginatedResult<T>> result, 
+        int languageId, 
+        IMessageService messageService,
+        string[]? includeFields = null,
+        string[]? excludeFields = null)
+    {
+        if (result.IsSuccess)
+        {
+            var filteredItems = result.Value!.Items
+                .Select(item => (T)FilterObject(item, includeFields, excludeFields)!)
+                .ToList();
+
+            var filteredResult = new PaginatedResult<T>(
+                filteredItems,
+                result.Value.TotalCount,
+                result.Value.Page,
+                result.Value.PageSize
+            );
+
+            var response = new LocalizedPaginatedApiResponse<T>(filteredResult, languageId);
+            if (includeFields != null) response.WithFields(includeFields);
+            if (excludeFields != null) response.WithoutFields(excludeFields);
+            return response;
+        }
+
+        var localizedErrors = new List<LocalizedApiError>();
+        
+        foreach (var error in result.Errors)
+        {
+            var localizedError = new LocalizedApiError(error.Code, languageId)
+            {
+                Parameters = error.Parameters
+            };
+
+            // Try to get localized message
+            var messageResult = await messageService.GetLocalizedMessageAsync(error.Code, languageId);
+            if (messageResult.IsSuccess && !string.IsNullOrEmpty(messageResult.Value))
+            {
+                localizedError.LocalizedMessage = messageResult.Value;
+            }
+
+            localizedErrors.Add(localizedError);
+        }
+
+        var errorResponse = new LocalizedPaginatedApiResponse<T>(localizedErrors, languageId);
+        if (includeFields != null) errorResponse.WithFields(includeFields);
+        if (excludeFields != null) errorResponse.WithoutFields(excludeFields);
+        return errorResponse;
+    }
+
+    /// <summary>
+    /// Converts a LocalizedApiResponse to an IActionResult for controllers
+    /// </summary>
+    public static IActionResult ToActionResult(this LocalizedApiResponse response)
+    {
+        if (response.Success)
+        {
+            return new OkObjectResult(response);
+        }
+
+        // Determine HTTP status code based on error codes
+        var httpStatusCode = GetHttpStatusCode(response.Errors.FirstOrDefault()?.Code);
+        return new ObjectResult(response)
+        {
+            StatusCode = httpStatusCode
+        };
+    }
+
+    /// <summary>
+    /// Converts a LocalizedApiResponse<T> to an IActionResult for controllers
+    /// </summary>
+    public static IActionResult ToActionResult<T>(this LocalizedApiResponse<T> response)
+    {
+        if (response.Success)
+        {
+            if (response.Data == null)
+            {
+                var notFoundError = new LocalizedApiError(ErrorCodes.ENTITY_NOT_FOUND, response.LanguageId);
+                var notFoundResponse = new LocalizedApiResponse<T>(notFoundError, response.LanguageId);
+                return new NotFoundObjectResult(notFoundResponse);
+            }
+            
+            return new OkObjectResult(response);
+        }
+
+        // Determine HTTP status code based on error codes
+        var httpStatusCode = GetHttpStatusCode(response.Errors.FirstOrDefault()?.Code);
+        return new ObjectResult(response)
+        {
+            StatusCode = httpStatusCode
+        };
+    }
+
+    /// <summary>
+    /// Filters object properties based on include/exclude field lists
+    /// </summary>
+    private static object FilterObject(object? obj, string[]? includeFields, string[]? excludeFields)
+    {
+        if (obj == null) return obj!;
+
+        // If no filtering is specified, return original object
+        if ((includeFields == null || includeFields.Length == 0) && 
+            (excludeFields == null || excludeFields.Length == 0))
+        {
+            return obj;
+        }
+
+        var objType = obj.GetType();
+        
+        // For primitive types and strings, return as-is
+        if (objType.IsPrimitive || objType == typeof(string) || objType == typeof(DateTime) || 
+            objType == typeof(Guid) || objType == typeof(decimal))
+        {
+            return obj;
+        }
+
+        // Create anonymous object with filtered properties
+        var properties = objType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+        var filteredProps = new Dictionary<string, object?>();
+
+        foreach (var prop in properties)
+        {
+            var propName = prop.Name;
+            
+            // Apply include filter
+            if (includeFields != null && includeFields.Length > 0)
+            {
+                if (!includeFields.Contains(propName, StringComparer.OrdinalIgnoreCase))
+                    continue;
+            }
+            
+            // Apply exclude filter
+            if (excludeFields != null && excludeFields.Length > 0)
+            {
+                if (excludeFields.Contains(propName, StringComparer.OrdinalIgnoreCase))
+                    continue;
+            }
+
+            var propValue = prop.GetValue(obj);
+            filteredProps[propName] = propValue;
+        }
+
+        // Create new object with filtered properties
+        var filteredType = obj.GetType();
+        var filteredObj = Activator.CreateInstance(filteredType);
+        
+        foreach (var kvp in filteredProps)
+        {
+            var prop = filteredType.GetProperty(kvp.Key);
+            if (prop != null && prop.CanWrite)
+            {
+                prop.SetValue(filteredObj, kvp.Value);
+            }
+        }
+
+        return filteredObj!;
     }
 }

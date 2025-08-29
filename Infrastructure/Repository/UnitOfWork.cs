@@ -28,6 +28,7 @@ public class UnitOfWork : IUnitOfWork
     private IRepository<Post>? _posts;
     private IRepository<Category>? _categories;
     private IRepository<Location>? _locations;
+    private IRepository<Language>? _languages;
 
     public UnitOfWork(TourTradeDbContext context)
     {
@@ -42,6 +43,7 @@ public class UnitOfWork : IUnitOfWork
     public IRepository<Post> Posts => _posts ??= new Repository<Post>(_context);
     public IRepository<Category> Categories => _categories ??= new Repository<Category>(_context);
     public IRepository<Location> Locations => _locations ??= new Repository<Location>(_context);
+    public IRepository<Language> Languages => _languages ??= new Repository<Language>(_context);
 
     public async Task<Result> BeginTransactionAsync(CancellationToken cancellationToken = default)
     {

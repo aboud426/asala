@@ -9,6 +9,7 @@ public static class CacheKeys
     public const string ALL_CATEGORIES = "all_categories";
     public const string ALL_USERS = "all_users";
     public const string ALL_MESSAGES = "all_messages";
+    public const string ALL_LANGUAGES = "all_languages";
     
     public static string Product(int id) => $"product_{id}";
     public static string ProductsByCategory(int categoryId) => $"products_category_{categoryId}";
@@ -22,4 +23,8 @@ public static class CacheKeys
     public static string MessageByCode(string code) => $"message_code_{code}";
     public static string MessageLocalized(int messageId, int languageId) => $"message_{messageId}_lang_{languageId}";
     public static string MessagesByLanguage(int languageId) => $"messages_lang_{languageId}";
+    
+    public static string Language(int id) => $"language_{id}";
+    public static string LanguageByCode(string code) => $"language_code_{code}";
+    public static string LanguagesByPaginated(int page, int pageSize) => $"languages_page_{page}_size_{pageSize}";
 }

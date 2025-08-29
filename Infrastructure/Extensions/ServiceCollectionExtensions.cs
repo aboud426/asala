@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Infrastructure.Interfaces;
 using Infrastructure.Models;
 using Infrastructure.Repository;
+using Infrastructure.Services;
 
 namespace Infrastructure.Extensions;
 
@@ -26,6 +27,9 @@ public static class ServiceCollectionExtensions
 
         // Repository pattern (if you need to inject repositories directly)
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
+        // Seed services
+        services.AddScoped<MessageSeedService>();
 
         return services;
     }

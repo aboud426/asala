@@ -20,8 +20,11 @@ public interface IMessageService
     Task<Result<Message?>> GetMessageByCodeAsync(string code, CancellationToken cancellationToken = default);
     Task<Result<Message>> CreateMessageAsync(string code, CancellationToken cancellationToken = default);
     Task<Result<MessageLocalized>> AddLocalizedMessageAsync(int messageId, int languageId, string text, CancellationToken cancellationToken = default);
+    Task<Result<MessageLocalized>> AddLocalizedMessageByLanguageCodeAsync(int messageId, string languageCode, string text, CancellationToken cancellationToken = default);
     Task<Result<string?>> GetLocalizedMessageAsync(string code, int languageId, CancellationToken cancellationToken = default);
+    Task<Result<string?>> GetLocalizedMessageByLanguageCodeAsync(string code, string languageCode, CancellationToken cancellationToken = default);
     Task<Result<PaginatedResult<Message>>> GetMessagesAsync(int page, int pageSize, CancellationToken cancellationToken = default);
+    Task<Result<PaginatedResult<Message>>> GetMessagesWithLocalizationsAsync(int page, int pageSize, string languageCode, CancellationToken cancellationToken = default);
 }
 
 public class MessageService : IMessageService
@@ -113,7 +116,6 @@ public class MessageService : IMessageService
 
     public async Task<Result<MessageLocalized>> AddLocalizedMessageAsync(int messageId, int languageId, string text, CancellationToken cancellationToken = default)
     {
-        // Validation
         if (messageId <= 0)
             return Result.Failure<MessageLocalized>(ErrorCodes.MESSAGE_INVALID_ID);
 
@@ -123,7 +125,7 @@ public class MessageService : IMessageService
         if (string.IsNullOrWhiteSpace(text))
             return Result.Failure<MessageLocalized>(ErrorCodes.MESSAGE_TEXT_REQUIRED);
 
-        // Validate message exists
+        // Check if message exists
         var messageResult = await GetMessageByIdAsync(messageId, cancellationToken);
         if (messageResult.IsFailure)
             return Result.Failure<MessageLocalized>(messageResult.Error!);
@@ -131,43 +133,31 @@ public class MessageService : IMessageService
         if (messageResult.Value == null)
             return Result.Failure<MessageLocalized>(ErrorCodes.MESSAGE_NOT_FOUND);
 
-        // Validate language exists
-        var languageRepository = _unitOfWork.Repository<Language>();
-        var languageExistsResult = await languageRepository.AnyAsync(l => l.Id == languageId, cancellationToken);
-        if (languageExistsResult.IsFailure)
-            return Result.Failure<MessageLocalized>(languageExistsResult.Error!);
+        // Check if language exists
+        var languageResult = await _unitOfWork.Repository<Language>().GetByIdAsync(languageId, cancellationToken);
+        if (languageResult.IsFailure)
+            return Result.Failure<MessageLocalized>(languageResult.Error!);
 
-        if (!languageExistsResult.Value)
-            return Result.Failure<MessageLocalized>(ErrorCodes.MESSAGE_INVALID_LANGUAGE);
+        if (languageResult.Value == null)
+            return Result.Failure<MessageLocalized>(ErrorCodes.LANGUAGE_NOT_FOUND);
 
         // Check if localization already exists
-        var messageLocalizedRepository = _unitOfWork.Repository<MessageLocalized>();
-        var existingLocalizationResult = await messageLocalizedRepository.AnyAsync(
-            ml => ml.MessageId == messageId && ml.LanguageId == languageId, 
-            cancellationToken);
+        var existingLocalizationResult = await _unitOfWork.Repository<MessageLocalized>().GetAsync(
+            filter: ml => ml.MessageId == messageId && ml.LanguageId == languageId,
+            cancellationToken: cancellationToken);
 
         if (existingLocalizationResult.IsFailure)
             return Result.Failure<MessageLocalized>(existingLocalizationResult.Error!);
 
         MessageLocalized messageLocalized;
-
-        if (existingLocalizationResult.Value)
+        if (existingLocalizationResult.Value != null && existingLocalizationResult.Value.Any())
         {
             // Update existing localization
-            var existingResult = await messageLocalizedRepository.GetAsync(
-                filter: ml => ml.MessageId == messageId && ml.LanguageId == languageId,
-                cancellationToken: cancellationToken);
-
-            if (existingResult.IsFailure)
-                return Result.Failure<MessageLocalized>(existingResult.Error!);
-
-            messageLocalized = existingResult.Value!.First();
-            messageLocalized.LocalizedText = text.Trim();
+            messageLocalized = existingLocalizationResult.Value.First();
+            messageLocalized.LocalizedText = text;
             messageLocalized.UpdatedAt = DateTime.UtcNow;
 
-            var updateResult = messageLocalizedRepository.Update(messageLocalized);
-            if (updateResult.IsFailure)
-                return Result.Failure<MessageLocalized>(updateResult.Error!);
+            _unitOfWork.Repository<MessageLocalized>().Update(messageLocalized);
         }
         else
         {
@@ -176,26 +166,52 @@ public class MessageService : IMessageService
             {
                 MessageId = messageId,
                 LanguageId = languageId,
-                LocalizedText = text.Trim(),
+                LocalizedText = text,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
 
-            var addResult = await messageLocalizedRepository.AddAsync(messageLocalized, cancellationToken);
+            var addResult = await _unitOfWork.Repository<MessageLocalized>().AddAsync(messageLocalized, cancellationToken);
             if (addResult.IsFailure)
                 return Result.Failure<MessageLocalized>(addResult.Error!);
-
-            messageLocalized = addResult.Value!;
         }
 
         var saveResult = await _unitOfWork.SaveChangesAsync(cancellationToken);
         if (saveResult.IsFailure)
             return Result.Failure<MessageLocalized>(saveResult.Error!);
 
-        // Cache invalidation
-        InvalidateMessageCaches(messageResult.Value.Code, messageId, languageId);
+        // Invalidate related caches
+        InvalidateMessageCaches(messageId: messageId, languageId: languageId);
 
         return Result<MessageLocalized>.Success(messageLocalized);
+    }
+
+    /// <summary>
+    /// Add or update localized message using language code
+    /// </summary>
+    public async Task<Result<MessageLocalized>> AddLocalizedMessageByLanguageCodeAsync(int messageId, string languageCode, string text, CancellationToken cancellationToken = default)
+    {
+        if (messageId <= 0)
+            return Result.Failure<MessageLocalized>(ErrorCodes.MESSAGE_INVALID_ID);
+
+        if (string.IsNullOrWhiteSpace(languageCode))
+            return Result.Failure<MessageLocalized>(ErrorCodes.MESSAGE_INVALID_LANGUAGE);
+
+        if (string.IsNullOrWhiteSpace(text))
+            return Result.Failure<MessageLocalized>(ErrorCodes.MESSAGE_TEXT_REQUIRED);
+
+        // Get the language ID for the given code
+        var languageResult = await _unitOfWork.Repository<Language>().GetAsync(
+            filter: l => l.Code == languageCode.Trim().ToUpper(),
+            cancellationToken: cancellationToken);
+
+        if (languageResult.IsFailure || languageResult.Value == null || !languageResult.Value.Any())
+            return Result.Failure<MessageLocalized>(ErrorCodes.LANGUAGE_NOT_FOUND);
+
+        var languageId = languageResult.Value.First().Id;
+
+        // Use the existing method with the resolved language ID
+        return await AddLocalizedMessageAsync(messageId, languageId, text, cancellationToken);
     }
 
     public async Task<Result<string?>> GetLocalizedMessageAsync(string code, int languageId, CancellationToken cancellationToken = default)
@@ -206,7 +222,7 @@ public class MessageService : IMessageService
         if (languageId <= 0)
             return Result.Failure<string?>(ErrorCodes.MESSAGE_INVALID_LANGUAGE);
 
-        // Get message by code first
+        // Cache-aside pattern for message lookup
         var messageResult = await GetMessageByCodeAsync(code, cancellationToken);
         if (messageResult.IsFailure)
             return Result.Failure<string?>(messageResult.Error!);
@@ -236,6 +252,31 @@ public class MessageService : IMessageService
         );
     }
 
+    /// <summary>
+    /// Get localized message by code and language code
+    /// </summary>
+    public async Task<Result<string?>> GetLocalizedMessageByLanguageCodeAsync(string code, string languageCode, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(code))
+            return Result.Failure<string?>(ErrorCodes.MESSAGE_CODE_REQUIRED);
+
+        if (string.IsNullOrWhiteSpace(languageCode))
+            return Result.Failure<string?>(ErrorCodes.MESSAGE_INVALID_LANGUAGE);
+
+        // Get the language ID for the given code
+        var languageResult = await _unitOfWork.Repository<Language>().GetAsync(
+            filter: l => l.Code == languageCode.Trim().ToUpper(),
+            cancellationToken: cancellationToken);
+
+        if (languageResult.IsFailure || languageResult.Value == null || !languageResult.Value.Any())
+            return Result.Failure<string?>(ErrorCodes.LANGUAGE_NOT_FOUND);
+
+        var languageId = languageResult.Value.First().Id;
+
+        // Use the existing method with the resolved language ID
+        return await GetLocalizedMessageAsync(code, languageId, cancellationToken);
+    }
+
     public async Task<Result<PaginatedResult<Message>>> GetMessagesAsync(int page, int pageSize, CancellationToken cancellationToken = default)
     {
         var cacheKey = $"messages_page_{page}_size_{pageSize}";
@@ -246,9 +287,64 @@ public class MessageService : IMessageService
                 page,
                 pageSize,
                 orderBy: query => query.OrderBy(m => m.Code),
-                includeProperties: "MessageLocalizeds",
+                includeProperties: "", // Remove MessageLocalizeds to avoid circular reference
                 cancellationToken: cancellationToken),
             CacheHelper.ExpirationTimes.Short // Shorter expiration for paginated lists
+        );
+    }
+
+    /// <summary>
+    /// Get messages with localizations for a specific language
+    /// </summary>
+    public async Task<Result<PaginatedResult<Message>>> GetMessagesWithLocalizationsAsync(int page, int pageSize, string languageCode, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(languageCode))
+            return Result.Failure<PaginatedResult<Message>>(ErrorCodes.MESSAGE_INVALID_LANGUAGE);
+
+        var cacheKey = $"messages_with_localizations_page_{page}_size_{pageSize}_lang_{languageCode}";
+
+        return await _cache.GetOrSetAsync(
+            cacheKey,
+            async () => 
+            {
+                // Get messages without navigation properties first
+                var messagesResult = await _unitOfWork.Repository<Message>().GetPaginatedAsync(
+                    page,
+                    pageSize,
+                    orderBy: query => query.OrderBy(m => m.Code),
+                    includeProperties: "",
+                    cancellationToken: cancellationToken);
+
+                if (messagesResult.IsFailure)
+                    return messagesResult;
+
+                // Get the language ID for the given code
+                var languageResult = await _unitOfWork.Repository<Language>().GetAsync(
+                    filter: l => l.Code == languageCode.Trim().ToUpper(),
+                    cancellationToken: cancellationToken);
+
+                if (languageResult.IsFailure || languageResult.Value == null || !languageResult.Value.Any())
+                    return Result.Failure<PaginatedResult<Message>>(ErrorCodes.LANGUAGE_NOT_FOUND);
+
+                var languageId = languageResult.Value.First().Id;
+
+                // Then get localizations for each message
+                var messages = messagesResult.Value!.Items;
+                foreach (var message in messages)
+                {
+                    var localizationsResult = await _unitOfWork.Repository<MessageLocalized>().GetAsync(
+                        filter: ml => ml.MessageId == message.Id && ml.LanguageId == languageId,
+                        cancellationToken: cancellationToken);
+
+                    if (localizationsResult.IsSuccess && localizationsResult.Value != null)
+                    {
+                        message.MessageLocalizeds = localizationsResult.Value.ToList();
+                    }
+                }
+
+                return messagesResult;
+            },
+            CacheHelper.ExpirationTimes.Short
         );
     }
 

@@ -12,6 +12,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddScoped<Business.Services.IUserService, Business.Services.UserService>();
 builder.Services.AddScoped<Business.Services.IProductService, Business.Services.ProductService>();
 builder.Services.AddScoped<Business.Services.IMessageService, Business.Services.MessageService>();
+builder.Services.AddScoped<Business.Services.ILanguageService, Business.Services.LanguageService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
