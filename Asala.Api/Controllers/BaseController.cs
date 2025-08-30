@@ -28,7 +28,7 @@ public abstract class BaseController : ControllerBase
 
     protected IActionResult CreateResponse<T>(Result<T> result)
     {
-        var response = _responseRepresenter.Represent(result);
+        var response = _responseRepresenter.Represent<T>(result);
 
         if (result.IsSuccess)
         {

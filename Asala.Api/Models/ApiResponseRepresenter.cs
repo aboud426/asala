@@ -9,7 +9,7 @@ public class ApiResponseRepresenter
     {
         if (result.IsSuccess)
         {
-            return new ApiResponse(true, result.MessageCode, result.MessageCode);
+            return new ApiResponse<T>(result.Value!, result.MessageCode, result.MessageCode);
         }
 
         return new ApiResponse(false, result.MessageCode, result.MessageCode);

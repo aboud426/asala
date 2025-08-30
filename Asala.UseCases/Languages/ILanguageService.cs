@@ -8,7 +8,7 @@ public interface ILanguageService
     Task<Result<PaginatedResult<LanguageDto>>> GetPaginatedAsync(
         int page,
         int pageSize,
-        bool activeOnly = true,
+        bool? activeOnly = null,
         CancellationToken cancellationToken = default
     );
     Task<Result<LanguageDto>> CreateAsync(

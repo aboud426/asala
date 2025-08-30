@@ -21,13 +21,16 @@ public class LanguageService : ILanguageService
     public async Task<Result<PaginatedResult<LanguageDto>>> GetPaginatedAsync(
         int page,
         int pageSize,
-        bool activeOnly = true,
+        bool? activeOnly = null,
         CancellationToken cancellationToken = default
     )
     {
-        Expression<Func<Language, bool>> filter = activeOnly
-            ? (l => l.IsActive && !l.IsDeleted)
-            : (l => !l.IsDeleted);
+        Expression<Func<Language, bool>> filter = activeOnly switch
+        {
+            true => l => l.IsActive && !l.IsDeleted, // Only active languages
+            false => l => !l.IsActive && !l.IsDeleted, // Only inactive languages
+            null => l => !l.IsDeleted, // All languages (both active and inactive)
+        };
 
         var result = await _languageRepository.GetPaginatedAsync(
             page,

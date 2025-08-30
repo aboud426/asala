@@ -19,8 +19,8 @@ public class LanguageController : BaseController
     [HttpGet]
     public async Task<IActionResult> GetPaginated(
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 10,
-        [FromQuery] bool activeOnly = true,
+        [FromQuery] int pageSize = 5,
+        [FromQuery] bool? activeOnly = null,
         CancellationToken cancellationToken = default
     )
     {
