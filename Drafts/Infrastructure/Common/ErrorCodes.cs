@@ -7,7 +7,7 @@ namespace Infrastructure.Common;
 public static class ErrorCodes
 {
     // General validation errors
-    public const string VALIDATION_REQUIRED_FIELD = "ERR_001";
+    public const string VALIDATION_REQUIRED_FIELD = "VALIDATION_REQUIRED_FIELD";
     public const string VALIDATION_INVALID_FORMAT = "ERR_002";
     public const string VALIDATION_OUT_OF_RANGE = "ERR_003";
     public const string VALIDATION_INVALID_LENGTH = "ERR_004";
