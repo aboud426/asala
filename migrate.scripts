@@ -1,6 +1,6 @@
 # main
 
-dotnet ef migrations add AddingLanguage --context AsalaDbContext
+dotnet ef migrations add AddingMessages --context AsalaDbContext
 
 dotnet ef database update --context AsalaDbContext
 

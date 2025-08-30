@@ -4,6 +4,7 @@ using Asala.Core.Db.Repositories;
 using Asala.Core.Db.UnitOfWork;
 using Asala.Core.Modules.Languages;
 using Asala.UseCases.Languages;
+using Asala.UseCases.Messages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,7 @@ public static class ServiceCollectionExtensions
     )
     {
         services.AddScoped<ILanguageService, LanguageService>();
+        services.AddScoped<IMessageService, MessageService>();
         return services;
     }
 }
