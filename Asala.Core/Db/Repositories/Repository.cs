@@ -32,7 +32,7 @@ public class Repository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey
         }
         catch (Exception ex)
         {
-            return Result.Failure<TEntity?>("DB_ERROR", ex);
+            return Result.Failure<TEntity?>(MessageCodes.DB_ERROR, ex);
         }
     }
 
@@ -48,7 +48,7 @@ public class Repository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey
         }
         catch (Exception ex)
         {
-            return Result.Failure<IEnumerable<TEntity>>("DB_ERROR", ex);
+            return Result.Failure<IEnumerable<TEntity>>(MessageCodes.DB_ERROR, ex);
         }
     }
 
@@ -85,7 +85,7 @@ public class Repository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey
         }
         catch (Exception ex)
         {
-            return Result.Failure<IEnumerable<TEntity>>("DB_ERROR", ex);
+            return Result.Failure<IEnumerable<TEntity>>(MessageCodes.DB_ERROR, ex);
         }
     }
 
@@ -140,7 +140,7 @@ public class Repository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey
         }
         catch (Exception ex)
         {
-            return Result.Failure<PaginatedResult<TEntity>>("DB_ERROR", ex);
+            return Result.Failure<PaginatedResult<TEntity>>(MessageCodes.DB_ERROR, ex);
         }
     }
 
@@ -164,7 +164,7 @@ public class Repository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey
         }
         catch (Exception ex)
         {
-            return Result.Failure<TEntity?>("DB_ERROR", ex);
+            return Result.Failure<TEntity?>(MessageCodes.DB_ERROR, ex);
         }
     }
 
@@ -181,7 +181,7 @@ public class Repository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey
         }
         catch (Exception ex)
         {
-            return Result.Failure<bool>("DB_ERROR", ex);
+            return Result.Failure<bool>(MessageCodes.DB_ERROR, ex);
         }
     }
 
@@ -204,7 +204,7 @@ public class Repository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey
         }
         catch (Exception ex)
         {
-            return Result.Failure<int>("DB_ERROR", ex);
+            return Result.Failure<int>(MessageCodes.DB_ERROR, ex);
         }
     }
 
@@ -217,7 +217,7 @@ public class Repository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey
         {
             if (entity == null)
             {
-                return Result.Failure<TEntity>("ENTITY_NULL");
+                return Result.Failure<TEntity>(MessageCodes.ENTITY_NULL);
             }
 
             entity.CreatedAt = DateTime.UtcNow;
@@ -230,7 +230,7 @@ public class Repository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey
         }
         catch (Exception ex)
         {
-            return Result.Failure<TEntity>("DB_ERROR", ex);
+            return Result.Failure<TEntity>(MessageCodes.DB_ERROR, ex);
         }
     }
 
@@ -243,7 +243,7 @@ public class Repository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey
         {
             if (entities == null || !entities.Any())
             {
-                return Result.Failure("ENTITIES_NULL_OR_EMPTY");
+                return Result.Failure(MessageCodes.ENTITIES_NULL_OR_EMPTY);
             }
 
             var now = DateTime.UtcNow;
@@ -260,7 +260,7 @@ public class Repository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey
         }
         catch (Exception ex)
         {
-            return Result.Failure("DB_ERROR", ex);
+            return Result.Failure(MessageCodes.DB_ERROR, ex);
         }
     }
 
@@ -270,7 +270,7 @@ public class Repository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey
         {
             if (entity == null)
             {
-                return Result.Failure<TEntity>("ENTITY_NULL");
+                return Result.Failure<TEntity>(MessageCodes.ENTITY_NULL);
             }
 
             entity.UpdatedAt = DateTime.UtcNow;
@@ -279,7 +279,7 @@ public class Repository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey
         }
         catch (Exception ex)
         {
-            return Result.Failure<TEntity>("DB_ERROR", ex);
+            return Result.Failure<TEntity>(MessageCodes.DB_ERROR, ex);
         }
     }
 
@@ -289,7 +289,7 @@ public class Repository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey
         {
             if (entities == null || !entities.Any())
             {
-                return Result.Failure("ENTITIES_NULL_OR_EMPTY");
+                return Result.Failure(MessageCodes.ENTITIES_NULL_OR_EMPTY);
             }
 
             var now = DateTime.UtcNow;
@@ -303,7 +303,7 @@ public class Repository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey
         }
         catch (Exception ex)
         {
-            return Result.Failure("DB_ERROR", ex);
+            return Result.Failure(MessageCodes.DB_ERROR, ex);
         }
     }
 
@@ -313,7 +313,7 @@ public class Repository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey
         {
             if (entity == null)
             {
-                return Result.Failure("ENTITY_NULL");
+                return Result.Failure(MessageCodes.ENTITY_NULL);
             }
 
             // Soft delete
@@ -326,7 +326,7 @@ public class Repository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey
         }
         catch (Exception ex)
         {
-            return Result.Failure("DB_ERROR", ex);
+            return Result.Failure(MessageCodes.DB_ERROR, ex);
         }
     }
 
@@ -344,7 +344,7 @@ public class Repository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey
 
             if (entity == null)
             {
-                return Result.Failure("ENTITY_NOT_FOUND");
+                return Result.Failure(MessageCodes.ENTITY_NOT_FOUND);
             }
 
             // Soft delete
@@ -357,7 +357,7 @@ public class Repository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey
         }
         catch (Exception ex)
         {
-            return Result.Failure("DB_ERROR", ex);
+            return Result.Failure(MessageCodes.DB_ERROR, ex);
         }
     }
 
@@ -367,7 +367,7 @@ public class Repository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey
         {
             if (entities == null || !entities.Any())
             {
-                return Result.Failure("ENTITIES_NULL_OR_EMPTY");
+                return Result.Failure(MessageCodes.ENTITIES_NULL_OR_EMPTY);
             }
 
             var now = DateTime.UtcNow;
@@ -384,7 +384,7 @@ public class Repository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey
         }
         catch (Exception ex)
         {
-            return Result.Failure("DB_ERROR", ex);
+            return Result.Failure(MessageCodes.DB_ERROR, ex);
         }
     }
 }

@@ -17,7 +17,8 @@ public static class ServiceCollectionExtensions
     )
     {
         services.AddDbContext<AsalaDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
+            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"), 
+                b => b.MigrationsAssembly("Asala.Api"))
         );
         services.AddRepository();
         services.AddUnitOfWork();

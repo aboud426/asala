@@ -23,7 +23,7 @@ public class UnitOfWork : IUnitOfWork
         {
             if (_currentTransaction != null)
             {
-                return Result.Failure("TRANSACTION_ALREADY_EXISTS");
+                return Result.Failure(MessageCodes.TRANSACTION_ALREADY_EXISTS);
             }
 
             _currentTransaction = await _context.Database.BeginTransactionAsync(cancellationToken);
@@ -31,7 +31,7 @@ public class UnitOfWork : IUnitOfWork
         }
         catch (Exception ex)
         {
-            return Result.Failure("TRANSACTION_BEGIN_ERROR", ex);
+            return Result.Failure(MessageCodes.TRANSACTION_BEGIN_ERROR, ex);
         }
     }
 
@@ -41,7 +41,7 @@ public class UnitOfWork : IUnitOfWork
         {
             if (_currentTransaction == null)
             {
-                return Result.Failure("NO_ACTIVE_TRANSACTION");
+                return Result.Failure(MessageCodes.NO_ACTIVE_TRANSACTION);
             }
 
             await _currentTransaction.CommitAsync(cancellationToken);
@@ -52,7 +52,7 @@ public class UnitOfWork : IUnitOfWork
         }
         catch (Exception ex)
         {
-            return Result.Failure("TRANSACTION_COMMIT_ERROR", ex);
+            return Result.Failure(MessageCodes.TRANSACTION_COMMIT_ERROR, ex);
         }
     }
 
@@ -64,7 +64,7 @@ public class UnitOfWork : IUnitOfWork
         {
             if (_currentTransaction == null)
             {
-                return Result.Failure("NO_ACTIVE_TRANSACTION");
+                return Result.Failure(MessageCodes.NO_ACTIVE_TRANSACTION);
             }
 
             await _currentTransaction.RollbackAsync(cancellationToken);
@@ -75,7 +75,7 @@ public class UnitOfWork : IUnitOfWork
         }
         catch (Exception ex)
         {
-            return Result.Failure("TRANSACTION_ROLLBACK_ERROR", ex);
+            return Result.Failure(MessageCodes.TRANSACTION_ROLLBACK_ERROR, ex);
         }
     }
 
@@ -88,15 +88,15 @@ public class UnitOfWork : IUnitOfWork
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            return Result.Failure<int>("CONCURRENCY_ERROR", ex);
+            return Result.Failure<int>(MessageCodes.CONCURRENCY_ERROR, ex);
         }
         catch (DbUpdateException ex)
         {
-            return Result.Failure<int>("DATABASE_UPDATE_ERROR", ex);
+            return Result.Failure<int>(MessageCodes.DATABASE_UPDATE_ERROR, ex);
         }
         catch (Exception ex)
         {
-            return Result.Failure<int>("SAVE_CHANGES_ERROR", ex);
+            return Result.Failure<int>(MessageCodes.SAVE_CHANGES_ERROR, ex);
         }
     }
 
