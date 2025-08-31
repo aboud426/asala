@@ -4,6 +4,7 @@ using Asala.Core.Db;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Asala.Api.Migrations
 {
     [DbContext(typeof(AsalaDbContext))]
-    partial class AsalaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250831131356_addUserTables")]
+    partial class addUserTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -699,21 +702,6 @@ namespace Asala.Api.Migrations
                         .IsUnique();
 
                     b.ToTable("UserRole", (string)null);
-                });
-
-            modelBuilder.Entity("Asala.Core.Modules.Categories.Models.ProviderCategory", b =>
-                {
-                    b.HasOne("Asala.Core.Modules.Categories.Models.Category", null)
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Asala.Core.Modules.Users.Models.Provider", null)
-                        .WithMany()
-                        .HasForeignKey("ProviderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Asala.Core.Modules.Messages.Models.MessageLocalized", b =>

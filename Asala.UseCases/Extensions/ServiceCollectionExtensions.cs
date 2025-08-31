@@ -7,6 +7,7 @@ using Asala.Core.Modules.Categories.Db;
 using Asala.UseCases.Languages;
 using Asala.UseCases.Messages;
 using Asala.UseCases.Categories;
+using Asala.UseCases.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,6 +36,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<IProductCategoryService, ProductCategoryService>();
         services.AddScoped<IProviderCategoryService, ProviderCategoryService>();
+        
+        // User services
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IRoleService, RoleService>();
+        services.AddScoped<IPermissionService, PermissionService>();
+        services.AddScoped<ICustomerService, CustomerService>();
         
         return services;
     }
