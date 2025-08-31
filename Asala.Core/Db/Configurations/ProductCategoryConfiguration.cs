@@ -17,20 +17,13 @@ public class ProductCategoryConfiguration : IEntityTypeConfiguration<ProductCate
             .HasMaxLength(10);
             
         builder.Property(x => x.Description)
-            .IsRequired(false)
+            .IsRequired()
             .HasMaxLength(500);
             
         builder.Property(x => x.ParentId)
             .IsRequired(false);
             
-        builder.Property(x => x.IsActive)
-            .IsRequired()
-            .HasDefaultValue(true);
-            
         // Foreign key relationship without navigation properties
-        builder.HasIndex(x => x.ParentId);
-            
-        // Foreign key relationships without navigation properties
         builder.HasIndex(x => x.ParentId);
     }
 }

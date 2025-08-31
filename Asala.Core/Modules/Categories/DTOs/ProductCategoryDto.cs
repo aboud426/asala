@@ -4,7 +4,7 @@ public class ProductCategoryDto
 {
     public int Id { get; set; }
     public string Name { get; set; } = null!;
-    public string? Description { get; set; }
+    public string Description { get; set; } = null!;
     public int? ParentId { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
@@ -14,7 +14,7 @@ public class ProductCategoryDto
 public class CreateProductCategoryDto
 {
     public string Name { get; set; } = null!;
-    public string? Description { get; set; }
+    public string Description { get; set; } = null!;
     public int? ParentId { get; set; }
     public bool IsActive { get; set; } = true;
 }
@@ -22,7 +22,7 @@ public class CreateProductCategoryDto
 public class UpdateProductCategoryDto
 {
     public string Name { get; set; } = null!;
-    public string? Description { get; set; }
+    public string Description { get; set; } = null!;
     public int? ParentId { get; set; }
     public bool IsActive { get; set; }
 }

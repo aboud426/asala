@@ -6,6 +6,5 @@ public class ProviderCategory : BaseEntity<int>
 {
     public int CategoryId { get; set; }
     public int ProviderId { get; set; }
-    public bool IsActive { get; set; } = true;
     
 }

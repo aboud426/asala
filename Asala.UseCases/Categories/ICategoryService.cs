@@ -25,4 +25,14 @@ public interface ICategoryService
     Task<Result<IEnumerable<CategoryDropdownDto>>> GetDropdownAsync(
         CancellationToken cancellationToken = default
     );
+    Task<Result<IEnumerable<CategoryDto>>> GetSubcategoriesAsync(
+        int parentId,
+        string? languageCode = null,
+        CancellationToken cancellationToken = default
+    );
+    Task<Result<IEnumerable<CategoryTreeDto>>> GetCategoryTreeAsync(
+        int? rootId = null,
+        string? languageCode = null,
+        CancellationToken cancellationToken = default
+    );
 }

@@ -18,10 +18,6 @@ public class ProviderCategoryConfiguration : IEntityTypeConfiguration<ProviderCa
         builder.Property(x => x.ProviderId)
             .IsRequired();
             
-        builder.Property(x => x.IsActive)
-            .IsRequired()
-            .HasDefaultValue(true);
-            
         // Foreign key relationships without navigation properties
         builder.HasIndex(x => x.CategoryId);
         builder.HasIndex(x => x.ProviderId);

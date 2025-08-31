@@ -15,9 +15,13 @@ public class CategoryLocalizedConfiguration : IEntityTypeConfiguration<CategoryL
         builder.Property(x => x.CategoryId)
             .IsRequired();
             
-        builder.Property(x => x.LocalizedName)
+        builder.Property(x => x.NameLocalized)
             .IsRequired()
             .HasMaxLength(50);
+            
+        builder.Property(x => x.DescriptionLocalized)
+            .IsRequired()
+            .HasMaxLength(500);
             
         builder.Property(x => x.LanguageId)
             .IsRequired();

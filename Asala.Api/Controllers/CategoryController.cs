@@ -80,4 +80,26 @@ public class CategoryController : BaseController
         var result = await _categoryService.SoftDeleteAsync(id, cancellationToken);
         return CreateResponse(result);
     }
+
+    [HttpGet("{parentId}/subcategories")]
+    public async Task<IActionResult> GetSubcategories(
+        int parentId,
+        [FromQuery] string? languageCode = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var result = await _categoryService.GetSubcategoriesAsync(parentId, languageCode, cancellationToken);
+        return CreateResponse(result);
+    }
+
+    [HttpGet("tree")]
+    public async Task<IActionResult> GetCategoryTree(
+        [FromQuery] int? rootId = null,
+        [FromQuery] string? languageCode = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var result = await _categoryService.GetCategoryTreeAsync(rootId, languageCode, cancellationToken);
+        return CreateResponse(result);
+    }
 }

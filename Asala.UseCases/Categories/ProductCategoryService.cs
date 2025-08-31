@@ -62,6 +62,9 @@ public class ProductCategoryService : IProductCategoryService
         if (string.IsNullOrWhiteSpace(createDto.Name))
             return Result.Failure<ProductCategoryDto>("Product category name is required");
 
+        if (string.IsNullOrWhiteSpace(createDto.Description))
+            return Result.Failure<ProductCategoryDto>("Product category description is required");
+
         // Check if parent category exists
         if (createDto.ParentId.HasValue)
         {
@@ -75,7 +78,7 @@ public class ProductCategoryService : IProductCategoryService
         var productCategory = new ProductCategory
         {
             Name = createDto.Name.Trim(),
-            Description = createDto.Description?.Trim(),
+            Description = createDto.Description.Trim(),
             ParentId = createDto.ParentId,
             IsActive = createDto.IsActive,
             CreatedAt = DateTime.UtcNow,
@@ -104,6 +107,9 @@ public class ProductCategoryService : IProductCategoryService
         if (string.IsNullOrWhiteSpace(updateDto.Name))
             return Result.Failure<ProductCategoryDto?>("Product category name is required");
 
+        if (string.IsNullOrWhiteSpace(updateDto.Description))
+            return Result.Failure<ProductCategoryDto?>("Product category description is required");
+
         var productCategory = await _productCategoryRepository.GetByIdAsync(id, cancellationToken);
         if (productCategory.IsFailure)
             return Result.Failure<ProductCategoryDto?>(productCategory.MessageCode);
@@ -125,7 +131,7 @@ public class ProductCategoryService : IProductCategoryService
         }
 
         productCategory.Value.Name = updateDto.Name.Trim();
-        productCategory.Value.Description = updateDto.Description?.Trim();
+        productCategory.Value.Description = updateDto.Description.Trim();
         productCategory.Value.ParentId = updateDto.ParentId;
         productCategory.Value.IsActive = updateDto.IsActive;
         productCategory.Value.UpdatedAt = DateTime.UtcNow;

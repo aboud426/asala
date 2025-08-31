@@ -16,11 +16,11 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
             .IsRequired()
             .HasMaxLength(50);
             
+        builder.Property(x => x.Description)
+            .IsRequired()
+            .HasMaxLength(500);
+            
         builder.Property(x => x.ParentId)
             .IsRequired(false);
-            
-        builder.Property(x => x.IsActive)
-            .IsRequired()
-            .HasDefaultValue(true);
     }
 }
