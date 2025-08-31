@@ -1,0 +1,209 @@
+using System;
+using System.Linq.Expressions;
+using Asala.Core.Common.Abstractions;
+using Asala.Core.Common.Models;
+using Asala.Core.Modules.Categories.DTOs;
+using Asala.Core.Modules.Categories.Db;
+using Asala.Core.Modules.Categories.Models;
+
+namespace Asala.UseCases.Categories;
+
+public class ProductCategoryService : IProductCategoryService
+{
+    private readonly IProductCategoryRepository _productCategoryRepository;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public ProductCategoryService(IProductCategoryRepository productCategoryRepository, IUnitOfWork unitOfWork)
+    {
+        _productCategoryRepository = productCategoryRepository ?? throw new ArgumentNullException(nameof(productCategoryRepository));
+        _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+    }
+
+    public async Task<Result<PaginatedResult<ProductCategoryDto>>> GetPaginatedAsync(
+        int page,
+        int pageSize,
+        bool? activeOnly = null,
+        CancellationToken cancellationToken = default)
+    {
+        Expression<Func<ProductCategory, bool>> filter = activeOnly switch
+        {
+            true => pc => pc.IsActive && !pc.IsDeleted, // Only active product categories
+            false => pc => !pc.IsActive && !pc.IsDeleted, // Only inactive product categories
+            null => pc => !pc.IsDeleted, // All product categories (both active and inactive)
+        };
+
+        var result = await _productCategoryRepository.GetPaginatedAsync(
+            page,
+            pageSize,
+            filter: filter,
+            orderBy: q => q.OrderBy(pc => pc.Name));
+
+        if (result.IsFailure)
+            return Result.Failure<PaginatedResult<ProductCategoryDto>>(result.MessageCode);
+
+        var productCategoryDtos = result.Value!.Items.Select(MapToDto).ToList();
+        var paginatedResult = new PaginatedResult<ProductCategoryDto>(
+            productCategoryDtos,
+            result.Value.TotalCount,
+            result.Value.Page,
+            result.Value.PageSize
+        );
+
+        return Result.Success(paginatedResult);
+    }
+
+    public async Task<Result<ProductCategoryDto>> CreateAsync(
+        CreateProductCategoryDto createDto,
+        CancellationToken cancellationToken = default)
+    {
+        if (createDto == null)
+            return Result.Failure<ProductCategoryDto>("CreateDto cannot be null");
+
+        if (string.IsNullOrWhiteSpace(createDto.Name))
+            return Result.Failure<ProductCategoryDto>("Product category name is required");
+
+        // Check if parent category exists
+        if (createDto.ParentId.HasValue)
+        {
+            var parentExistsResult = await _productCategoryRepository.AnyAsync(pc => pc.Id == createDto.ParentId.Value && !pc.IsDeleted, cancellationToken);
+            if (parentExistsResult.IsFailure)
+                return Result.Failure<ProductCategoryDto>(parentExistsResult.MessageCode);
+            if (!parentExistsResult.Value)
+                return Result.Failure<ProductCategoryDto>("Parent product category not found");
+        }
+
+        var productCategory = new ProductCategory
+        {
+            Name = createDto.Name.Trim(),
+            Description = createDto.Description?.Trim(),
+            ParentId = createDto.ParentId,
+            IsActive = createDto.IsActive,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        var result = await _productCategoryRepository.AddAsync(productCategory, cancellationToken);
+        if (result.IsFailure)
+            return Result.Failure<ProductCategoryDto>(result.MessageCode);
+
+        var saveResult = await _unitOfWork.SaveChangesAsync(cancellationToken);
+        if (saveResult.IsFailure)
+            return Result.Failure<ProductCategoryDto>(saveResult.MessageCode);
+
+        return Result.Success(MapToDto(result.Value!));
+    }
+
+    public async Task<Result<ProductCategoryDto?>> UpdateAsync(
+        int id,
+        UpdateProductCategoryDto updateDto,
+        CancellationToken cancellationToken = default)
+    {
+        if (updateDto == null)
+            return Result.Failure<ProductCategoryDto?>("UpdateDto cannot be null");
+
+        if (string.IsNullOrWhiteSpace(updateDto.Name))
+            return Result.Failure<ProductCategoryDto?>("Product category name is required");
+
+        var productCategory = await _productCategoryRepository.GetByIdAsync(id, cancellationToken);
+        if (productCategory.IsFailure)
+            return Result.Failure<ProductCategoryDto?>(productCategory.MessageCode);
+
+        if (productCategory.Value == null)
+            return Result.Failure<ProductCategoryDto?>("Product category not found");
+
+        // Check if parent category exists
+        if (updateDto.ParentId.HasValue)
+        {
+            if (updateDto.ParentId.Value == id)
+                return Result.Failure<ProductCategoryDto?>("Product category cannot be its own parent");
+
+            var parentExistsResult = await _productCategoryRepository.AnyAsync(pc => pc.Id == updateDto.ParentId.Value && !pc.IsDeleted, cancellationToken);
+            if (parentExistsResult.IsFailure)
+                return Result.Failure<ProductCategoryDto?>(parentExistsResult.MessageCode);
+            if (!parentExistsResult.Value)
+                return Result.Failure<ProductCategoryDto?>("Parent product category not found");
+        }
+
+        productCategory.Value.Name = updateDto.Name.Trim();
+        productCategory.Value.Description = updateDto.Description?.Trim();
+        productCategory.Value.ParentId = updateDto.ParentId;
+        productCategory.Value.IsActive = updateDto.IsActive;
+        productCategory.Value.UpdatedAt = DateTime.UtcNow;
+
+        _productCategoryRepository.Update(productCategory.Value);
+
+        var saveResult = await _unitOfWork.SaveChangesAsync(cancellationToken);
+        if (saveResult.IsFailure)
+            return Result.Failure<ProductCategoryDto?>(saveResult.MessageCode);
+
+        return Result.Success<ProductCategoryDto?>(MapToDto(productCategory.Value));
+    }
+
+    public async Task<Result> SoftDeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var productCategory = await _productCategoryRepository.GetByIdAsync(id, cancellationToken);
+        if (productCategory.IsFailure)
+            return productCategory;
+
+        if (productCategory.Value == null)
+            return Result.Failure("Product category not found");
+
+        productCategory.Value.IsActive = false;
+        productCategory.Value.UpdatedAt = DateTime.UtcNow;
+
+        _productCategoryRepository.Update(productCategory.Value);
+
+        return await _unitOfWork.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<Result> ToggleActivationAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var productCategory = await _productCategoryRepository.GetByIdAsync(id, cancellationToken);
+        if (productCategory.IsFailure)
+            return productCategory;
+
+        if (productCategory.Value == null)
+            return Result.Failure("Product category not found");
+
+        productCategory.Value.IsActive = !productCategory.Value.IsActive;
+        productCategory.Value.UpdatedAt = DateTime.UtcNow;
+
+        _productCategoryRepository.Update(productCategory.Value);
+
+        return await _unitOfWork.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<Result<IEnumerable<ProductCategoryDropdownDto>>> GetDropdownAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var productCategories = await _productCategoryRepository.GetAsync(
+            filter: pc => pc.IsActive,
+            orderBy: q => q.OrderBy(pc => pc.Name));
+
+        if (productCategories.IsFailure)
+            return Result.Failure<IEnumerable<ProductCategoryDropdownDto>>(productCategories.MessageCode);
+
+        var dropdownDtos = productCategories.Value!.Select(pc => new ProductCategoryDropdownDto
+        {
+            Id = pc.Id,
+            Name = pc.Name,
+            ParentId = pc.ParentId
+        }).ToList();
+
+        return Result.Success<IEnumerable<ProductCategoryDropdownDto>>(dropdownDtos);
+    }
+
+    private static ProductCategoryDto MapToDto(ProductCategory productCategory)
+    {
+        return new ProductCategoryDto
+        {
+            Id = productCategory.Id,
+            Name = productCategory.Name,
+            Description = productCategory.Description,
+            ParentId = productCategory.ParentId,
+            IsActive = productCategory.IsActive,
+            CreatedAt = productCategory.CreatedAt,
+            UpdatedAt = productCategory.UpdatedAt
+        };
+    }
+}
