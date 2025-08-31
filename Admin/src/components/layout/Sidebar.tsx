@@ -111,7 +111,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
             </div>
           )}
         </div>
-        
+
         {/* <Button
           variant="ghost"
           size="sm"
@@ -121,7 +121,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
             isCollapsed && 'hidden'
           )}
         > */}
-          {/* <ChevronLeft className={cn('h-4 w-4', isRTL && 'rotate-180')} /> */}
+        {/* <ChevronLeft className={cn('h-4 w-4', isRTL && 'rotate-180')} /> */}
         {/* </Button> */}
       </div>
 
@@ -130,7 +130,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
         {navigationItems.map((item) => {
           const isActive = location.pathname === item.href;
           const Icon = item.icon;
-          
+
           return (
             <NavLink
               key={item.href}
