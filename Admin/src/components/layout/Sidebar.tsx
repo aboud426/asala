@@ -11,6 +11,8 @@ import {
   Store,
   Globe,
   MessageSquare,
+  FolderTree,
+  ShoppingBag,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -57,6 +59,18 @@ const navigationItems = [
     titleAr: 'اللغات',
     href: '/languages',
     icon: Globe,
+  },
+  {
+    title: 'Categories',
+    titleAr: 'الفئات',
+    href: '/categories',
+    icon: FolderTree,
+  },
+  {
+    title: 'Product Categories',
+    titleAr: 'فئات المنتجات',
+    href: '/product-categories',
+    icon: ShoppingBag,
   },
   {
     title: 'Messages',

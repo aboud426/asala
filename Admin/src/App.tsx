@@ -12,6 +12,8 @@ import Customers from "./pages/Customers";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import Languages from "./pages/Languages";
+import Categories from "./pages/Categories";
+import ProductCategories from "./pages/ProductCategories";
 import Messages from "./pages/Messages";
 import NotFound from "./pages/NotFound";
 
@@ -32,6 +34,8 @@ const App = () => (
               <Route path="/customers" element={<Customers />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/languages" element={<Languages />} />
+              <Route path="/categories" element={<Categories />} />
+              <Route path="/product-categories" element={<ProductCategories />} />
               <Route path="/messages" element={<Messages />} />
               <Route path="/settings" element={<Settings />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
