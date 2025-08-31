@@ -7,9 +7,10 @@ import {
   Users,
   BarChart3,
   Settings,
-  ChevronLeft,
+  // ChevronLeft,
   Store,
   Globe,
+  MessageSquare,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -58,6 +59,12 @@ const navigationItems = [
     icon: Globe,
   },
   {
+    title: 'Messages',
+    titleAr: 'الرسائل',
+    href: '/messages',
+    icon: MessageSquare,
+  },
+  {
     title: 'Settings',
     titleAr: 'الإعدادات',
     href: '/settings',
@@ -91,7 +98,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
           )}
         </div>
         
-        <Button
+        {/* <Button
           variant="ghost"
           size="sm"
           onClick={onToggle}
@@ -99,9 +106,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
             'h-8 w-8 p-0 hover:bg-sidebar-accent transition-smooth',
             isCollapsed && 'hidden'
           )}
-        >
-          <ChevronLeft className={cn('h-4 w-4', isRTL && 'rotate-180')} />
-        </Button>
+        > */}
+          {/* <ChevronLeft className={cn('h-4 w-4', isRTL && 'rotate-180')} /> */}
+        {/* </Button> */}
       </div>
 
       {/* Navigation */}

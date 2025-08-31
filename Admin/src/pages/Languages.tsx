@@ -367,44 +367,44 @@ const Languages: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
+            <Table dir={isRTL ? 'rtl' : 'ltr'}>
               <TableHeader>
-                <TableRow>
-                  <TableHead>{isRTL ? 'اسم اللغة' : 'Language Name'}</TableHead>
-                  <TableHead>{isRTL ? 'الكود' : 'Code'}</TableHead>
-                  <TableHead>{isRTL ? 'الحالة' : 'Status'}</TableHead>
-                  <TableHead>{isRTL ? 'تاريخ الإنشاء' : 'Created Date'}</TableHead>
-                  <TableHead>{isRTL ? 'آخر تحديث' : 'Last Updated'}</TableHead>
+                <TableRow className={isRTL ? 'text-right' : 'text-left'}>
+                  <TableHead className={isRTL ? 'text-right' : 'text-left'}>{isRTL ? 'اسم اللغة' : 'Language Name'}</TableHead>
+                  <TableHead className={isRTL ? 'text-right' : 'text-left'}>{isRTL ? 'الكود' : 'Code'}</TableHead>
+                  <TableHead className={isRTL ? 'text-right' : 'text-left'}>{isRTL ? 'الحالة' : 'Status'}</TableHead>
+                  <TableHead className={isRTL ? 'text-right' : 'text-left'}>{isRTL ? 'تاريخ الإنشاء' : 'Created Date'}</TableHead>
+                  <TableHead className={isRTL ? 'text-right' : 'text-left'}>{isRTL ? 'آخر تحديث' : 'Last Updated'}</TableHead>
                   <TableHead className="text-center">{isRTL ? 'الإجراءات' : 'Actions'}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  <TableRow>
+                  <TableRow className={isRTL ? 'text-right' : 'text-left'}>
                     <TableCell colSpan={6} className="text-center py-8">
                       <div className="flex items-center justify-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                        <span className="ml-2">{isRTL ? 'جاري التحميل...' : 'Loading...'}</span>
+                        <span className={isRTL ? 'mr-2' : 'ml-2'}>{isRTL ? 'جاري التحميل...' : 'Loading...'}</span>
                       </div>
                     </TableCell>
                   </TableRow>
                 ) : error ? (
-                  <TableRow>
+                  <TableRow className={isRTL ? 'text-right' : 'text-left'}>
                     <TableCell colSpan={6} className="text-center py-8 text-destructive">
                       {isRTL ? 'خطأ في تحميل البيانات' : 'Error loading data'}
                     </TableCell>
                   </TableRow>
                 ) : filteredLanguages.length === 0 ? (
-                  <TableRow>
+                  <TableRow className={isRTL ? 'text-right' : 'text-left'}>
                     <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                       {isRTL ? 'لا توجد لغات متاحة' : 'No languages available'}
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredLanguages.map((language) => (
-                  <TableRow key={language.id} className="hover:bg-muted/50">
-                    <TableCell>
-                      <div className="flex items-center gap-3">
+                  <TableRow key={language.id} className={`hover:bg-muted/50 ${isRTL ? 'text-right' : 'text-left'}`}>
+                    <TableCell className={isRTL ? 'text-right' : 'text-left'}>
+                      <div className={`flex items-center gap-3 ${isRTL ? 'text-right' : 'flex-row'}`}>
                         <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center">
                           <Globe className="h-4 w-4 text-primary-foreground" />
                         </div>
@@ -413,42 +413,42 @@ const Languages: React.FC = () => {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className={isRTL ? 'text-right' : 'text-left'}>
                       <Badge variant="outline" className="font-mono">
                         {language.code}
                       </Badge>
                     </TableCell>
-                    <TableCell>{getStatusBadge(language.isActive)}</TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell className={isRTL ? 'text-right' : 'text-left'}>{getStatusBadge(language.isActive)}</TableCell>
+                    <TableCell className={`text-muted-foreground ${isRTL ? 'text-right' : 'text-left'}`}>
                       {formatDate(language.createdAt)}
                     </TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell className={`text-muted-foreground ${isRTL ? 'text-right' : 'text-left'}`}>
                       {formatDate(language.updatedAt)}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" className="h-8 w-8 p-0">
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align={isRTL ? 'start' : 'end'}>
                           <DropdownMenuItem 
-                            className="flex items-center gap-2"
+                            className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}
                             onClick={() => handleEdit(language)}
                           >
                             <Edit className="h-4 w-4" />
                             {isRTL ? 'تحرير' : 'Edit'}
                           </DropdownMenuItem>
                           <DropdownMenuItem 
-                            className="flex items-center gap-2"
+                            className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}
                             onClick={() => toggleMutation.mutate(language.id)}
                           >
                             <Power className="h-4 w-4" />
                             {isRTL ? 'تغيير الحالة' : 'Toggle Status'}
                           </DropdownMenuItem>
                           <DropdownMenuItem 
-                            className="flex items-center gap-2 text-destructive"
+                            className={`flex items-center gap-2 text-destructive ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}
                             onClick={() => deleteMutation.mutate(language.id)}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -479,7 +479,7 @@ const Languages: React.FC = () => {
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                     disabled={!languagesData.hasPreviousPage}
                   >
-                    <ChevronLeft className="h-4 w-4" />
+                    {isRTL ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
                   </Button>
                   <span className="text-sm font-medium">
                     {isRTL ? `${languagesData.page} من ${languagesData.totalPages}` : `${languagesData.page} of ${languagesData.totalPages}`}
@@ -490,7 +490,7 @@ const Languages: React.FC = () => {
                     onClick={() => setCurrentPage(prev => prev + 1)}
                     disabled={!languagesData.hasNextPage}
                   >
-                    <ChevronRight className="h-4 w-4" />
+                    {isRTL ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                   </Button>
                 </div>
               </div>

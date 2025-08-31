@@ -1,5 +1,6 @@
 using Asala.Core.Db.Configurations;
 using Asala.Core.Modules.Languages;
+using Asala.Core.Modules.Messages.Models;
 using Asala.Core.Modules.Categories.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,6 +12,8 @@ public class AsalaDbContext : DbContext
         : base(options) { }
 
     public DbSet<Language> Languages => Set<Language>();
+    public DbSet<Message> Messages => Set<Message>();
+    public DbSet<MessageLocalized> MessageLocalizations => Set<MessageLocalized>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<CategoryLocalized> CategoryLocalizeds => Set<CategoryLocalized>();
     public DbSet<ProductCategory> ProductCategories => Set<ProductCategory>();
