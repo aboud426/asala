@@ -75,6 +75,8 @@ import categoryService, {
   PaginatedResult
 } from '@/services/categoryService';
 import languageService, { LanguageDropdownDto } from '@/services/languageService';
+import MissingTranslationsWarning from '@/components/ui/missing-translations-warning';
+import MissingTranslationsModal from '@/components/ui/missing-translations-modal';
 
 const Categories: React.FC = () => {
   const { isRTL } = useDirection();
@@ -88,6 +90,8 @@ const Categories: React.FC = () => {
   const [selectedCategoryForDetails, setSelectedCategoryForDetails] = useState<Category | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(5);
+  const [isMissingTranslationsModalOpen, setIsMissingTranslationsModalOpen] = useState(false);
+  const [dismissedWarning, setDismissedWarning] = useState(false);
 
   // Form setup
   const createForm = useForm<CreateCategoryDto>({
@@ -169,6 +173,13 @@ const Categories: React.FC = () => {
   const { data: languages } = useQuery({
     queryKey: ['languages-dropdown'],
     queryFn: () => languageService.getLanguagesDropdown(),
+  });
+
+  // Query for categories missing translations
+  const { data: missingTranslationsIds } = useQuery({
+    queryKey: ['categories-missing-translations'],
+    queryFn: () => categoryService.getCategoriesMissingTranslations(),
+    refetchInterval: 30000, // Refetch every 30 seconds
   });
 
   // Mutations
@@ -348,6 +359,16 @@ const Categories: React.FC = () => {
             {isRTL ? 'إضافة فئة جديدة' : 'Add New Category'}
           </Button>
         </div>
+
+        {/* Missing Translations Warning */}
+        {missingTranslationsIds && missingTranslationsIds.length > 0 && !dismissedWarning && (
+          <MissingTranslationsWarning
+            missingCount={missingTranslationsIds.length}
+            onApplyTranslations={() => setIsMissingTranslationsModalOpen(true)}
+            onDismiss={() => setDismissedWarning(true)}
+            className="mb-6"
+          />
+        )}
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-3">
@@ -1301,6 +1322,15 @@ const Categories: React.FC = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Missing Translations Modal */}
+        {missingTranslationsIds && missingTranslationsIds.length > 0 && (
+          <MissingTranslationsModal
+            isOpen={isMissingTranslationsModalOpen}
+            onOpenChange={setIsMissingTranslationsModalOpen}
+            missingCategoryIds={missingTranslationsIds}
+          />
+        )}
       </div>
     </DashboardLayout>
   );

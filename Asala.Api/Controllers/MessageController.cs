@@ -33,6 +33,13 @@ public class MessageController : BaseController
         return CreateResponse(result);
     }
 
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken = default)
+    {
+        var result = await _messageService.GetByIdAsync(id, cancellationToken);
+        return CreateResponse(result);
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create(
         [FromBody] CreateMessageDto createDto,
@@ -71,6 +78,17 @@ public class MessageController : BaseController
     )
     {
         var result = await _messageService.SoftDeleteAsync(id, cancellationToken);
+        return CreateResponse(result);
+    }
+
+    [HttpGet("missing-translations")]
+    public async Task<IActionResult> GetMessagesMissingTranslations(
+        CancellationToken cancellationToken = default
+    )
+    {
+        var result = await _messageService.GetMessagesMissingTranslationsAsync(
+            cancellationToken
+        );
         return CreateResponse(result);
     }
 }

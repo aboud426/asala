@@ -227,6 +227,24 @@ class ProductCategoryService {
             throw new Error(response.message || 'Failed to delete product category');
         }
     };
+
+    /**
+     * Get product categories missing translations (returns product category IDs)
+     * GET /api/product-categories/missing-translations
+     */
+    getProductCategoriesMissingTranslations = async (): Promise<number[]> => {
+        const response = await this.request<number[]>('/missing-translations');
+
+        if (!response.success) {
+            throw new Error(response.message || 'Failed to fetch product categories missing translations');
+        }
+
+        if (!response.data) {
+            throw new Error('No data returned from server');
+        }
+
+        return response.data;
+    };
 }
 
 // Export singleton instance

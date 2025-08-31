@@ -25,4 +25,16 @@ public interface IProductCategoryService
     Task<Result<IEnumerable<ProductCategoryDropdownDto>>> GetDropdownAsync(
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// Gets a product category by id with all its localizations
+    /// </summary>
+    Task<Result<ProductCategoryDto?>> GetByIdAsync(int id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets product category IDs that are missing translations
+    /// </summary>
+    Task<Result<IEnumerable<int>>> GetProductCategoriesMissingTranslationsAsync(
+        CancellationToken cancellationToken = default
+    );
 }

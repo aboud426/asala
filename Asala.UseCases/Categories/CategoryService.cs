@@ -314,6 +314,27 @@ public class CategoryService : ICategoryService
         return Result.Success<IEnumerable<CategoryTreeDto>>(trees);
     }
 
+    public async Task<Result<IEnumerable<int>>> GetCategoriesMissingTranslationsAsync(
+        CancellationToken cancellationToken = default
+    )
+    {
+        // Delegate to the optimized repository method that uses efficient SQL joins
+        return await _categoryRepository.GetCategoriesMissingTranslationsAsync(cancellationToken);
+    }
+
+    public async Task<Result<CategoryDto?>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var categoryResult = await _categoryRepository.GetByIdAsync(id, cancellationToken);
+        if (categoryResult.IsFailure)
+            return Result.Failure<CategoryDto?>(categoryResult.MessageCode);
+
+        if (categoryResult.Value == null || categoryResult.Value.IsDeleted)
+            return Result.Failure<CategoryDto?>("Category not found");
+
+        var categoryDto = await MapToDtoAsync(categoryResult.Value, cancellationToken);
+        return Result.Success<CategoryDto?>(categoryDto);
+    }
+
     private async Task<CategoryTreeDto> BuildCategoryTreeAsync(
         Category category,
         List<Category> allCategories,

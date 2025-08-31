@@ -261,6 +261,30 @@ public class ProductCategoryService : IProductCategoryService
         return Result.Success<IEnumerable<ProductCategoryDropdownDto>>(dropdownDtos);
     }
 
+    public async Task<Result<ProductCategoryDto?>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        if (id <= 0)
+            return Result.Failure<ProductCategoryDto?>("Product category ID is invalid");
+
+        var productCategoryResult = await _productCategoryRepository.GetByIdAsync(id, cancellationToken);
+        if (productCategoryResult.IsFailure)
+            return Result.Failure<ProductCategoryDto?>(productCategoryResult.MessageCode);
+
+        if (productCategoryResult.Value == null || productCategoryResult.Value.IsDeleted)
+            return Result.Failure<ProductCategoryDto?>("Product category not found");
+
+        var productCategoryDto = await MapToDtoAsync(productCategoryResult.Value, cancellationToken);
+        return Result.Success<ProductCategoryDto?>(productCategoryDto);
+    }
+
+    public async Task<Result<IEnumerable<int>>> GetProductCategoriesMissingTranslationsAsync(
+        CancellationToken cancellationToken = default
+    )
+    {
+        // Delegate to the optimized repository method that uses efficient SQL joins
+        return await _productCategoryRepository.GetProductCategoriesMissingTranslationsAsync(cancellationToken);
+    }
+
     private async Task CreateLocalizationsAsync(
         int productCategoryId,
         List<CreateProductCategoryLocalizedDto> localizations,

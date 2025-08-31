@@ -125,4 +125,46 @@ public class MessageRepository : Repository<Message, int>, IMessageRepository
             return Result.Failure<bool>(MessageCodes.DB_ERROR, ex);
         }
     }
+
+    public async Task<Result<IEnumerable<int>>> GetMessagesMissingTranslationsAsync(
+        CancellationToken cancellationToken = default
+    )
+    {
+        try
+        {
+            // This query finds messages that don't have translations for all active languages
+            // It works by:
+            // 1. Getting the cross product of active messages and active languages
+            // 2. Left joining with existing message localizations
+            // 3. Finding combinations where no localization exists
+            // 4. Grouping by message and counting missing translations
+            // 5. Returning messages that have missing translations
+            var query =
+                from message in _context.Messages
+                where message.IsActive && !message.IsDeleted
+                from language in _context.Languages
+                where language.IsActive && !language.IsDeleted
+                join localization in _context.MessageLocalizations
+                    on new { MessageId = message.Id, LanguageId = language.Id } equals new
+                    {
+                        MessageId = localization.MessageId,
+                        LanguageId = localization.LanguageId,
+                    }
+                    into localizations
+                from localization in localizations.DefaultIfEmpty()
+                where localization == null || localization.IsDeleted || !localization.IsActive
+                select new { MessageId = message.Id, LanguageId = language.Id };
+
+            var missingTranslations = await query
+                .GroupBy(x => x.MessageId)
+                .Select(g => g.Key)
+                .ToListAsync(cancellationToken);
+
+            return Result.Success<IEnumerable<int>>(missingTranslations);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<IEnumerable<int>>(MessageCodes.DB_ERROR, ex);
+        }
+    }
 }

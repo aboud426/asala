@@ -75,6 +75,8 @@ import productCategoryService, {
   PaginatedResult 
 } from '@/services/productCategoryService';
 import languageService, { LanguageDropdownDto } from '@/services/languageService';
+import MissingProductCategoryTranslationsWarning from '@/components/ui/missing-product-category-translations-warning';
+import MissingProductCategoryTranslationsModal from '@/components/ui/missing-product-category-translations-modal';
 
 const ProductCategories: React.FC = () => {
   const { isRTL } = useDirection();
@@ -88,6 +90,8 @@ const ProductCategories: React.FC = () => {
   const [selectedProductCategoryForDetails, setSelectedProductCategoryForDetails] = useState<ProductCategory | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(5);
+  const [isMissingTranslationsModalOpen, setIsMissingTranslationsModalOpen] = useState(false);
+  const [dismissedWarning, setDismissedWarning] = useState(false);
 
   // Form setup
   const createForm = useForm<CreateProductCategoryDto>({
@@ -170,6 +174,13 @@ const ProductCategories: React.FC = () => {
   const { data: languages } = useQuery({
     queryKey: ['languages-dropdown'],
     queryFn: () => languageService.getLanguagesDropdown(),
+  });
+
+  // Query for product categories missing translations
+  const { data: missingTranslationsIds } = useQuery({
+    queryKey: ['product-categories-missing-translations'],
+    queryFn: () => productCategoryService.getProductCategoriesMissingTranslations(),
+    refetchInterval: 30000, // Refetch every 30 seconds
   });
 
   // Mutations
@@ -370,6 +381,16 @@ const ProductCategories: React.FC = () => {
             {isRTL ? 'إضافة فئة منتج جديدة' : 'Add New Product Category'}
           </Button>
         </div>
+
+        {/* Missing Translations Warning */}
+        {missingTranslationsIds && missingTranslationsIds.length > 0 && !dismissedWarning && (
+          <MissingProductCategoryTranslationsWarning
+            missingCount={missingTranslationsIds.length}
+            onApplyTranslations={() => setIsMissingTranslationsModalOpen(true)}
+            onDismiss={() => setDismissedWarning(true)}
+            className="mb-6"
+          />
+        )}
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-3">
@@ -1271,6 +1292,15 @@ const ProductCategories: React.FC = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Missing Translations Modal */}
+        {missingTranslationsIds && missingTranslationsIds.length > 0 && (
+          <MissingProductCategoryTranslationsModal
+            isOpen={isMissingTranslationsModalOpen}
+            onOpenChange={setIsMissingTranslationsModalOpen}
+            missingProductCategoryIds={missingTranslationsIds}
+          />
+        )}
       </div>
     </DashboardLayout>
   );

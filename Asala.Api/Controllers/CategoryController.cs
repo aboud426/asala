@@ -33,6 +33,13 @@ public class CategoryController : BaseController
         return CreateResponse(result);
     }
 
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken = default)
+    {
+        var result = await _categoryService.GetByIdAsync(id, cancellationToken);
+        return CreateResponse(result);
+    }
+
     [HttpGet("dropdown")]
     public async Task<IActionResult> GetDropdown(CancellationToken cancellationToken = default)
     {
@@ -88,7 +95,11 @@ public class CategoryController : BaseController
         CancellationToken cancellationToken = default
     )
     {
-        var result = await _categoryService.GetSubcategoriesAsync(parentId, languageCode, cancellationToken);
+        var result = await _categoryService.GetSubcategoriesAsync(
+            parentId,
+            languageCode,
+            cancellationToken
+        );
         return CreateResponse(result);
     }
 
@@ -99,7 +110,22 @@ public class CategoryController : BaseController
         CancellationToken cancellationToken = default
     )
     {
-        var result = await _categoryService.GetCategoryTreeAsync(rootId, languageCode, cancellationToken);
+        var result = await _categoryService.GetCategoryTreeAsync(
+            rootId,
+            languageCode,
+            cancellationToken
+        );
+        return CreateResponse(result);
+    }
+
+    [HttpGet("missing-translations")]
+    public async Task<IActionResult> GetCategoriesMissingTranslations(
+        CancellationToken cancellationToken = default
+    )
+    {
+        var result = await _categoryService.GetCategoriesMissingTranslationsAsync(
+            cancellationToken
+        );
         return CreateResponse(result);
     }
 }

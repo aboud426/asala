@@ -282,6 +282,24 @@ class CategoryService {
 
         return response.data;
     };
+
+    /**
+     * Get categories missing translations (returns category IDs)
+     * GET /api/categories/missing-translations
+     */
+    getCategoriesMissingTranslations = async (): Promise<number[]> => {
+        const response = await this.request<number[]>('/missing-translations');
+
+        if (!response.success) {
+            throw new Error(response.message || 'Failed to fetch categories missing translations');
+        }
+
+        if (!response.data) {
+            throw new Error('No data returned from server');
+        }
+
+        return response.data;
+    };
 }
 
 // Export singleton instance

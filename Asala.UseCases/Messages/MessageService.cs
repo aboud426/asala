@@ -246,6 +246,32 @@ public class MessageService : IMessageService
         return await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<Result<MessageDto?>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        // Validate ID
+        var idValidationResult = ValidateId(id);
+        if (idValidationResult.IsFailure)
+            return Result.Failure<MessageDto?>(idValidationResult.MessageCode);
+
+        var messageResult = await _messageRepository.GetByIdWithLocalizationsAsync(id, cancellationToken);
+        if (messageResult.IsFailure)
+            return Result.Failure<MessageDto?>(messageResult.MessageCode);
+
+        if (messageResult.Value == null || messageResult.Value.IsDeleted)
+            return Result.Failure<MessageDto?>(MessageCodes.MESSAGE_NOT_FOUND);
+
+        var messageDto = MapToDto(messageResult.Value);
+        return Result.Success<MessageDto?>(messageDto);
+    }
+
+    public async Task<Result<IEnumerable<int>>> GetMessagesMissingTranslationsAsync(
+        CancellationToken cancellationToken = default
+    )
+    {
+        // Delegate to the optimized repository method that uses efficient SQL joins
+        return await _messageRepository.GetMessagesMissingTranslationsAsync(cancellationToken);
+    }
+
     #region Private Helper Methods
 
     private static List<MessageLocalized> CreateLocalizations(

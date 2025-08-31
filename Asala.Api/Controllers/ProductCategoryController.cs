@@ -33,6 +33,13 @@ public class ProductCategoryController : BaseController
         return CreateResponse(result);
     }
 
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken = default)
+    {
+        var result = await _productCategoryService.GetByIdAsync(id, cancellationToken);
+        return CreateResponse(result);
+    }
+
     [HttpGet("dropdown")]
     public async Task<IActionResult> GetDropdown(CancellationToken cancellationToken = default)
     {
@@ -78,6 +85,17 @@ public class ProductCategoryController : BaseController
     )
     {
         var result = await _productCategoryService.SoftDeleteAsync(id, cancellationToken);
+        return CreateResponse(result);
+    }
+
+    [HttpGet("missing-translations")]
+    public async Task<IActionResult> GetProductCategoriesMissingTranslations(
+        CancellationToken cancellationToken = default
+    )
+    {
+        var result = await _productCategoryService.GetProductCategoriesMissingTranslationsAsync(
+            cancellationToken
+        );
         return CreateResponse(result);
     }
 }
