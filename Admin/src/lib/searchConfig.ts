@@ -82,6 +82,16 @@ export const searchablePages: SearchableItem[] = [
     keywordsAr: ['فئات', 'مجموعات', 'تصنيف', 'تنظيم', 'هيكل']
   },
   {
+    id: 'categories-tree',
+    title: 'Categories Tree',
+    titleAr: 'شجرة الفئات',
+    description: 'View categories in hierarchical tree structure',
+    descriptionAr: 'عرض الفئات في هيكل شجري هرمي',
+    href: '/categories/tree',
+    keywords: ['categories tree', 'hierarchy', 'tree view', 'nested categories', 'structure'],
+    keywordsAr: ['شجرة الفئات', 'هرمية', 'عرض شجري', 'فئات متداخلة', 'هيكل']
+  },
+  {
     id: 'product-categories',
     title: 'Product Categories',
     titleAr: 'فئات المنتجات',
@@ -90,6 +100,16 @@ export const searchablePages: SearchableItem[] = [
     href: '/product-categories',
     keywords: ['product categories', 'product groups', 'product classification', 'product organization'],
     keywordsAr: ['فئات المنتجات', 'مجموعات المنتجات', 'تصنيف المنتجات', 'تنظيم المنتجات']
+  },
+  {
+    id: 'product-categories-tree',
+    title: 'Product Categories Tree',
+    titleAr: 'شجرة فئات المنتجات',
+    description: 'View product categories in hierarchical tree structure',
+    descriptionAr: 'عرض فئات المنتجات في هيكل شجري هرمي',
+    href: '/product-categories/tree',
+    keywords: ['product categories tree', 'product hierarchy', 'product tree view', 'nested product categories'],
+    keywordsAr: ['شجرة فئات المنتجات', 'هرمية المنتجات', 'عرض شجري للمنتجات', 'فئات منتجات متداخلة']
   },
   {
     id: 'messages',

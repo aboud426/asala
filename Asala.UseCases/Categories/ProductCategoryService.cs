@@ -261,19 +261,28 @@ public class ProductCategoryService : IProductCategoryService
         return Result.Success<IEnumerable<ProductCategoryDropdownDto>>(dropdownDtos);
     }
 
-    public async Task<Result<ProductCategoryDto?>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Result<ProductCategoryDto?>> GetByIdAsync(
+        int id,
+        CancellationToken cancellationToken = default
+    )
     {
         if (id <= 0)
             return Result.Failure<ProductCategoryDto?>("Product category ID is invalid");
 
-        var productCategoryResult = await _productCategoryRepository.GetByIdAsync(id, cancellationToken);
+        var productCategoryResult = await _productCategoryRepository.GetByIdAsync(
+            id,
+            cancellationToken
+        );
         if (productCategoryResult.IsFailure)
             return Result.Failure<ProductCategoryDto?>(productCategoryResult.MessageCode);
 
         if (productCategoryResult.Value == null || productCategoryResult.Value.IsDeleted)
             return Result.Failure<ProductCategoryDto?>("Product category not found");
 
-        var productCategoryDto = await MapToDtoAsync(productCategoryResult.Value, cancellationToken);
+        var productCategoryDto = await MapToDtoAsync(
+            productCategoryResult.Value,
+            cancellationToken
+        );
         return Result.Success<ProductCategoryDto?>(productCategoryDto);
     }
 
@@ -282,7 +291,9 @@ public class ProductCategoryService : IProductCategoryService
     )
     {
         // Delegate to the optimized repository method that uses efficient SQL joins
-        return await _productCategoryRepository.GetProductCategoriesMissingTranslationsAsync(cancellationToken);
+        return await _productCategoryRepository.GetProductCategoriesMissingTranslationsAsync(
+            cancellationToken
+        );
     }
 
     public async Task<Result<IEnumerable<ProductCategoryTreeDto>>> GetProductCategoryTreeAsync(
@@ -293,12 +304,14 @@ public class ProductCategoryService : IProductCategoryService
     {
         // Get all active product categories
         var allProductCategories = await _productCategoryRepository.GetAsync(
-            filter: pc => pc.IsActive && !pc.IsDeleted,
+            filter: pc => !pc.IsDeleted,
             orderBy: q => q.OrderBy(pc => pc.Name)
         );
 
         if (allProductCategories.IsFailure)
-            return Result.Failure<IEnumerable<ProductCategoryTreeDto>>(allProductCategories.MessageCode);
+            return Result.Failure<IEnumerable<ProductCategoryTreeDto>>(
+                allProductCategories.MessageCode
+            );
 
         var productCategories = allProductCategories.Value!.ToList();
 
@@ -307,10 +320,18 @@ public class ProductCategoryService : IProductCategoryService
         {
             var rootProductCategory = productCategories.FirstOrDefault(pc => pc.Id == rootId.Value);
             if (rootProductCategory == null)
-                return Result.Failure<IEnumerable<ProductCategoryTreeDto>>("Root product category not found");
+                return Result.Failure<IEnumerable<ProductCategoryTreeDto>>(
+                    "Root product category not found"
+                );
 
-            var tree = await BuildProductCategoryTreeAsync(rootProductCategory, productCategories, cancellationToken);
-            return Result.Success<IEnumerable<ProductCategoryTreeDto>>(new List<ProductCategoryTreeDto> { tree });
+            var tree = await BuildProductCategoryTreeAsync(
+                rootProductCategory,
+                productCategories,
+                cancellationToken
+            );
+            return Result.Success<IEnumerable<ProductCategoryTreeDto>>(
+                new List<ProductCategoryTreeDto> { tree }
+            );
         }
 
         // Otherwise, get all root product categories (product categories with no parent)
@@ -318,7 +339,11 @@ public class ProductCategoryService : IProductCategoryService
         var trees = new List<ProductCategoryTreeDto>();
         foreach (var rootProductCategory in rootProductCategories)
         {
-            var tree = await BuildProductCategoryTreeAsync(rootProductCategory, productCategories, cancellationToken);
+            var tree = await BuildProductCategoryTreeAsync(
+                rootProductCategory,
+                productCategories,
+                cancellationToken
+            );
             trees.Add(tree);
         }
 
@@ -331,7 +356,10 @@ public class ProductCategoryService : IProductCategoryService
         CancellationToken cancellationToken = default
     )
     {
-        var localizations = await GetProductCategoryLocalizationsAsync(productCategory.Id, cancellationToken);
+        var localizations = await GetProductCategoryLocalizationsAsync(
+            productCategory.Id,
+            cancellationToken
+        );
 
         var treeDto = new ProductCategoryTreeDto
         {
@@ -350,7 +378,11 @@ public class ProductCategoryService : IProductCategoryService
         // Recursively build the tree for each child
         foreach (var child in children)
         {
-            var childTree = await BuildProductCategoryTreeAsync(child, allProductCategories, cancellationToken);
+            var childTree = await BuildProductCategoryTreeAsync(
+                child,
+                allProductCategories,
+                cancellationToken
+            );
             treeDto.Children.Add(childTree);
         }
 
@@ -400,8 +432,7 @@ public class ProductCategoryService : IProductCategoryService
                 if (existingResult.IsSuccess && existingResult.Value != null)
                 {
                     existingResult.Value.NameLocalized = localizationDto.NameLocalized;
-                    existingResult.Value.DecriptionLocalized =
-                        localizationDto.DescriptionLocalized;
+                    existingResult.Value.DecriptionLocalized = localizationDto.DescriptionLocalized;
                     existingResult.Value.LanguageId = localizationDto.LanguageId;
                     existingResult.Value.IsActive = localizationDto.IsActive;
                     existingResult.Value.UpdatedAt = DateTime.UtcNow;

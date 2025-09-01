@@ -282,7 +282,7 @@ public class CategoryService : ICategoryService
     {
         // Get all active categories
         var allCategories = await _categoryRepository.GetAsync(
-            filter: c => c.IsActive && !c.IsDeleted,
+            filter: c => !c.IsDeleted,
             orderBy: q => q.OrderBy(c => c.Name)
         );
 
@@ -322,7 +322,10 @@ public class CategoryService : ICategoryService
         return await _categoryRepository.GetCategoriesMissingTranslationsAsync(cancellationToken);
     }
 
-    public async Task<Result<CategoryDto?>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Result<CategoryDto?>> GetByIdAsync(
+        int id,
+        CancellationToken cancellationToken = default
+    )
     {
         var categoryResult = await _categoryRepository.GetByIdAsync(id, cancellationToken);
         if (categoryResult.IsFailure)
