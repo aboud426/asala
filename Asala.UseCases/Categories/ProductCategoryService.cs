@@ -285,6 +285,78 @@ public class ProductCategoryService : IProductCategoryService
         return await _productCategoryRepository.GetProductCategoriesMissingTranslationsAsync(cancellationToken);
     }
 
+    public async Task<Result<IEnumerable<ProductCategoryTreeDto>>> GetProductCategoryTreeAsync(
+        int? rootId = null,
+        string? languageCode = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        // Get all active product categories
+        var allProductCategories = await _productCategoryRepository.GetAsync(
+            filter: pc => pc.IsActive && !pc.IsDeleted,
+            orderBy: q => q.OrderBy(pc => pc.Name)
+        );
+
+        if (allProductCategories.IsFailure)
+            return Result.Failure<IEnumerable<ProductCategoryTreeDto>>(allProductCategories.MessageCode);
+
+        var productCategories = allProductCategories.Value!.ToList();
+
+        // If rootId is specified, start from that product category
+        if (rootId.HasValue)
+        {
+            var rootProductCategory = productCategories.FirstOrDefault(pc => pc.Id == rootId.Value);
+            if (rootProductCategory == null)
+                return Result.Failure<IEnumerable<ProductCategoryTreeDto>>("Root product category not found");
+
+            var tree = await BuildProductCategoryTreeAsync(rootProductCategory, productCategories, cancellationToken);
+            return Result.Success<IEnumerable<ProductCategoryTreeDto>>(new List<ProductCategoryTreeDto> { tree });
+        }
+
+        // Otherwise, get all root product categories (product categories with no parent)
+        var rootProductCategories = productCategories.Where(pc => pc.ParentId == null).ToList();
+        var trees = new List<ProductCategoryTreeDto>();
+        foreach (var rootProductCategory in rootProductCategories)
+        {
+            var tree = await BuildProductCategoryTreeAsync(rootProductCategory, productCategories, cancellationToken);
+            trees.Add(tree);
+        }
+
+        return Result.Success<IEnumerable<ProductCategoryTreeDto>>(trees);
+    }
+
+    private async Task<ProductCategoryTreeDto> BuildProductCategoryTreeAsync(
+        ProductCategory productCategory,
+        List<ProductCategory> allProductCategories,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var localizations = await GetProductCategoryLocalizationsAsync(productCategory.Id, cancellationToken);
+
+        var treeDto = new ProductCategoryTreeDto
+        {
+            Id = productCategory.Id,
+            Name = productCategory.Name,
+            Description = productCategory.Description,
+            ParentId = productCategory.ParentId,
+            IsActive = productCategory.IsActive,
+            Localizations = localizations,
+            Children = new List<ProductCategoryTreeDto>(),
+        };
+
+        // Find all direct children of this product category
+        var children = allProductCategories.Where(pc => pc.ParentId == productCategory.Id).ToList();
+
+        // Recursively build the tree for each child
+        foreach (var child in children)
+        {
+            var childTree = await BuildProductCategoryTreeAsync(child, allProductCategories, cancellationToken);
+            treeDto.Children.Add(childTree);
+        }
+
+        return treeDto;
+    }
+
     private async Task CreateLocalizationsAsync(
         int productCategoryId,
         List<CreateProductCategoryLocalizedDto> localizations,

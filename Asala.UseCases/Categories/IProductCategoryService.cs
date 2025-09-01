@@ -37,4 +37,13 @@ public interface IProductCategoryService
     Task<Result<IEnumerable<int>>> GetProductCategoriesMissingTranslationsAsync(
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// Gets the product category tree starting from an optional root, with optional language localization
+    /// </summary>
+    Task<Result<IEnumerable<ProductCategoryTreeDto>>> GetProductCategoryTreeAsync(
+        int? rootId = null,
+        string? languageCode = null,
+        CancellationToken cancellationToken = default
+    );
 }

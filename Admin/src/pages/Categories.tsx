@@ -60,12 +60,14 @@ import {
   Languages as LanguagesIcon,
   Eye,
   X,
+  TreePine,
 } from 'lucide-react';
 import { useDirection } from '@/contexts/DirectionContext';
 import { Switch } from '@/components/ui/switch';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate, useLocation } from 'react-router-dom';
 import categoryService, {
   Category,
   CreateCategoryDto,
@@ -78,8 +80,12 @@ import languageService, { LanguageDropdownDto } from '@/services/languageService
 import MissingTranslationsWarning from '@/components/ui/missing-translations-warning';
 import MissingTranslationsModal from '@/components/ui/missing-translations-modal';
 
+
+
 const Categories: React.FC = () => {
   const { isRTL } = useDirection();
+  const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
@@ -131,6 +137,36 @@ const Categories: React.FC = () => {
     control: editForm.control,
     name: 'localizations',
   });
+
+  // Handle navigation state from tree page
+  React.useEffect(() => {
+    if (location.state?.editCategory) {
+      const category = location.state.editCategory as Category;
+      setSelectedCategory(category);
+      editForm.reset({
+        name: category.name,
+        description: category.description,
+        parentId: category.parentId,
+        isActive: category.isActive,
+        localizations: category.localizations?.map(loc => ({
+          id: loc.id,
+          nameLocalized: loc.nameLocalized,
+          descriptionLocalized: loc.descriptionLocalized,
+          languageId: loc.languageId,
+          isActive: loc.isActive,
+        })) || [],
+      });
+      setIsEditDialogOpen(true);
+      // Clear the state to prevent re-triggering
+      navigate(location.pathname, { replace: true });
+    } else if (location.state?.viewCategory) {
+      const category = location.state.viewCategory as Category;
+      setSelectedCategoryForDetails(category);
+      setIsDetailsDialogOpen(true);
+      // Clear the state to prevent re-triggering
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.state, location.pathname, navigate, editForm]);
 
   // Query for categories data
   const { data: categoriesData, isLoading, error } = useQuery({
@@ -351,13 +387,23 @@ const Categories: React.FC = () => {
               {isRTL ? 'إدارة فئات المنتجات والخدمات' : 'Manage product and service categories'}
             </p>
           </div>
-          <Button
-            className="gradient-primary flex items-center gap-2"
-            onClick={() => setIsCreateDialogOpen(true)}
-          >
-            <Plus className="h-4 w-4" />
-            {isRTL ? 'إضافة فئة جديدة' : 'Add New Category'}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              className="flex items-center gap-2"
+              onClick={() => navigate('/categories/tree')}
+            >
+              <TreePine className="h-4 w-4" />
+              {isRTL ? 'عرض الشجرة' : 'Tree View'}
+            </Button>
+            <Button
+              className="gradient-primary flex items-center gap-2"
+              onClick={() => setIsCreateDialogOpen(true)}
+            >
+              <Plus className="h-4 w-4" />
+              {isRTL ? 'إضافة فئة جديدة' : 'Add New Category'}
+            </Button>
+          </div>
         </div>
 
         {/* Missing Translations Warning */}
@@ -1331,6 +1377,8 @@ const Categories: React.FC = () => {
             missingCategoryIds={missingTranslationsIds}
           />
         )}
+
+
       </div>
     </DashboardLayout>
   );

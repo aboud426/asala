@@ -98,4 +98,19 @@ public class ProductCategoryController : BaseController
         );
         return CreateResponse(result);
     }
+
+    [HttpGet("tree")]
+    public async Task<IActionResult> GetProductCategoryTree(
+        [FromQuery] int? rootId = null,
+        [FromQuery] string? languageCode = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var result = await _productCategoryService.GetProductCategoryTreeAsync(
+            rootId,
+            languageCode,
+            cancellationToken
+        );
+        return CreateResponse(result);
+    }
 }

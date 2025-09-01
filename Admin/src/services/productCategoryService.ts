@@ -61,6 +61,16 @@ export interface ProductCategoryDropdownDto {
     parentId?: number | null;
 }
 
+export interface ProductCategoryTreeDto {
+    id: number;
+    name: string;
+    description: string;
+    parentId?: number | null;
+    isActive: boolean;
+    localizations: ProductCategoryLocalizedDto[];
+    children: ProductCategoryTreeDto[];
+}
+
 export interface PaginatedResult<T> {
     items: T[];
     totalCount: number;
@@ -149,6 +159,29 @@ class ProductCategoryService {
 
         if (!response.success) {
             throw new Error(response.message || 'Failed to fetch product categories dropdown');
+        }
+
+        if (!response.data) {
+            throw new Error('No data returned from server');
+        }
+
+        return response.data;
+    };
+
+    /**
+     * Get product category tree
+     * GET /api/product-categories/tree
+     */
+    getProductCategoryTree = async (rootId?: number, languageCode?: string): Promise<ProductCategoryTreeDto[]> => {
+        const searchParams = new URLSearchParams();
+        if (rootId) searchParams.append('rootId', rootId.toString());
+        if (languageCode) searchParams.append('languageCode', languageCode);
+
+        const endpoint = `/tree${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+        const response = await this.request<ProductCategoryTreeDto[]>(endpoint);
+
+        if (!response.success) {
+            throw new Error(response.message || 'Failed to fetch product category tree');
         }
 
         if (!response.data) {

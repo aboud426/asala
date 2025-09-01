@@ -36,3 +36,14 @@ public class ProductCategoryDropdownDto
     public string Name { get; set; } = null!;
     public int? ParentId { get; set; }
 }
+
+public class ProductCategoryTreeDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = null!;
+    public string Description { get; set; } = null!;
+    public int? ParentId { get; set; }
+    public bool IsActive { get; set; }
+    public List<ProductCategoryLocalizedDto> Localizations { get; set; } = [];
+    public List<ProductCategoryTreeDto> Children { get; set; } = new List<ProductCategoryTreeDto>();
+}

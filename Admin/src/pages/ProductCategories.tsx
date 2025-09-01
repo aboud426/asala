@@ -60,12 +60,14 @@ import {
   Languages as LanguagesIcon,
   Eye,
   X,
+  TreePine,
 } from 'lucide-react';
 import { useDirection } from '@/contexts/DirectionContext';
 import { Switch } from '@/components/ui/switch';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate, useLocation } from 'react-router-dom';
 import productCategoryService, { 
   ProductCategory, 
   CreateProductCategoryDto, 
@@ -80,6 +82,8 @@ import MissingProductCategoryTranslationsModal from '@/components/ui/missing-pro
 
 const ProductCategories: React.FC = () => {
   const { isRTL } = useDirection();
+  const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
@@ -132,6 +136,36 @@ const ProductCategories: React.FC = () => {
     control: editForm.control,
     name: 'localizations',
   });
+
+  // Handle navigation state from tree page
+  React.useEffect(() => {
+    if (location.state?.editProductCategory) {
+      const productCategory = location.state.editProductCategory as ProductCategory;
+      setSelectedProductCategory(productCategory);
+      editForm.reset({
+        name: productCategory.name,
+        description: productCategory.description,
+        parentId: productCategory.parentId,
+        isActive: productCategory.isActive,
+        localizations: productCategory.localizations?.map(loc => ({
+          id: loc.id,
+          nameLocalized: loc.nameLocalized,
+          descriptionLocalized: loc.descriptionLocalized,
+          languageId: loc.languageId,
+          isActive: loc.isActive,
+        })) || [],
+      });
+      setIsEditDialogOpen(true);
+      // Clear the state to prevent re-triggering
+      navigate(location.pathname, { replace: true });
+    } else if (location.state?.viewProductCategory) {
+      const productCategory = location.state.viewProductCategory as ProductCategory;
+      setSelectedProductCategoryForDetails(productCategory);
+      setIsDetailsDialogOpen(true);
+      // Clear the state to prevent re-triggering
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.state, location.pathname, navigate, editForm]);
 
   // Query for product categories data
   const { data: productCategoriesData, isLoading, error } = useQuery({
@@ -373,13 +407,23 @@ const ProductCategories: React.FC = () => {
               {isRTL ? 'إدارة فئات المنتجات وتصنيفاتها' : 'Manage product categories and classifications'}
             </p>
           </div>
-          <Button 
-            className="gradient-primary flex items-center gap-2"
-            onClick={() => setIsCreateDialogOpen(true)}
-          >
-            <Plus className="h-4 w-4" />
-            {isRTL ? 'إضافة فئة منتج جديدة' : 'Add New Product Category'}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              className="flex items-center gap-2"
+              onClick={() => navigate('/product-categories/tree')}
+            >
+              <TreePine className="h-4 w-4" />
+              {isRTL ? 'عرض الشجرة' : 'Tree View'}
+            </Button>
+            <Button 
+              className="gradient-primary flex items-center gap-2"
+              onClick={() => setIsCreateDialogOpen(true)}
+            >
+              <Plus className="h-4 w-4" />
+              {isRTL ? 'إضافة فئة منتج جديدة' : 'Add New Product Category'}
+            </Button>
+          </div>
         </div>
 
         {/* Missing Translations Warning */}
