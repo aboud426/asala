@@ -89,6 +89,11 @@ public static class MessageCodes
     public const string CUSTOMER_NAME_TOO_LONG = "CUSTOMER_NAME_TOO_LONG";
     public const string CUSTOMER_ADDRESS_ID_INVALID = "CUSTOMER_ADDRESS_ID_INVALID";
 
+    // Employee-specific errors
+    public const string EMPLOYEE_NOT_FOUND = "EMPLOYEE_NOT_FOUND";
+    public const string EMPLOYEE_NAME_REQUIRED = "EMPLOYEE_NAME_REQUIRED";
+    public const string EMPLOYEE_NAME_TOO_LONG = "EMPLOYEE_NAME_TOO_LONG";
+
     // Success messages
     public const string WELCOME_MESSAGE = "WELCOME_MESSAGE";
 }

@@ -2,6 +2,7 @@ using Asala.Core.Common.Models;
 using Asala.Core.Db;
 using Asala.Core.Db.Repositories;
 using Asala.Core.Modules.Users.Models;
+using Asala.Core.Modules.Users.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace Asala.Core.Modules.Users.Db;
@@ -110,6 +111,72 @@ public class ProviderRepository : BaseRepository<Provider, int>, IProviderReposi
 
             var providers = await query
                 .OrderBy(p => p.BusinessName)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            var paginatedResult = new PaginatedResult<Provider>(
+                providers,
+                totalCount,
+                page,
+                pageSize
+            );
+
+            return Result.Success(paginatedResult);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<PaginatedResult<Provider>>(MessageCodes.DB_ERROR, ex);
+        }
+    }
+
+    public async Task<Result<PaginatedResult<Provider>>> SearchByBusinessNameAsync(
+        string searchTerm,
+        int page,
+        int pageSize,
+        bool? activeOnly = null,
+        ProviderSortBy sortBy = ProviderSortBy.Name,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (page <= 0) page = 1;
+            if (pageSize <= 0) pageSize = 10;
+
+            if (string.IsNullOrWhiteSpace(searchTerm))
+                return await GetPaginatedWithUserAsync(page, pageSize, activeOnly, null, cancellationToken);
+
+            var searchPattern = $"%{searchTerm.Trim()}%";
+
+            var query = from p in _dbSet
+                       join u in _context.Users on p.UserId equals u.Id
+                       from pl in _context.Set<ProviderLocalized>().Where(x => x.ProviderId == p.UserId && !x.IsDeleted).DefaultIfEmpty()
+                       where !u.IsDeleted && 
+                             (EF.Functions.Like(p.BusinessName, searchPattern) || 
+                              EF.Functions.Like(p.Description, searchPattern) ||
+                              (pl != null && (EF.Functions.Like(pl.BusinessNameLocalized, searchPattern) ||
+                                             EF.Functions.Like(pl.DescriptionLocalized, searchPattern))))
+                       select p;
+
+            if (activeOnly.HasValue)
+            {
+                query = query.Where(p => _context.Users.Any(u => u.Id == p.UserId && u.IsActive == activeOnly.Value));
+            }
+
+            // Use Distinct to avoid duplicates when multiple localizations match
+            var distinctQuery = query.Distinct();
+            
+            var totalCount = await distinctQuery.CountAsync(cancellationToken);
+
+            // Apply sorting based on sortBy parameter
+            distinctQuery = sortBy switch
+            {
+                ProviderSortBy.Name => distinctQuery.OrderBy(p => p.BusinessName),
+                ProviderSortBy.Rating => distinctQuery.OrderByDescending(p => p.Rating).ThenBy(p => p.BusinessName),
+                _ => distinctQuery.OrderBy(p => p.BusinessName)
+            };
+
+            var providers = await distinctQuery
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(cancellationToken);

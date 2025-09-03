@@ -35,3 +35,16 @@ public class ChangePasswordDto
     public string CurrentPassword { get; set; } = null!;
     public string NewPassword { get; set; } = null!;
 }
+
+public class LoginDto
+{
+    public string Email { get; set; } = null!;
+    public string Password { get; set; } = null!;
+}
+
+public class AuthResponseDto
+{
+    public string Token { get; set; } = null!;
+    public UserDto User { get; set; } = null!;
+    public DateTime ExpiresAt { get; set; }
+}

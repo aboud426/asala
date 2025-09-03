@@ -1,6 +1,7 @@
 using Asala.Core.Common.Abstractions;
 using Asala.Core.Common.Models;
 using Asala.Core.Modules.Users.Models;
+using Asala.Core.Modules.Users.DTOs;
 
 namespace Asala.Core.Modules.Users.Db;
 
@@ -15,6 +16,14 @@ public interface IProviderRepository : IBaseRepository<Provider, int>
         int pageSize,
         bool? activeOnly = null,
         int? parentId = null,
+        CancellationToken cancellationToken = default
+    );
+    Task<Result<PaginatedResult<Provider>>> SearchByBusinessNameAsync(
+        string searchTerm,
+        int page,
+        int pageSize,
+        bool? activeOnly = null,
+        ProviderSortBy sortBy = ProviderSortBy.Name,
         CancellationToken cancellationToken = default
     );
 }

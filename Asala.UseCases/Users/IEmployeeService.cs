@@ -3,51 +3,51 @@ using Asala.Core.Modules.Users.DTOs;
 
 namespace Asala.UseCases.Users;
 
-public interface ICustomerService
+public interface IEmployeeService
 {
-    Task<Result<PaginatedResult<CustomerDto>>> GetPaginatedAsync(
+    Task<Result<PaginatedResult<EmployeeDto>>> GetPaginatedAsync(
         int page,
         int pageSize,
         bool activeOnly = true,
         CancellationToken cancellationToken = default
     );
     
-    Task<Result<CustomerDto?>> GetByUserIdAsync(
-        int userId,
+    Task<Result<EmployeeDto?>> GetByIdAsync(
+        int id,
         CancellationToken cancellationToken = default
     );
     
-    Task<Result<CustomerDto?>> GetByEmailAsync(
+    Task<Result<EmployeeDto?>> GetByEmailAsync(
         string email,
         CancellationToken cancellationToken = default
     );
     
-    Task<Result<CustomerDto>> CreateAsync(
-        CreateCustomerDto createDto,
+    Task<Result<EmployeeDto>> CreateAsync(
+        CreateEmployeeDto createDto,
         CancellationToken cancellationToken = default
     );
     
-    Task<Result<CustomerDto?>> UpdateAsync(
-        int userId,
-        UpdateCustomerDto updateDto,
+    Task<Result<EmployeeDto?>> UpdateAsync(
+        int id,
+        UpdateEmployeeDto updateDto,
         CancellationToken cancellationToken = default
     );
     
-    Task<Result> SoftDeleteAsync(int userId, CancellationToken cancellationToken = default);
+    Task<Result> SoftDeleteAsync(int id, CancellationToken cancellationToken = default);
     
-    Task<Result> ToggleActivationAsync(int userId, CancellationToken cancellationToken = default);
+    Task<Result> ToggleActivationAsync(int id, CancellationToken cancellationToken = default);
     
-    Task<Result<IEnumerable<CustomerDropdownDto>>> GetDropdownAsync(
+    Task<Result<IEnumerable<EmployeeDropdownDto>>> GetDropdownAsync(
         bool activeOnly = true,
         CancellationToken cancellationToken = default
     );
     
-    Task<Result<PaginatedResult<CustomerDto>>> SearchByNameAsync(
+    Task<Result<PaginatedResult<EmployeeDto>>> SearchByNameAsync(
         string searchTerm,
         int page = 1,
         int pageSize = 10,
         bool activeOnly = true,
-        CustomerSortBy sortBy = CustomerSortBy.Name,
+        EmployeeSortBy sortBy = EmployeeSortBy.Name,
         CancellationToken cancellationToken = default
     );
 }

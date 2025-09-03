@@ -4,6 +4,6 @@ public class Customer
 {
     public int UserId { get; set; }
     public string Name { get; set; } = null!;
-    public int AddressId { get; set; }
+    public int? AddressId { get; set; }
 
 }

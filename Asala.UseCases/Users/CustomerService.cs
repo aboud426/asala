@@ -121,6 +121,8 @@ public class CustomerService : ICustomerService
             {
                 Email = createDto.Email.Trim().ToLowerInvariant(),
                 PasswordHash = HashPassword(createDto.Password),
+                LocationId = createDto.LocationId,
+                IsActive = createDto.IsActive,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
             };
@@ -144,7 +146,7 @@ public class CustomerService : ICustomerService
             {
                 UserId = addUserResult.Value.Id,
                 Name = createDto.Name.Trim(),
-                AddressId = createDto.AddressId
+                AddressId = null // Address can be set later
             };
 
             var addCustomerResult = await _customerRepository.AddAsync(customer, cancellationToken);
@@ -335,6 +337,43 @@ public class CustomerService : ICustomerService
         return Result.Success<IEnumerable<CustomerDropdownDto>>(dtos);
     }
 
+    public async Task<Result<PaginatedResult<CustomerDto>>> SearchByNameAsync(
+        string searchTerm,
+        int page = 1,
+        int pageSize = 10,
+        bool activeOnly = true,
+        CustomerSortBy sortBy = CustomerSortBy.Name,
+        CancellationToken cancellationToken = default)
+    {
+        if (page <= 0)
+            return Result.Failure<PaginatedResult<CustomerDto>>(MessageCodes.PAGINATION_INVALID_PAGE);
+
+        if (pageSize <= 0 || pageSize > 100)
+            return Result.Failure<PaginatedResult<CustomerDto>>(MessageCodes.PAGINATION_INVALID_PAGE_SIZE);
+
+        var result = await _customerRepository.SearchByNameAsync(
+            searchTerm,
+            page,
+            pageSize,
+            activeOnly,
+            sortBy,
+            cancellationToken
+        );
+
+        if (result.IsFailure)
+            return Result.Failure<PaginatedResult<CustomerDto>>(result.MessageCode);
+
+        var dtos = result.Value.Items.Select(MapToDto);
+        var paginatedDto = new PaginatedResult<CustomerDto>(
+            items: dtos.ToList(),
+            totalCount: result.Value.TotalCount,
+            page: result.Value.Page,
+            pageSize: result.Value.PageSize
+        );
+
+        return Result.Success(paginatedDto);
+    }
+
     #region Private Helper Methods
 
     private static string HashPassword(string password)
@@ -387,10 +426,6 @@ public class CustomerService : ICustomerService
 
         if (createDto.Password.Length > 100)
             return Result.Failure(MessageCodes.USER_PASSWORD_TOO_LONG);
-
-        // Validate Address ID
-        if (createDto.AddressId <= 0)
-            return Result.Failure(MessageCodes.CUSTOMER_ADDRESS_ID_INVALID);
 
         return Result.Success();
     }

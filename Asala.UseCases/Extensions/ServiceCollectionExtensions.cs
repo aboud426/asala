@@ -11,6 +11,7 @@ using Asala.UseCases.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Asala.Core.Modules.Users.Db;
 
 namespace Asala.UseCases.Extensions;
 
@@ -37,11 +38,25 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IProductCategoryService, ProductCategoryService>();
         services.AddScoped<IProviderCategoryService, ProviderCategoryService>();
         
+        // User repositories
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ICustomerRepository, CustomerRepository>();
+        services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+        services.AddScoped<IProviderRepository, ProviderRepository>();
+        services.AddScoped<IProviderLocalizedRepository, ProviderLocalizedRepository>();
+        services.AddScoped<IRoleRepository, RoleRepository>();
+        services.AddScoped<IPermissionRepository, PermissionRepository>();
+        services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+        services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
+        
         // User services
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IPermissionService, PermissionService>();
         services.AddScoped<ICustomerService, CustomerService>();
+        services.AddScoped<IProviderService, ProviderService>();
+        services.AddScoped<IEmployeeService, EmployeeService>();
+        services.AddScoped<IAuthenticationService, AuthenticationService>();
         
         return services;
     }

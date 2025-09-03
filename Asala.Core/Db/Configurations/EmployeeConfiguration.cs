@@ -10,7 +10,11 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
     {
         builder.ToTable("Employee");
         
+        // UserId is the primary key
         builder.HasKey(e => e.UserId);
+        
+        builder.Property(e => e.Name).IsRequired().HasMaxLength(100);
+        builder.Property(e => e.UserId).IsRequired();
             
         // Foreign Key Relationship (no navigation properties)
         builder.HasOne<User>()
@@ -19,6 +23,6 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
             .OnDelete(DeleteBehavior.Cascade);
             
         // Indexes
-        builder.HasIndex(e => e.UserId).IsUnique();
+        builder.HasIndex(e => e.Name);
     }
 }

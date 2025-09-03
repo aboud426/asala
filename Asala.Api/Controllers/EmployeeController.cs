@@ -5,24 +5,24 @@ using Microsoft.AspNetCore.Mvc;
 namespace Asala.Api.Controllers;
 
 [ApiController]
-[Route("api/customers")]
-public class CustomerController : BaseController
+[Route("api/employees")]
+public class EmployeeController : BaseController
 {
-    private readonly ICustomerService _customerService;
+    private readonly IEmployeeService _employeeService;
     private readonly IAuthenticationService _authenticationService;
 
-    public CustomerController(ICustomerService customerService, IAuthenticationService authenticationService) : base()
+    public EmployeeController(IEmployeeService employeeService, IAuthenticationService authenticationService) : base()
     {
-        _customerService = customerService;
+        _employeeService = employeeService;
         _authenticationService = authenticationService;
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register(
-        [FromBody] CreateCustomerDto createDto,
+        [FromBody] CreateEmployeeDto createDto,
         CancellationToken cancellationToken = default)
     {
-        var result = await _customerService.CreateAsync(createDto, cancellationToken);
+        var result = await _employeeService.CreateAsync(createDto, cancellationToken);
         if (result.IsFailure)
         {
             return CreateResponse(result);
@@ -39,7 +39,8 @@ public class CustomerController : BaseController
                 Id = result.Value!.UserId,
                 Email = result.Value.Email,
                 IsActive = result.Value.IsActive,
-                CreatedAt = result.Value.CreatedAt
+                CreatedAt = result.Value.CreatedAt,
+                UpdatedAt = result.Value.UpdatedAt
             },
             ExpiresAt = DateTime.UtcNow.AddHours(24)
         };
@@ -52,7 +53,7 @@ public class CustomerController : BaseController
         [FromBody] LoginDto loginDto,
         CancellationToken cancellationToken = default)
     {
-        var result = await _authenticationService.LoginCustomerAsync(loginDto, cancellationToken);
+        var result = await _authenticationService.LoginEmployeeAsync(loginDto, cancellationToken);
         return CreateResponse(result);
     }
 
@@ -70,31 +71,31 @@ public class CustomerController : BaseController
         [FromQuery] bool activeOnly = true,
         CancellationToken cancellationToken = default)
     {
-        var result = await _customerService.GetPaginatedAsync(page, pageSize, activeOnly, cancellationToken);
+        var result = await _employeeService.GetPaginatedAsync(page, pageSize, activeOnly, cancellationToken);
         return CreateResponse(result);
     }
 
-    [HttpGet("{userId}")]
-    public async Task<IActionResult> GetById(int userId, CancellationToken cancellationToken = default)
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken = default)
     {
-        var result = await _customerService.GetByUserIdAsync(userId, cancellationToken);
+        var result = await _employeeService.GetByIdAsync(id, cancellationToken);
         return CreateResponse(result);
     }
 
-    [HttpPut("{userId}")]
+    [HttpPut("{id}")]
     public async Task<IActionResult> Modify(
-        int userId,
-        [FromBody] UpdateCustomerDto updateDto,
+        int id,
+        [FromBody] UpdateEmployeeDto updateDto,
         CancellationToken cancellationToken = default)
     {
-        var result = await _customerService.UpdateAsync(userId, updateDto, cancellationToken);
+        var result = await _employeeService.UpdateAsync(id, updateDto, cancellationToken);
         return CreateResponse(result);
     }
 
-    [HttpDelete("{userId}")]
-    public async Task<IActionResult> Delete(int userId, CancellationToken cancellationToken = default)
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default)
     {
-        var result = await _customerService.SoftDeleteAsync(userId, cancellationToken);
+        var result = await _employeeService.SoftDeleteAsync(id, cancellationToken);
         return CreateResponse(result);
     }
 
@@ -104,10 +105,10 @@ public class CustomerController : BaseController
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] bool activeOnly = true,
-        [FromQuery] CustomerSortBy sortBy = CustomerSortBy.Name,
+        [FromQuery] EmployeeSortBy sortBy = EmployeeSortBy.Name,
         CancellationToken cancellationToken = default)
     {
-        var result = await _customerService.SearchByNameAsync(searchTerm, page, pageSize, activeOnly, sortBy, cancellationToken);
+        var result = await _employeeService.SearchByNameAsync(searchTerm, page, pageSize, activeOnly, sortBy, cancellationToken);
         return CreateResponse(result);
     }
 }

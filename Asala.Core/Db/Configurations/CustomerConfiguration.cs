@@ -17,7 +17,7 @@ public class CustomerConfiguration : IEntityTypeConfiguration<Customer>
             .HasMaxLength(50);
             
         builder.Property(e => e.AddressId)
-            .IsRequired();
+            .IsRequired(false); // Nullable
             
         // Foreign Key Relationship (no navigation properties)
         builder.HasOne<User>()
@@ -26,7 +26,6 @@ public class CustomerConfiguration : IEntityTypeConfiguration<Customer>
             .OnDelete(DeleteBehavior.Cascade);
             
         // Indexes
-        builder.HasIndex(e => e.UserId).IsUnique();
         builder.HasIndex(e => e.Name);
     }
 }

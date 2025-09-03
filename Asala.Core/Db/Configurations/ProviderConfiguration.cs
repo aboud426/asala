@@ -10,11 +10,19 @@ public class ProviderConfiguration : IEntityTypeConfiguration<Provider>
     {
         builder.ToTable("Provider");
         
+        // UserId is the primary key
         builder.HasKey(e => e.UserId);
+        
+        builder.Property(e => e.UserId)
+            .IsRequired();
         
         builder.Property(e => e.BusinessName)
             .IsRequired()
-            .HasMaxLength(50);
+            .HasMaxLength(100);
+            
+        builder.Property(e => e.Description)
+            .IsRequired()
+            .HasMaxLength(1000);
             
         builder.Property(e => e.Rating)
             .IsRequired();
@@ -34,7 +42,6 @@ public class ProviderConfiguration : IEntityTypeConfiguration<Provider>
             .OnDelete(DeleteBehavior.Restrict);
             
         // Indexes
-        builder.HasIndex(e => e.UserId).IsUnique();
         builder.HasIndex(e => e.BusinessName);
         builder.HasIndex(e => e.ParentId);
     }
