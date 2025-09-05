@@ -13,6 +13,7 @@ import {
   MessageSquare,
   FolderTree,
   ShoppingBag,
+  Shield,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -77,6 +78,12 @@ const navigationItems = [
     titleAr: 'الرسائل',
     href: '/messages',
     icon: MessageSquare,
+  },
+  {
+    title: 'Roles',
+    titleAr: 'الأدوار',
+    href: '/roles',
+    icon: Shield,
   },
   {
     title: 'Settings',

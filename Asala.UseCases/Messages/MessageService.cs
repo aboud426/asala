@@ -246,14 +246,20 @@ public class MessageService : IMessageService
         return await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<Result<MessageDto?>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Result<MessageDto?>> GetByIdAsync(
+        int id,
+        CancellationToken cancellationToken = default
+    )
     {
         // Validate ID
         var idValidationResult = ValidateId(id);
         if (idValidationResult.IsFailure)
             return Result.Failure<MessageDto?>(idValidationResult.MessageCode);
 
-        var messageResult = await _messageRepository.GetByIdWithLocalizationsAsync(id, cancellationToken);
+        var messageResult = await _messageRepository.GetByIdWithLocalizationsAsync(
+            id,
+            cancellationToken
+        );
         if (messageResult.IsFailure)
             return Result.Failure<MessageDto?>(messageResult.MessageCode);
 

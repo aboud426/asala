@@ -34,7 +34,7 @@ public class RoleController : BaseController
     public async Task<IActionResult> GetPaginated(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
-        [FromQuery] bool activeOnly = true,
+        [FromQuery] bool? activeOnly = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -57,10 +57,7 @@ public class RoleController : BaseController
     /// <response code="404">Role not found</response>
     /// <response code="500">Internal server error</response>
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(
-        int id,
-        CancellationToken cancellationToken = default
-    )
+    public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken = default)
     {
         var result = await _roleService.GetByIdAsync(id, cancellationToken);
         return CreateResponse(result);
@@ -179,6 +176,22 @@ public class RoleController : BaseController
     )
     {
         var result = await _roleService.SoftDeleteAsync(id, cancellationToken);
+        return CreateResponse(result);
+    }
+
+    /// <summary>
+    /// Get roles that are missing translations for active languages
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of role IDs that are missing translations</returns>
+    /// <response code="200">Role IDs missing translations retrieved successfully</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("missing-translations")]
+    public async Task<IActionResult> GetRolesMissingTranslations(
+        CancellationToken cancellationToken = default
+    )
+    {
+        var result = await _roleService.GetRolesMissingTranslationsAsync(cancellationToken);
         return CreateResponse(result);
     }
 }

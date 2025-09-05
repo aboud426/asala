@@ -138,9 +138,7 @@ public class MessageController : BaseController
         CancellationToken cancellationToken = default
     )
     {
-        var result = await _messageService.GetMessagesMissingTranslationsAsync(
-            cancellationToken
-        );
+        var result = await _messageService.GetMessagesMissingTranslationsAsync(cancellationToken);
         return CreateResponse(result);
     }
 }

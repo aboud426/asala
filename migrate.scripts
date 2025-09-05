@@ -1,6 +1,6 @@
 # main
 
-dotnet ef migrations add AddingCategoryImage --context AsalaDbContext
+dotnet ef migrations add AddingLocalizedRole --context AsalaDbContext
 
 dotnet ef database update --context AsalaDbContext
 

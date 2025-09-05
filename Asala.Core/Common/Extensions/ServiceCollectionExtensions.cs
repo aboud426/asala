@@ -19,8 +19,10 @@ public static class ServiceCollectionExtensions
     )
     {
         services.AddDbContext<AsalaDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"), 
-                b => b.MigrationsAssembly("Asala.Api"))
+            options.UseSqlServer(
+                configuration.GetConnectionString("DefaultConnection"),
+                b => b.MigrationsAssembly("Asala.Api")
+            )
         );
         services.AddRepository();
         services.AddUnitOfWork();
@@ -44,7 +46,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<ILanguageRepository, LanguageRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
-        
+
         // Users module repositories
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
@@ -54,7 +56,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<IEmployeeRepository, EmployeeRepository>();
         services.AddScoped<IProviderRepository, ProviderRepository>();
-        
+
         return services;
     }
 }

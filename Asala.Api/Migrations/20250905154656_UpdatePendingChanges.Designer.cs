@@ -4,6 +4,7 @@ using Asala.Core.Db;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Asala.Api.Migrations
 {
     [DbContext(typeof(AsalaDbContext))]
-    partial class AsalaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250905154656_UpdatePendingChanges")]
+    partial class UpdatePendingChanges
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -658,11 +661,6 @@ namespace Asala.Api.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime");
 
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -675,8 +673,8 @@ namespace Asala.Api.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime");
@@ -692,60 +690,6 @@ namespace Asala.Api.Migrations
                     b.HasIndex("IsActive", "IsDeleted");
 
                     b.ToTable("Role", (string)null);
-                });
-
-            modelBuilder.Entity("Asala.Core.Modules.Users.Models.RoleLocalized", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("LanguageId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Id")
-                        .IsUnique();
-
-                    b.HasIndex("LanguageId");
-
-                    b.HasIndex("IsActive", "IsDeleted");
-
-                    b.HasIndex("RoleId", "LanguageId")
-                        .IsUnique();
-
-                    b.ToTable("RoleLocalizations", (string)null);
                 });
 
             modelBuilder.Entity("Asala.Core.Modules.Users.Models.RolePermission", b =>
@@ -973,25 +917,6 @@ namespace Asala.Api.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Asala.Core.Modules.Users.Models.RoleLocalized", b =>
-                {
-                    b.HasOne("Asala.Core.Modules.Languages.Language", "Language")
-                        .WithMany()
-                        .HasForeignKey("LanguageId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Asala.Core.Modules.Users.Models.Role", "Role")
-                        .WithMany("Localizations")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Language");
-
-                    b.Navigation("Role");
-                });
-
             modelBuilder.Entity("Asala.Core.Modules.Users.Models.RolePermission", b =>
                 {
                     b.HasOne("Asala.Core.Modules.Users.Models.Permission", null)
@@ -1023,11 +948,6 @@ namespace Asala.Api.Migrations
                 });
 
             modelBuilder.Entity("Asala.Core.Modules.Messages.Models.Message", b =>
-                {
-                    b.Navigation("Localizations");
-                });
-
-            modelBuilder.Entity("Asala.Core.Modules.Users.Models.Role", b =>
                 {
                     b.Navigation("Localizations");
                 });

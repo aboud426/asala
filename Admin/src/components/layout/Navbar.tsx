@@ -136,7 +136,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSidebarToggle, sidebarCollapse
         }
 
         // Check if we have "sss"
-        if (keyBufferRef.current === 'sss' || keyBufferRef.current === 'سسس') {
+        if (keyBufferRef.current === '\\' || keyBufferRef.current === '\\') {
           event.preventDefault();
           keyBufferRef.current = ''; // Clear buffer
 
@@ -239,7 +239,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSidebarToggle, sidebarCollapse
             <Input
               ref={searchInputRef}
               type="search"
-              placeholder={isRTL ? 'البحث في الصفحات... (اكتب سسس)' : 'Search pages... (type sss)'}
+              placeholder={isRTL ? 'البحث في الصفحات... (اكتب \\)' : 'Search pages... (type \\)'}
               value={searchQuery}
               onChange={handleSearchChange}
               onFocus={handleSearchFocus}

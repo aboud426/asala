@@ -1,9 +1,9 @@
 using System.Linq.Expressions;
 using Asala.Core.Common.Abstractions;
 using Asala.Core.Common.Models;
-using Asala.Core.Modules.Users.Models;
-using Asala.Core.Modules.Users.DTOs;
 using Asala.Core.Modules.Users.Db;
+using Asala.Core.Modules.Users.DTOs;
+using Asala.Core.Modules.Users.Models;
 
 namespace Asala.UseCases.Users;
 
@@ -21,17 +21,15 @@ public class RoleService : IRoleService
     public async Task<Result<PaginatedResult<RoleDto>>> GetPaginatedAsync(
         int page,
         int pageSize,
-        bool activeOnly = true,
+        bool? activeOnly = null,
         CancellationToken cancellationToken = default
     )
     {
-        Expression<Func<Role, bool>> filter = BuildFilter(activeOnly);
-
-        var result = await _roleRepository.GetPaginatedAsync(
+        var result = await _roleRepository.GetPaginatedWithLocalizationsAsync(
             page,
             pageSize,
-            filter: filter,
-            orderBy: q => q.OrderBy(r => r.Name)
+            activeOnly,
+            cancellationToken
         );
 
         if (result.IsFailure)
@@ -92,7 +90,10 @@ public class RoleService : IRoleService
             return Result.Failure<RoleDto>(validationResult.MessageCode);
 
         // Check if name already exists
-        var nameExistsResult = await _roleRepository.ExistsByNameAsync(createDto.Name, cancellationToken: cancellationToken);
+        var nameExistsResult = await _roleRepository.ExistsByNameAsync(
+            createDto.Name,
+            cancellationToken: cancellationToken
+        );
         if (nameExistsResult.IsFailure)
             return Result.Failure<RoleDto>(nameExistsResult.MessageCode);
 
@@ -102,8 +103,10 @@ public class RoleService : IRoleService
         var role = new Role
         {
             Name = createDto.Name.Trim(),
+            Description = createDto.Description.Trim(),
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
+            Localizations = CreateLocalizations(createDto.Localizations),
         };
 
         var addResult = await _roleRepository.AddAsync(role, cancellationToken);
@@ -135,7 +138,11 @@ public class RoleService : IRoleService
             return Result.Failure<RoleDto?>(validationResult.MessageCode);
 
         // Check if name already exists (excluding current role)
-        var nameExistsResult = await _roleRepository.ExistsByNameAsync(updateDto.Name, id, cancellationToken);
+        var nameExistsResult = await _roleRepository.ExistsByNameAsync(
+            updateDto.Name,
+            id,
+            cancellationToken
+        );
         if (nameExistsResult.IsFailure)
             return Result.Failure<RoleDto?>(nameExistsResult.MessageCode);
 
@@ -151,8 +158,12 @@ public class RoleService : IRoleService
             return Result.Success<RoleDto?>(null);
 
         role.Name = updateDto.Name.Trim();
+        role.Description = updateDto.Description.Trim();
         role.IsActive = updateDto.IsActive;
         role.UpdatedAt = DateTime.UtcNow;
+
+        // Handle localizations
+        UpdateLocalizations(role, updateDto.Localizations);
 
         var updateResult = _roleRepository.Update(role);
         if (updateResult.IsFailure)
@@ -181,9 +192,17 @@ public class RoleService : IRoleService
         if (role == null)
             return Result.Failure(MessageCodes.ROLE_NOT_FOUND);
 
+        // Soft delete role and all localizations
         role.IsDeleted = true;
         role.DeletedAt = DateTime.UtcNow;
         role.UpdatedAt = DateTime.UtcNow;
+
+        foreach (var localization in role.Localizations)
+        {
+            localization.IsDeleted = true;
+            localization.DeletedAt = DateTime.UtcNow;
+            localization.UpdatedAt = DateTime.UtcNow;
+        }
 
         var updateResult = _roleRepository.Update(role);
         if (updateResult.IsFailure)
@@ -239,11 +258,83 @@ public class RoleService : IRoleService
         return Result.Success<IEnumerable<RoleDropdownDto>>(dtos);
     }
 
+    public async Task<Result<IEnumerable<int>>> GetRolesMissingTranslationsAsync(
+        CancellationToken cancellationToken = default
+    )
+    {
+        // Delegate to the optimized repository method that uses efficient SQL joins
+        return await _roleRepository.GetRolesMissingTranslationsAsync(cancellationToken);
+    }
+
     #region Private Helper Methods
 
     private static Expression<Func<Role, bool>> BuildFilter(bool activeOnly)
     {
         return r => !r.IsDeleted && (!activeOnly || r.IsActive);
+    }
+
+    private static List<RoleLocalized> CreateLocalizations(
+        List<CreateRoleLocalizedDto> localizationDtos
+    )
+    {
+        return localizationDtos
+            .Select(dto => new RoleLocalized
+            {
+                Name = dto.Name.Trim(),
+                Description = dto.Description.Trim(),
+                LanguageId = dto.LanguageId,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+            })
+            .ToList();
+    }
+
+    private static void UpdateLocalizations(
+        Role role,
+        List<UpdateRoleLocalizedDto> localizationDtos
+    )
+    {
+        var now = DateTime.UtcNow;
+
+        // Handle existing localizations
+        foreach (var existingLocalization in role.Localizations)
+        {
+            var updatedDto = localizationDtos.FirstOrDefault(dto =>
+                dto.Id == existingLocalization.Id
+            );
+            if (updatedDto != null)
+            {
+                // Update existing localization
+                existingLocalization.Name = updatedDto.Name.Trim();
+                existingLocalization.Description = updatedDto.Description.Trim();
+                existingLocalization.LanguageId = updatedDto.LanguageId;
+                existingLocalization.UpdatedAt = now;
+            }
+            else
+            {
+                // Mark for deletion if not in the update list
+                existingLocalization.IsDeleted = true;
+                existingLocalization.DeletedAt = now;
+                existingLocalization.UpdatedAt = now;
+            }
+        }
+
+        // Add new localizations (those with null or 0 Id)
+        var newLocalizations = localizationDtos
+            .Where(dto => dto.Id == 0)
+            .Select(dto => new RoleLocalized
+            {
+                Name = dto.Name.Trim(),
+                Description = dto.Description.Trim(),
+                LanguageId = dto.LanguageId,
+                CreatedAt = now,
+                UpdatedAt = now,
+            });
+
+        foreach (var newLocalization in newLocalizations)
+        {
+            role.Localizations.Add(newLocalization);
+        }
     }
 
     #endregion
@@ -267,8 +358,17 @@ public class RoleService : IRoleService
         if (string.IsNullOrWhiteSpace(createDto.Name))
             return Result.Failure(MessageCodes.ROLE_NAME_REQUIRED);
 
-        if (createDto.Name.Length > 50)
+        if (createDto.Name.Length > 100)
             return Result.Failure(MessageCodes.ROLE_NAME_TOO_LONG);
+
+        // Validate Description
+        if (createDto.Description.Length > 500)
+            return Result.Failure(MessageCodes.ROLE_DESCRIPTION_TOO_LONG);
+
+        // Validate localizations
+        var localizationValidation = ValidateCreateLocalizations(createDto.Localizations);
+        if (localizationValidation.IsFailure)
+            return localizationValidation;
 
         return Result.Success();
     }
@@ -282,8 +382,63 @@ public class RoleService : IRoleService
         if (string.IsNullOrWhiteSpace(updateDto.Name))
             return Result.Failure(MessageCodes.ROLE_NAME_REQUIRED);
 
-        if (updateDto.Name.Length > 50)
+        if (updateDto.Name.Length > 100)
             return Result.Failure(MessageCodes.ROLE_NAME_TOO_LONG);
+
+        // Validate Description
+        if (updateDto.Description.Length > 500)
+            return Result.Failure(MessageCodes.ROLE_DESCRIPTION_TOO_LONG);
+
+        // Validate localizations
+        var localizationValidation = ValidateUpdateLocalizations(updateDto.Localizations);
+        if (localizationValidation.IsFailure)
+            return localizationValidation;
+
+        return Result.Success();
+    }
+
+    private static Result ValidateCreateLocalizations(List<CreateRoleLocalizedDto> localizations)
+    {
+        if (localizations == null)
+            return Result.Success(); // Optional localizations
+
+        foreach (var localization in localizations)
+        {
+            if (string.IsNullOrWhiteSpace(localization.Name))
+                return Result.Failure(MessageCodes.ROLE_LOCALIZED_NAME_REQUIRED);
+
+            if (localization.Name.Length > 100)
+                return Result.Failure(MessageCodes.ROLE_LOCALIZED_NAME_TOO_LONG);
+
+            if (localization.Description.Length > 500)
+                return Result.Failure(MessageCodes.ROLE_LOCALIZED_DESCRIPTION_TOO_LONG);
+
+            if (localization.LanguageId <= 0)
+                return Result.Failure(MessageCodes.ROLE_LOCALIZED_LANGUAGE_ID_INVALID);
+        }
+
+        return Result.Success();
+    }
+
+    private static Result ValidateUpdateLocalizations(List<UpdateRoleLocalizedDto> localizations)
+    {
+        if (localizations == null)
+            return Result.Success(); // Optional localizations
+
+        foreach (var localization in localizations)
+        {
+            if (string.IsNullOrWhiteSpace(localization.Name))
+                return Result.Failure(MessageCodes.ROLE_LOCALIZED_NAME_REQUIRED);
+
+            if (localization.Name.Length > 100)
+                return Result.Failure(MessageCodes.ROLE_LOCALIZED_NAME_TOO_LONG);
+
+            if (localization.Description.Length > 500)
+                return Result.Failure(MessageCodes.ROLE_LOCALIZED_DESCRIPTION_TOO_LONG);
+
+            if (localization.LanguageId <= 0)
+                return Result.Failure(MessageCodes.ROLE_LOCALIZED_LANGUAGE_ID_INVALID);
+        }
 
         return Result.Success();
     }
@@ -298,19 +453,43 @@ public class RoleService : IRoleService
         {
             Id = role.Id,
             Name = role.Name,
+            Description = role.Description,
             IsActive = role.IsActive,
             CreatedAt = role.CreatedAt,
             UpdatedAt = role.UpdatedAt,
+            Localizations =
+            [
+                .. role.Localizations.Where(l => !l.IsDeleted).Select(MapLocalizationToDto),
+            ],
+        };
+    }
+
+    private static RoleLocalizedDto MapLocalizationToDto(RoleLocalized localization)
+    {
+        return new RoleLocalizedDto
+        {
+            Id = localization.Id,
+            RoleId = localization.RoleId,
+            Name = localization.Name,
+            Description = localization.Description,
+            LanguageId = localization.LanguageId,
+            CreatedAt = localization.CreatedAt,
+            UpdatedAt = localization.UpdatedAt,
+            Language =
+                localization.Language != null
+                    ? new LanguageDto
+                    {
+                        Id = localization.Language.Id,
+                        Code = localization.Language.Code,
+                        Name = localization.Language.Name,
+                    }
+                    : null,
         };
     }
 
     private static RoleDropdownDto MapToDropdownDto(Role role)
     {
-        return new RoleDropdownDto
-        {
-            Id = role.Id,
-            Name = role.Name,
-        };
+        return new RoleDropdownDto { Id = role.Id, Name = role.Name };
     }
 
     #endregion

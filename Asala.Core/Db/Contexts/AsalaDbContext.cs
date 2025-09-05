@@ -1,7 +1,7 @@
 using Asala.Core.Db.Configurations;
+using Asala.Core.Modules.Categories.Models;
 using Asala.Core.Modules.Languages;
 using Asala.Core.Modules.Messages.Models;
-using Asala.Core.Modules.Categories.Models;
 using Asala.Core.Modules.Users.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,10 +20,11 @@ public class AsalaDbContext : DbContext
     public DbSet<ProductCategory> ProductCategories => Set<ProductCategory>();
     public DbSet<ProductCategoryLocalized> ProductCategoryLocalizeds => Set<ProductCategoryLocalized>();
     public DbSet<ProviderCategory> ProviderCategories => Set<ProviderCategory>();
-    
+
     // Users module
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
+    public DbSet<RoleLocalized> RoleLocalizations => Set<RoleLocalized>();
     public DbSet<Permission> Permissions => Set<Permission>();
     public DbSet<UserRole> UserRoles => Set<UserRole>();
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();

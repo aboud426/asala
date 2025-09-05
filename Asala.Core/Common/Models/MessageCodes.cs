@@ -76,6 +76,11 @@ public static class MessageCodes
     public const string ROLE_NAME_REQUIRED = "ROLE_NAME_REQUIRED";
     public const string ROLE_NAME_TOO_LONG = "ROLE_NAME_TOO_LONG";
     public const string ROLE_NAME_ALREADY_EXISTS = "ROLE_NAME_ALREADY_EXISTS";
+    public const string ROLE_DESCRIPTION_TOO_LONG = "ROLE_DESCRIPTION_TOO_LONG";
+    public const string ROLE_LOCALIZED_NAME_REQUIRED = "ROLE_LOCALIZED_NAME_REQUIRED";
+    public const string ROLE_LOCALIZED_NAME_TOO_LONG = "ROLE_LOCALIZED_NAME_TOO_LONG";
+    public const string ROLE_LOCALIZED_DESCRIPTION_TOO_LONG = "ROLE_LOCALIZED_DESCRIPTION_TOO_LONG";
+    public const string ROLE_LOCALIZED_LANGUAGE_ID_INVALID = "ROLE_LOCALIZED_LANGUAGE_ID_INVALID";
 
     // Permission-specific errors
     public const string PERMISSION_NOT_FOUND = "PERMISSION_NOT_FOUND";

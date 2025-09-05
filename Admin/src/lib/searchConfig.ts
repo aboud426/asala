@@ -122,6 +122,16 @@ export const searchablePages: SearchableItem[] = [
     keywordsAr: ['رسائل', 'تواصل', 'إشعارات', 'قوالب', 'محتوى']
   },
   {
+    id: 'roles',
+    title: 'Roles',
+    titleAr: 'الأدوار',
+    description: 'Manage user roles and permissions system',
+    descriptionAr: 'إدارة أدوار المستخدمين ونظام الصلاحيات',
+    href: '/roles',
+    keywords: ['roles', 'permissions', 'access', 'authorization', 'security', 'users'],
+    keywordsAr: ['أدوار', 'صلاحيات', 'وصول', 'تخويل', 'أمان', 'مستخدمين']
+  },
+  {
     id: 'settings',
     title: 'Settings',
     titleAr: 'الإعدادات',
