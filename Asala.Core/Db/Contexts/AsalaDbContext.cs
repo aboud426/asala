@@ -2,6 +2,7 @@ using Asala.Core.Db.Configurations;
 using Asala.Core.Modules.Languages;
 using Asala.Core.Modules.Messages.Models;
 using Asala.Core.Modules.Categories.Models;
+using Asala.Core.Modules.Users.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Asala.Core.Db;
@@ -19,6 +20,18 @@ public class AsalaDbContext : DbContext
     public DbSet<ProductCategory> ProductCategories => Set<ProductCategory>();
     public DbSet<ProductCategoryLocalized> ProductCategoryLocalizeds => Set<ProductCategoryLocalized>();
     public DbSet<ProviderCategory> ProviderCategories => Set<ProviderCategory>();
+    
+    // Users module
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Role> Roles => Set<Role>();
+    public DbSet<Permission> Permissions => Set<Permission>();
+    public DbSet<UserRole> UserRoles => Set<UserRole>();
+    public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+    public DbSet<Customer> Customers => Set<Customer>();
+    public DbSet<Employee> Employees => Set<Employee>();
+    public DbSet<Provider> Providers => Set<Provider>();
+    public DbSet<ProviderLocalized> ProviderLocalizeds => Set<ProviderLocalized>();
+    public DbSet<Otp> Otps => Set<Otp>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

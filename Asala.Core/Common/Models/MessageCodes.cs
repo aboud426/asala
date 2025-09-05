@@ -58,6 +58,43 @@ public static class MessageCodes
     // System errors
     public const string INTERNAL_ERROR = "INTERNAL_ERROR";
 
+    // User-specific errors
+    public const string USER_NOT_FOUND = "USER_NOT_FOUND";
+    public const string USER_ID_INVALID = "USER_ID_INVALID";
+    public const string USER_EMAIL_REQUIRED = "USER_EMAIL_REQUIRED";
+    public const string USER_EMAIL_INVALID_FORMAT = "USER_EMAIL_INVALID_FORMAT";
+    public const string USER_EMAIL_TOO_LONG = "USER_EMAIL_TOO_LONG";
+    public const string USER_EMAIL_ALREADY_EXISTS = "USER_EMAIL_ALREADY_EXISTS";
+    public const string USER_PASSWORD_REQUIRED = "USER_PASSWORD_REQUIRED";
+    public const string USER_PASSWORD_TOO_SHORT = "USER_PASSWORD_TOO_SHORT";
+    public const string USER_PASSWORD_TOO_LONG = "USER_PASSWORD_TOO_LONG";
+    public const string USER_CURRENT_PASSWORD_INVALID = "USER_CURRENT_PASSWORD_INVALID";
+
+    // Role-specific errors
+    public const string ROLE_NOT_FOUND = "ROLE_NOT_FOUND";
+    public const string ROLE_ID_INVALID = "ROLE_ID_INVALID";
+    public const string ROLE_NAME_REQUIRED = "ROLE_NAME_REQUIRED";
+    public const string ROLE_NAME_TOO_LONG = "ROLE_NAME_TOO_LONG";
+    public const string ROLE_NAME_ALREADY_EXISTS = "ROLE_NAME_ALREADY_EXISTS";
+
+    // Permission-specific errors
+    public const string PERMISSION_NOT_FOUND = "PERMISSION_NOT_FOUND";
+    public const string PERMISSION_ID_INVALID = "PERMISSION_ID_INVALID";
+    public const string PERMISSION_NAME_REQUIRED = "PERMISSION_NAME_REQUIRED";
+    public const string PERMISSION_NAME_TOO_LONG = "PERMISSION_NAME_TOO_LONG";
+    public const string PERMISSION_NAME_ALREADY_EXISTS = "PERMISSION_NAME_ALREADY_EXISTS";
+
+    // Customer-specific errors
+    public const string CUSTOMER_NOT_FOUND = "CUSTOMER_NOT_FOUND";
+    public const string CUSTOMER_NAME_REQUIRED = "CUSTOMER_NAME_REQUIRED";
+    public const string CUSTOMER_NAME_TOO_LONG = "CUSTOMER_NAME_TOO_LONG";
+    public const string CUSTOMER_ADDRESS_ID_INVALID = "CUSTOMER_ADDRESS_ID_INVALID";
+
+    // Employee-specific errors
+    public const string EMPLOYEE_NOT_FOUND = "EMPLOYEE_NOT_FOUND";
+    public const string EMPLOYEE_NAME_REQUIRED = "EMPLOYEE_NAME_REQUIRED";
+    public const string EMPLOYEE_NAME_TOO_LONG = "EMPLOYEE_NAME_TOO_LONG";
+
     // Image upload errors
     public const string IMAGE_FILE_REQUIRED = "IMAGE_FILE_REQUIRED";
     public const string IMAGE_FILE_TOO_LARGE = "IMAGE_FILE_TOO_LARGE";

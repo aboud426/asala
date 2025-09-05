@@ -1,4 +1,5 @@
 ﻿using Asala.Core.Modules.Categories.Models;
+using Asala.Core.Modules.Users.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -18,7 +19,18 @@ public class ProviderCategoryConfiguration : IEntityTypeConfiguration<ProviderCa
         builder.Property(x => x.ProviderId)
             .IsRequired();
             
-        // Foreign key relationships without navigation properties
+        // Foreign key relationships (shadow navigation properties)
+        builder.HasOne<Category>()
+            .WithMany()
+            .HasForeignKey(x => x.CategoryId)
+            .OnDelete(DeleteBehavior.Cascade);
+            
+        builder.HasOne<Provider>()
+            .WithMany()
+            .HasForeignKey(x => x.ProviderId)
+            .OnDelete(DeleteBehavior.Cascade);
+            
+        // Indexes
         builder.HasIndex(x => x.CategoryId);
         builder.HasIndex(x => x.ProviderId);
             

@@ -1,5 +1,9 @@
+using System.Reflection;
 using Asala.Core.Common.Extensions;
 using Asala.UseCases.Extensions;
+using Microsoft.EntityFrameworkCore;
+
+// using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +25,42 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+// builder.Services.AddSwaggerGen(c =>
+// {
+//     c.SwaggerDoc("v1", new OpenApiInfo
+//     {
+//         Title = "Asala API",
+//         Version = "v1",
+//         Description = "A comprehensive API for managing users, customers, providers, and employees with OTP-based authentication",
+//         Contact = new OpenApiContact
+//         {
+//             Name = "Asala Development Team",
+//             Email = "support@asala.com"
+//         }
+//     });
+
+//     // Set the comments path for the Swagger JSON and UI
+//     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+//     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+//     c.IncludeXmlComments(xmlPath);
+
+//     // Include XML comments from the Core project as well (for DTOs)
+//     var coreXmlFile = "Asala.Core.xml";
+//     var coreXmlPath = Path.Combine(AppContext.BaseDirectory, coreXmlFile);
+//     if (File.Exists(coreXmlPath))
+//         c.IncludeXmlComments(coreXmlPath);
+
+//     // Add security definition for future JWT implementation
+//     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+//     {
+//         Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+//         Name = "Authorization",
+//         In = ParameterLocation.Header,
+//         Type = SecuritySchemeType.ApiKey,
+//         Scheme = "Bearer"
+//     });
+// });
+
 // Add NSwag services
 builder.Services.AddOpenApiDocument(config =>
 {
@@ -39,7 +79,8 @@ using (var scope = app.Services.CreateScope())
     try
     {
         logger.LogInformation("Seeding MessageCodes...");
-        var messageCodesSeeder = scope.ServiceProvider.GetRequiredService<Asala.UseCases.Messages.MessageCodesSeederService>();
+        var messageCodesSeeder =
+            scope.ServiceProvider.GetRequiredService<Asala.UseCases.Messages.MessageCodesSeederService>();
         await messageCodesSeeder.SeedMessageCodesAsync();
         logger.LogInformation("MessageCodes seeding completed");
     }
