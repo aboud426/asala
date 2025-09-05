@@ -32,6 +32,23 @@ builder.Services.AddOpenApiDocument(config =>
 
 var app = builder.Build();
 
+// Seed MessageCodes on startup
+using (var scope = app.Services.CreateScope())
+{
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        logger.LogInformation("Seeding MessageCodes...");
+        var messageCodesSeeder = scope.ServiceProvider.GetRequiredService<Asala.UseCases.Messages.MessageCodesSeederService>();
+        await messageCodesSeeder.SeedMessageCodesAsync();
+        logger.LogInformation("MessageCodes seeding completed");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Error occurred while seeding MessageCodes");
+    }
+}
+
 // Use NSwag middleware
 app.UseOpenApi();
 app.UseSwaggerUi(config =>
