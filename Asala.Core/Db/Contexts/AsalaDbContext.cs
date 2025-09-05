@@ -30,6 +30,8 @@ public class AsalaDbContext : DbContext
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<Employee> Employees => Set<Employee>();
     public DbSet<Provider> Providers => Set<Provider>();
+    public DbSet<ProviderLocalized> ProviderLocalizeds => Set<ProviderLocalized>();
+    public DbSet<Otp> Otps => Set<Otp>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

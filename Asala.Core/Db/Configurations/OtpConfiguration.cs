@@ -4,31 +4,38 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Asala.Core.Db.Configurations;
 
-public class UserConfiguration : IEntityTypeConfiguration<User>
+public class OtpConfiguration : IEntityTypeConfiguration<Otp>
 {
-    public void Configure(EntityTypeBuilder<User> builder)
+    public void Configure(EntityTypeBuilder<Otp> builder)
     {
-        builder.ToTable("User");
+        builder.ToTable("Otp");
         
         builder.HasKey(e => e.Id);
         
-        builder.Property(e => e.Email)
-            .IsRequired()
-            .HasMaxLength(100)
-            .IsUnicode(false);
-            
         builder.Property(e => e.PhoneNumber)
-            .IsRequired(false)
+            .IsRequired()
             .HasMaxLength(20)
             .IsUnicode(false);
             
-        builder.Property(e => e.PasswordHash)
-            .IsRequired(false) // Optional - only for Employee users
-            .HasMaxLength(200)
+        builder.Property(e => e.Code)
+            .IsRequired()
+            .HasMaxLength(6)
             .IsUnicode(false);
             
-        builder.Property(e => e.LocationId)
-            .IsRequired(false);
+        builder.Property(e => e.ExpiresAt)
+            .HasColumnType("datetime")
+            .IsRequired();
+            
+        builder.Property(e => e.IsUsed)
+            .HasDefaultValue(false);
+            
+        builder.Property(e => e.Purpose)
+            .IsRequired()
+            .HasMaxLength(50)
+            .IsUnicode(false);
+            
+        builder.Property(e => e.AttemptsCount)
+            .HasDefaultValue(0);
             
         // Base entity properties
         builder.Property(e => e.IsActive)
@@ -50,9 +57,9 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired(false);
             
         // Indexes
-        builder.HasIndex(e => e.Email).IsUnique();
-        builder.HasIndex(e => e.PhoneNumber).IsUnique();
+        builder.HasIndex(e => e.PhoneNumber);
+        builder.HasIndex(e => new { e.PhoneNumber, e.Purpose, e.IsUsed });
+        builder.HasIndex(e => e.ExpiresAt);
         builder.HasIndex(e => new { e.IsActive, e.IsDeleted });
-        builder.HasIndex(e => e.Id).IsUnique();
     }
 }

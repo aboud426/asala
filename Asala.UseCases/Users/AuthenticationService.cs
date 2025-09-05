@@ -15,6 +15,7 @@ public class AuthenticationService : IAuthenticationService
     private readonly ICustomerRepository _customerRepository;
     private readonly IProviderRepository _providerRepository;
     private readonly IEmployeeRepository _employeeRepository;
+    private readonly IOtpService _otpService;
     private readonly IUnitOfWork _unitOfWork;
 
     public AuthenticationService(
@@ -22,43 +23,56 @@ public class AuthenticationService : IAuthenticationService
         ICustomerRepository customerRepository,
         IProviderRepository providerRepository,
         IEmployeeRepository employeeRepository,
+        IOtpService otpService,
         IUnitOfWork unitOfWork)
     {
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         _customerRepository = customerRepository ?? throw new ArgumentNullException(nameof(customerRepository));
         _providerRepository = providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
         _employeeRepository = employeeRepository ?? throw new ArgumentNullException(nameof(employeeRepository));
+        _otpService = otpService ?? throw new ArgumentNullException(nameof(otpService));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
     }
 
     public async Task<Result<AuthResponseDto>> LoginCustomerAsync(
-        LoginDto loginDto,
+        CustomerLoginDto loginDto,
         CancellationToken cancellationToken = default)
     {
         if (loginDto == null)
             return Result.Failure<AuthResponseDto>(MessageCodes.ENTITY_NULL);
 
-        var validationResult = ValidateLoginDto(loginDto);
+        var validationResult = ValidateCustomerLoginDto(loginDto);
         if (validationResult.IsFailure)
             return Result.Failure<AuthResponseDto>(validationResult.MessageCode);
 
-        // Get user by email
-        var userResult = await _userRepository.GetByEmailAsync(loginDto.Email, cancellationToken);
+        // Verify OTP first
+        var otpVerifyDto = new VerifyOtpDto
+        {
+            PhoneNumber = loginDto.PhoneNumber,
+            Code = loginDto.OtpCode,
+            Purpose = "Login"
+        };
+
+        var otpResult = await _otpService.VerifyOtpAsync(otpVerifyDto, cancellationToken);
+        if (otpResult.IsFailure)
+            return Result.Failure<AuthResponseDto>(otpResult.MessageCode);
+
+        if (!otpResult.Value)
+            return Result.Failure<AuthResponseDto>("Invalid or expired OTP");
+
+        // Get user by phone number
+        var userResult = await _userRepository.GetByPhoneNumberAsync(loginDto.PhoneNumber, cancellationToken);
         if (userResult.IsFailure)
             return Result.Failure<AuthResponseDto>(userResult.MessageCode);
 
         if (userResult.Value == null)
-            return Result.Failure<AuthResponseDto>("Invalid email or password");
+            return Result.Failure<AuthResponseDto>("User not found");
 
         var user = userResult.Value;
 
         // Check if user is active
         if (!user.IsActive || user.IsDeleted)
             return Result.Failure<AuthResponseDto>("Account is not active");
-
-        // Verify password
-        if (!VerifyPassword(loginDto.Password, user.PasswordHash))
-            return Result.Failure<AuthResponseDto>("Invalid email or password");
 
         // Check if customer exists
         var customerResult = await _customerRepository.GetAsync(
@@ -85,33 +99,44 @@ public class AuthenticationService : IAuthenticationService
     }
 
     public async Task<Result<AuthResponseDto>> LoginProviderAsync(
-        LoginDto loginDto,
+        ProviderLoginDto loginDto,
         CancellationToken cancellationToken = default)
     {
         if (loginDto == null)
             return Result.Failure<AuthResponseDto>(MessageCodes.ENTITY_NULL);
 
-        var validationResult = ValidateLoginDto(loginDto);
+        var validationResult = ValidateProviderLoginDto(loginDto);
         if (validationResult.IsFailure)
             return Result.Failure<AuthResponseDto>(validationResult.MessageCode);
 
-        // Get user by email
-        var userResult = await _userRepository.GetByEmailAsync(loginDto.Email, cancellationToken);
+        // Verify OTP first
+        var otpVerifyDto = new VerifyOtpDto
+        {
+            PhoneNumber = loginDto.PhoneNumber,
+            Code = loginDto.OtpCode,
+            Purpose = "Login"
+        };
+
+        var otpResult = await _otpService.VerifyOtpAsync(otpVerifyDto, cancellationToken);
+        if (otpResult.IsFailure)
+            return Result.Failure<AuthResponseDto>(otpResult.MessageCode);
+
+        if (!otpResult.Value)
+            return Result.Failure<AuthResponseDto>("Invalid or expired OTP");
+
+        // Get user by phone number
+        var userResult = await _userRepository.GetByPhoneNumberAsync(loginDto.PhoneNumber, cancellationToken);
         if (userResult.IsFailure)
             return Result.Failure<AuthResponseDto>(userResult.MessageCode);
 
         if (userResult.Value == null)
-            return Result.Failure<AuthResponseDto>("Invalid email or password");
+            return Result.Failure<AuthResponseDto>("User not found");
 
         var user = userResult.Value;
 
         // Check if user is active
         if (!user.IsActive || user.IsDeleted)
             return Result.Failure<AuthResponseDto>("Account is not active");
-
-        // Verify password
-        if (!VerifyPassword(loginDto.Password, user.PasswordHash))
-            return Result.Failure<AuthResponseDto>("Invalid email or password");
 
         // Check if provider exists
         var providerResult = await _providerRepository.GetAsync(
@@ -264,6 +289,34 @@ public class AuthenticationService : IAuthenticationService
 
         if (!IsValidEmail(loginDto.Email))
             return Result.Failure(MessageCodes.USER_EMAIL_INVALID_FORMAT);
+
+        return Result.Success();
+    }
+
+    private Result ValidateCustomerLoginDto(CustomerLoginDto loginDto)
+    {
+        if (string.IsNullOrWhiteSpace(loginDto.PhoneNumber))
+            return Result.Failure("Phone number is required");
+
+        if (string.IsNullOrWhiteSpace(loginDto.OtpCode))
+            return Result.Failure("OTP code is required");
+
+        if (loginDto.OtpCode.Length != 6 || !loginDto.OtpCode.All(char.IsDigit))
+            return Result.Failure("OTP code must be 6 digits");
+
+        return Result.Success();
+    }
+
+    private Result ValidateProviderLoginDto(ProviderLoginDto loginDto)
+    {
+        if (string.IsNullOrWhiteSpace(loginDto.PhoneNumber))
+            return Result.Failure("Phone number is required");
+
+        if (string.IsNullOrWhiteSpace(loginDto.OtpCode))
+            return Result.Failure("OTP code is required");
+
+        if (loginDto.OtpCode.Length != 6 || !loginDto.OtpCode.All(char.IsDigit))
+            return Result.Failure("OTP code must be 6 digits");
 
         return Result.Success();
     }

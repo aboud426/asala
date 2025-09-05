@@ -28,11 +28,47 @@ public class UserRepository : Repository<User, int>, IUserRepository
         }
     }
 
+    public async Task<Result<User?>> GetByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var user = await _dbSet
+                .Where(u => !u.IsDeleted)
+                .FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber, cancellationToken);
+
+            return Result.Success(user);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<User?>(MessageCodes.DB_ERROR, ex);
+        }
+    }
+
     public async Task<Result<bool>> ExistsByEmailAsync(string email, int? excludeId = null, CancellationToken cancellationToken = default)
     {
         try
         {
             var query = _dbSet.Where(u => !u.IsDeleted && u.Email.ToLower() == email.ToLower());
+
+            if (excludeId.HasValue)
+            {
+                query = query.Where(u => u.Id != excludeId.Value);
+            }
+
+            var exists = await query.AnyAsync(cancellationToken);
+            return Result.Success(exists);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<bool>(MessageCodes.DB_ERROR, ex);
+        }
+    }
+
+    public async Task<Result<bool>> ExistsByPhoneNumberAsync(string phoneNumber, int? excludeId = null, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var query = _dbSet.Where(u => !u.IsDeleted && u.PhoneNumber == phoneNumber);
 
             if (excludeId.HasValue)
             {

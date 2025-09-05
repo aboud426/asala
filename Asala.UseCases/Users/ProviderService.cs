@@ -17,6 +17,7 @@ public class ProviderService : IProviderService
     private readonly IProviderLocalizedRepository _providerLocalizedRepository;
     private readonly IUserRepository _userRepository;
     private readonly ILanguageRepository _languageRepository;
+    private readonly IOtpService _otpService;
     private readonly IUnitOfWork _unitOfWork;
 
     public ProviderService(
@@ -24,12 +25,14 @@ public class ProviderService : IProviderService
         IProviderLocalizedRepository providerLocalizedRepository,
         IUserRepository userRepository,
         ILanguageRepository languageRepository,
+        IOtpService otpService,
         IUnitOfWork unitOfWork)
     {
         _providerRepository = providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
         _providerLocalizedRepository = providerLocalizedRepository ?? throw new ArgumentNullException(nameof(providerLocalizedRepository));
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         _languageRepository = languageRepository ?? throw new ArgumentNullException(nameof(languageRepository));
+        _otpService = otpService ?? throw new ArgumentNullException(nameof(otpService));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
     }
 
@@ -117,13 +120,28 @@ public class ProviderService : IProviderService
         if (validationResult.IsFailure)
             return Result.Failure<ProviderDto>(validationResult.MessageCode);
 
-        // Check if email already exists
-        var emailExistsResult = await _userRepository.ExistsByEmailAsync(createDto.Email, cancellationToken: cancellationToken);
-        if (emailExistsResult.IsFailure)
-            return Result.Failure<ProviderDto>(emailExistsResult.MessageCode);
+        // Verify OTP first
+        var otpVerifyDto = new VerifyOtpDto
+        {
+            PhoneNumber = createDto.PhoneNumber,
+            Code = createDto.OtpCode,
+            Purpose = "Registration"
+        };
 
-        if (emailExistsResult.Value)
-            return Result.Failure<ProviderDto>(MessageCodes.USER_EMAIL_ALREADY_EXISTS);
+        var otpResult = await _otpService.VerifyOtpAsync(otpVerifyDto, cancellationToken);
+        if (otpResult.IsFailure)
+            return Result.Failure<ProviderDto>(otpResult.MessageCode);
+
+        if (!otpResult.Value)
+            return Result.Failure<ProviderDto>("Invalid or expired OTP");
+
+        // Check if phone number already exists
+        var phoneExistsResult = await _userRepository.ExistsByPhoneNumberAsync(createDto.PhoneNumber, cancellationToken: cancellationToken);
+        if (phoneExistsResult.IsFailure)
+            return Result.Failure<ProviderDto>(phoneExistsResult.MessageCode);
+
+        if (phoneExistsResult.Value)
+            return Result.Failure<ProviderDto>("Phone number already exists");
 
         // Check parent provider if specified
         if (createDto.ParentId.HasValue)
@@ -147,8 +165,9 @@ public class ProviderService : IProviderService
             // Create User first
             var user = new User
             {
-                Email = createDto.Email.Trim().ToLowerInvariant(),
-                PasswordHash = HashPassword(createDto.Password),
+                Email = $"provider_{createDto.PhoneNumber}@temp.com", // Temporary email since Provider uses phone
+                PhoneNumber = createDto.PhoneNumber.Trim(),
+                PasswordHash = null, // No password for Provider users - they use OTP
                 LocationId = createDto.LocationId,
                 IsActive = createDto.IsActive,
                 CreatedAt = DateTime.UtcNow,
@@ -245,7 +264,9 @@ public class ProviderService : IProviderService
         var userResult = await _userRepository.GetByIdAsync(provider.UserId, cancellationToken);
         if (userResult.IsSuccess && userResult.Value != null)
         {
-            userResult.Value.Email = updateDto.Email.Trim().ToLowerInvariant();
+            // Update phone number only if provided
+            if (!string.IsNullOrWhiteSpace(updateDto.PhoneNumber))
+                userResult.Value.PhoneNumber = updateDto.PhoneNumber.Trim();
             userResult.Value.LocationId = updateDto.LocationId;
             userResult.Value.IsActive = updateDto.IsActive;
             userResult.Value.UpdatedAt = DateTime.UtcNow;
@@ -327,7 +348,7 @@ public class ProviderService : IProviderService
             {
                 UserId = provider.UserId,
                 BusinessName = provider.BusinessName,
-                Email = userResult.IsSuccess && userResult.Value != null ? userResult.Value.Email : string.Empty
+                PhoneNumber = userResult.IsSuccess && userResult.Value != null ? userResult.Value.PhoneNumber : null
             });
         }
 
@@ -490,7 +511,7 @@ public class ProviderService : IProviderService
         return new ProviderDto
         {
             UserId = provider.UserId,
-            Email = userResult.IsSuccess && userResult.Value != null ? userResult.Value.Email : string.Empty,
+            PhoneNumber = userResult.IsSuccess && userResult.Value != null ? userResult.Value.PhoneNumber : null,
             BusinessName = provider.BusinessName,
             Description = provider.Description,
             Rating = provider.Rating,
@@ -537,8 +558,8 @@ public class ProviderService : IProviderService
 
     private Result ValidateCreateDto(CreateProviderDto createDto)
     {
-        if (string.IsNullOrWhiteSpace(createDto.Email))
-            return Result.Failure(MessageCodes.USER_EMAIL_REQUIRED);
+        if (string.IsNullOrWhiteSpace(createDto.PhoneNumber))
+            return Result.Failure("Phone number is required");
 
         if (string.IsNullOrWhiteSpace(createDto.BusinessName))
             return Result.Failure("Business name is required");
@@ -546,28 +567,30 @@ public class ProviderService : IProviderService
         if (string.IsNullOrWhiteSpace(createDto.Description))
             return Result.Failure("Description is required");
 
-        if (!IsValidEmail(createDto.Email))
-            return Result.Failure(MessageCodes.USER_EMAIL_INVALID_FORMAT);
+        if (createDto.PhoneNumber.Length > 20)
+            return Result.Failure("Phone number is too long");
 
-        if (createDto.Password.Length < 6)
-            return Result.Failure(MessageCodes.USER_PASSWORD_TOO_SHORT);
+        // Validate OTP Code
+        if (string.IsNullOrWhiteSpace(createDto.OtpCode))
+            return Result.Failure("OTP code is required");
+
+        if (createDto.OtpCode.Length != 6 || !createDto.OtpCode.All(char.IsDigit))
+            return Result.Failure("OTP code must be 6 digits");
 
         return Result.Success();
     }
 
     private Result ValidateUpdateDto(UpdateProviderDto updateDto)
     {
-        if (string.IsNullOrWhiteSpace(updateDto.Email))
-            return Result.Failure(MessageCodes.USER_EMAIL_REQUIRED);
+        // Phone number is optional for updates
+        if (!string.IsNullOrWhiteSpace(updateDto.PhoneNumber) && updateDto.PhoneNumber.Length > 20)
+            return Result.Failure("Phone number is too long");
 
         if (string.IsNullOrWhiteSpace(updateDto.BusinessName))
             return Result.Failure("Business name is required");
 
         if (string.IsNullOrWhiteSpace(updateDto.Description))
             return Result.Failure("Description is required");
-
-        if (!IsValidEmail(updateDto.Email))
-            return Result.Failure(MessageCodes.USER_EMAIL_INVALID_FORMAT);
 
         return Result.Success();
     }

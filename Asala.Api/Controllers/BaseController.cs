@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Asala.Api.Controllers;
 
+/// <summary>
+/// Base controller providing common functionality for all API controllers
+/// </summary>
 [ApiController]
 public abstract class BaseController : ControllerBase
 {

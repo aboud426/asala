@@ -14,15 +14,18 @@ public class CustomerService : ICustomerService
 {
     private readonly ICustomerRepository _customerRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IOtpService _otpService;
     private readonly IUnitOfWork _unitOfWork;
 
     public CustomerService(
         ICustomerRepository customerRepository,
         IUserRepository userRepository,
+        IOtpService otpService,
         IUnitOfWork unitOfWork)
     {
         _customerRepository = customerRepository;
         _userRepository = userRepository;
+        _otpService = otpService;
         _unitOfWork = unitOfWork;
     }
 
@@ -101,13 +104,28 @@ public class CustomerService : ICustomerService
         if (validationResult.IsFailure)
             return Result.Failure<CustomerDto>(validationResult.MessageCode);
 
-        // Check if email already exists
-        var emailExistsResult = await _userRepository.ExistsByEmailAsync(createDto.Email, cancellationToken: cancellationToken);
-        if (emailExistsResult.IsFailure)
-            return Result.Failure<CustomerDto>(emailExistsResult.MessageCode);
+        // Verify OTP first
+        var otpVerifyDto = new VerifyOtpDto
+        {
+            PhoneNumber = createDto.PhoneNumber,
+            Code = createDto.OtpCode,
+            Purpose = "Registration"
+        };
 
-        if (emailExistsResult.Value)
-            return Result.Failure<CustomerDto>(MessageCodes.USER_EMAIL_ALREADY_EXISTS);
+        var otpResult = await _otpService.VerifyOtpAsync(otpVerifyDto, cancellationToken);
+        if (otpResult.IsFailure)
+            return Result.Failure<CustomerDto>(otpResult.MessageCode);
+
+        if (!otpResult.Value)
+            return Result.Failure<CustomerDto>("Invalid or expired OTP");
+
+        // Check if phone number already exists
+        var phoneExistsResult = await _userRepository.ExistsByPhoneNumberAsync(createDto.PhoneNumber, cancellationToken: cancellationToken);
+        if (phoneExistsResult.IsFailure)
+            return Result.Failure<CustomerDto>(phoneExistsResult.MessageCode);
+
+        if (phoneExistsResult.Value)
+            return Result.Failure<CustomerDto>("Phone number already exists");
 
         // Begin transaction for creating both User and Customer
         var transactionResult = await _unitOfWork.BeginTransactionAsync(cancellationToken);
@@ -119,8 +137,9 @@ public class CustomerService : ICustomerService
             // Create User first
             var user = new User
             {
-                Email = createDto.Email.Trim().ToLowerInvariant(),
-                PasswordHash = HashPassword(createDto.Password),
+                Email = $"customer_{createDto.PhoneNumber}@temp.com", // Temporary email since Customer uses phone
+                PhoneNumber = createDto.PhoneNumber.Trim(),
+                PasswordHash = null, // No password for Customer users - they use OTP
                 LocationId = createDto.LocationId,
                 IsActive = createDto.IsActive,
                 CreatedAt = DateTime.UtcNow,
@@ -214,16 +233,19 @@ public class CustomerService : ICustomerService
         if (user == null)
             return Result.Success<CustomerDto?>(null);
 
-        // Check if email already exists (excluding current user)
-        var emailExistsResult = await _userRepository.ExistsByEmailAsync(updateDto.Email, userId, cancellationToken);
-        if (emailExistsResult.IsFailure)
-            return Result.Failure<CustomerDto?>(emailExistsResult.MessageCode);
+        // Check if phone number already exists (excluding current user) - only if phone number is being updated
+        if (!string.IsNullOrWhiteSpace(updateDto.PhoneNumber))
+        {
+            var phoneExistsResult = await _userRepository.ExistsByPhoneNumberAsync(updateDto.PhoneNumber, userId, cancellationToken);
+            if (phoneExistsResult.IsFailure)
+                return Result.Failure<CustomerDto?>(phoneExistsResult.MessageCode);
 
-        if (emailExistsResult.Value)
-            return Result.Failure<CustomerDto?>(MessageCodes.USER_EMAIL_ALREADY_EXISTS);
+            if (phoneExistsResult.Value)
+                return Result.Failure<CustomerDto?>("Phone number already exists");
 
-        // Update User
-        user.Email = updateDto.Email.Trim().ToLowerInvariant();
+            // Update User phone number
+            user.PhoneNumber = updateDto.PhoneNumber.Trim();
+        }
         user.IsActive = updateDto.IsActive;
         user.UpdatedAt = DateTime.UtcNow;
 
@@ -407,25 +429,19 @@ public class CustomerService : ICustomerService
         if (createDto.Name.Length > 50)
             return Result.Failure(MessageCodes.CUSTOMER_NAME_TOO_LONG);
 
-        // Validate Email
-        if (string.IsNullOrWhiteSpace(createDto.Email))
-            return Result.Failure(MessageCodes.USER_EMAIL_REQUIRED);
+        // Validate Phone Number
+        if (string.IsNullOrWhiteSpace(createDto.PhoneNumber))
+            return Result.Failure("Phone number is required");
 
-        if (createDto.Email.Length > 100)
-            return Result.Failure(MessageCodes.USER_EMAIL_TOO_LONG);
+        if (createDto.PhoneNumber.Length > 20)
+            return Result.Failure("Phone number is too long");
 
-        if (!IsValidEmail(createDto.Email))
-            return Result.Failure(MessageCodes.USER_EMAIL_INVALID_FORMAT);
+        // Validate OTP Code
+        if (string.IsNullOrWhiteSpace(createDto.OtpCode))
+            return Result.Failure("OTP code is required");
 
-        // Validate Password
-        if (string.IsNullOrWhiteSpace(createDto.Password))
-            return Result.Failure(MessageCodes.USER_PASSWORD_REQUIRED);
-
-        if (createDto.Password.Length < 6)
-            return Result.Failure(MessageCodes.USER_PASSWORD_TOO_SHORT);
-
-        if (createDto.Password.Length > 100)
-            return Result.Failure(MessageCodes.USER_PASSWORD_TOO_LONG);
+        if (createDto.OtpCode.Length != 6 || !createDto.OtpCode.All(char.IsDigit))
+            return Result.Failure("OTP code must be 6 digits");
 
         return Result.Success();
     }
@@ -442,15 +458,9 @@ public class CustomerService : ICustomerService
         if (updateDto.Name.Length > 50)
             return Result.Failure(MessageCodes.CUSTOMER_NAME_TOO_LONG);
 
-        // Validate Email
-        if (string.IsNullOrWhiteSpace(updateDto.Email))
-            return Result.Failure(MessageCodes.USER_EMAIL_REQUIRED);
-
-        if (updateDto.Email.Length > 100)
-            return Result.Failure(MessageCodes.USER_EMAIL_TOO_LONG);
-
-        if (!IsValidEmail(updateDto.Email))
-            return Result.Failure(MessageCodes.USER_EMAIL_INVALID_FORMAT);
+        // Validate Phone Number (optional for updates)
+        if (!string.IsNullOrWhiteSpace(updateDto.PhoneNumber) && updateDto.PhoneNumber.Length > 20)
+            return Result.Failure("Phone number is too long");
 
         // Validate Address ID
         if (updateDto.AddressId <= 0)
@@ -476,9 +486,10 @@ public class CustomerService : ICustomerService
             UserId = customer.UserId,
             Name = customer.Name,
             AddressId = customer.AddressId,
-            Email = user?.Email ?? "",
+            PhoneNumber = user?.PhoneNumber,
             IsActive = user?.IsActive ?? false,
             CreatedAt = user?.CreatedAt ?? DateTime.MinValue,
+            UpdatedAt = user?.UpdatedAt ?? DateTime.MinValue
         };
     }
 
@@ -489,9 +500,10 @@ public class CustomerService : ICustomerService
             UserId = customer.UserId,
             Name = customer.Name,
             AddressId = customer.AddressId,
-            Email = "", // Will be populated by service methods when User data is available
+            PhoneNumber = null, // Will be populated by service methods when User data is available
             IsActive = true, // Will be populated by service methods when User data is available
             CreatedAt = DateTime.MinValue, // Will be populated by service methods when User data is available
+            UpdatedAt = DateTime.MinValue // Will be populated by service methods when User data is available
         };
     }
 

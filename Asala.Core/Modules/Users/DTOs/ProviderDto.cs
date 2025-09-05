@@ -9,7 +9,7 @@ public enum ProviderSortBy
 public class ProviderDto
 {
     public int UserId { get; set; } // Primary Key
-    public string Email { get; set; } = null!; // From User table
+    public string? PhoneNumber { get; set; } // From User table
     public string BusinessName { get; set; } = null!;
     public string Description { get; set; } = null!;
     public int Rating { get; set; }
@@ -23,8 +23,8 @@ public class ProviderDto
 
 public class CreateProviderDto
 {
-    public string Email { get; set; } = null!;
-    public string Password { get; set; } = null!;
+    public string PhoneNumber { get; set; } = null!;
+    public string OtpCode { get; set; } = null!; // OTP for phone verification
     public string BusinessName { get; set; } = null!;
     public string Description { get; set; } = null!;
     public int Rating { get; set; }
@@ -36,7 +36,7 @@ public class CreateProviderDto
 
 public class UpdateProviderDto
 {
-    public string Email { get; set; } = null!;
+    public string? PhoneNumber { get; set; }
     public string BusinessName { get; set; } = null!;
     public string Description { get; set; } = null!;
     public int Rating { get; set; }
@@ -50,7 +50,7 @@ public class ProviderDropdownDto
 {
     public int UserId { get; set; } // Primary Key
     public string BusinessName { get; set; } = null!;
-    public string Email { get; set; } = null!;
+    public string? PhoneNumber { get; set; }
 }
 
 public class ProviderTreeDto

@@ -44,6 +44,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEmployeeRepository, EmployeeRepository>();
         services.AddScoped<IProviderRepository, ProviderRepository>();
         services.AddScoped<IProviderLocalizedRepository, ProviderLocalizedRepository>();
+        services.AddScoped<IOtpRepository, OtpRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IPermissionRepository, PermissionRepository>();
         services.AddScoped<IUserRoleRepository, UserRoleRepository>();
@@ -56,6 +57,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICustomerService, CustomerService>();
         services.AddScoped<IProviderService, ProviderService>();
         services.AddScoped<IEmployeeService, EmployeeService>();
+        services.AddScoped<IOtpService, OtpService>();
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         
         return services;
