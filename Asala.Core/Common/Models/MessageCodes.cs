@@ -30,7 +30,7 @@ public static class MessageCodes
     // Language-specific errors
     public const string LANGUAGE_NOT_FOUND = "LANGUAGE_NOT_FOUND";
     public const string LANGUAGE_CODE_ALREADY_EXISTS = "LANGUAGE_CODE_ALREADY_EXISTS";
-    
+
     // Language validation errors
     public const string LANGUAGE_NAME_REQUIRED = "LANGUAGE_NAME_REQUIRED";
     public const string LANGUAGE_NAME_TOO_LONG = "LANGUAGE_NAME_TOO_LONG";
@@ -57,6 +57,14 @@ public static class MessageCodes
     // System errors
     public const string INTERNAL_ERROR = "INTERNAL_ERROR";
 
+    // Image upload errors
+    public const string IMAGE_FILE_REQUIRED = "IMAGE_FILE_REQUIRED";
+    public const string IMAGE_FILE_TOO_LARGE = "IMAGE_FILE_TOO_LARGE";
+    public const string IMAGE_INVALID_FORMAT = "IMAGE_INVALID_FORMAT";
+    public const string IMAGE_UPLOAD_ERROR = "IMAGE_UPLOAD_ERROR";
+    public const string IMAGE_DIRECTORY_CREATE_ERROR = "IMAGE_DIRECTORY_CREATE_ERROR";
+
     // Success messages
     public const string WELCOME_MESSAGE = "WELCOME_MESSAGE";
+    public const string IMAGE_UPLOADED_SUCCESSFULLY = "IMAGE_UPLOADED_SUCCESSFULLY";
 }

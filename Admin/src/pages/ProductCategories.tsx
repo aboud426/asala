@@ -79,6 +79,52 @@ import productCategoryService, {
 import languageService, { LanguageDropdownDto } from '@/services/languageService';
 import MissingProductCategoryTranslationsWarning from '@/components/ui/missing-product-category-translations-warning';
 import MissingProductCategoryTranslationsModal from '@/components/ui/missing-product-category-translations-modal';
+import { ImageUpload } from '@/components/ui/image-upload';
+
+// Default placeholder image as data URI - Professional product category placeholder
+const DEFAULT_PRODUCT_CATEGORY_IMAGE = "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48IS0tIFVwbG9hZGVkIHRvOiBTVkcgUmVwbywgd3d3LnN2Z3JlcG8uY29tLCBHZW5lcmF0b3I6IFNWRyBSZXBvIE1peGVyIFRvb2xzIC0tPgo8c3ZnIHdpZHRoPSI4MDBweCIgaGVpZ2h0PSI4MDBweCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiBmaWxsPSIjRUZGMUYzIi8+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMzMuMjUwMyAzOC40ODE2QzMzLjI2MDMgMzcuMDQ3MiAzNC40MTk5IDM1Ljg4NjQgMzUuODU0MyAzNS44NzVIODMuMTQ2M0M4NC41ODQ4IDM1Ljg3NSA4NS43NTAzIDM3LjA0MzEgODUuNzUwMyAzOC40ODE2VjgwLjUxODRDODUuNzQwMyA4MS45NTI4IDg0LjU4MDcgODMuMTEzNiA4My4xNDYzIDgzLjEyNUgzNS44NTQzQzM0LjQxNTggODMuMTIzNiAzMy4yNTAzIDgxLjk1NyAzMy4yNTAzIDgwLjUxODRWMzguNDgxNlpNODAuNTAwNiA0MS4xMjUxSDM4LjUwMDZWNzcuODc1MUw2Mi44OTIxIDUzLjQ3ODNDNjMuOTE3MiA1Mi40NTM2IDY1LjU3ODggNTIuNDUzNiA2Ni42MDM5IDUzLjQ3ODNMODAuNTAwNiA2Ny40MDEzVjQxLjEyNTFaTTQzLjc1IDUxLjYyNDlDNDMuNzUgNTQuNTI0NCA0Ni4xMDA1IDU2Ljg3NDkgNDkgNTYuODc0OUM1MS44OTk1IDU2Ljg3NDkgNTQuMjUgNTQuNTI0NCA1NC4yNSA1MS42MjQ5QzU0LjI1IDQ4LjcyNTQgNTEuODk5NSA0Ni4zNzQ5IDQ5IDQ2LjM3NDlDNDYuMTAwNSA0Ni4zNzQ5IDQzLjc1IDQ4LjcyNTQgNDMuNzUgNTEuNjI0OVoiIGZpbGw9IiM2ODc3ODciLz4KPC9zdmc+";
+
+// Product Category Avatar Component with error handling and placeholder
+const ProductCategoryAvatar: React.FC<{ productCategory: ProductCategory | null; size?: 'sm' | 'md' | 'lg' }> = ({ productCategory, size = 'sm' }) => {
+  const [imageError, setImageError] = useState(false);
+
+  const sizeClasses = {
+    sm: 'w-8 h-8',
+    md: 'w-12 h-12',
+    lg: 'w-16 h-16'
+  };
+
+  const imageToShow = (productCategory?.imageUrl && !imageError) ? productCategory.imageUrl : DEFAULT_PRODUCT_CATEGORY_IMAGE;
+
+  return (
+    <div className={`${sizeClasses[size]} rounded-full bg-gradient-primary flex items-center justify-center overflow-hidden border-2 border-border/20`}>
+      <img
+        src={imageToShow}
+        alt={productCategory?.name || 'Product Category'}
+        className="w-full h-full object-cover"
+        onError={() => setImageError(true)}
+      />
+    </div>
+  );
+};
+
+// Product Category Image Preview Component for details dialog
+const ProductCategoryImagePreview: React.FC<{ productCategory: ProductCategory | null }> = ({ productCategory }) => {
+  const [imageError, setImageError] = useState(false);
+
+  const imageToShow = (productCategory?.imageUrl && !imageError) ? productCategory.imageUrl : DEFAULT_PRODUCT_CATEGORY_IMAGE;
+
+  return (
+    <div className="w-24 h-24 rounded-lg overflow-hidden border-2 border-border shadow-sm bg-gradient-to-br from-primary/10 to-primary/5">
+      <img
+        src={imageToShow}
+        alt={productCategory?.name || 'Product Category'}
+        className="w-full h-full object-cover"
+        onError={() => setImageError(true)}
+      />
+    </div>
+  );
+};
 
 const ProductCategories: React.FC = () => {
   const { isRTL } = useDirection();
@@ -103,6 +149,7 @@ const ProductCategories: React.FC = () => {
       name: '',
       description: '',
       parentId: null,
+      imageUrl: '',
       isActive: true,
       localizations: [],
     },
@@ -113,6 +160,7 @@ const ProductCategories: React.FC = () => {
       name: '',
       description: '',
       parentId: null,
+      imageUrl: '',
       isActive: true,
       localizations: [],
     },
@@ -146,6 +194,7 @@ const ProductCategories: React.FC = () => {
         name: productCategory.name,
         description: productCategory.description,
         parentId: productCategory.parentId,
+        imageUrl: productCategory.imageUrl || '',
         isActive: productCategory.isActive,
         localizations: productCategory.localizations?.map(loc => ({
           id: loc.id,
@@ -315,6 +364,7 @@ const ProductCategories: React.FC = () => {
       name: productCategory.name,
       description: productCategory.description,
       parentId: productCategory.parentId,
+      imageUrl: productCategory.imageUrl || '',
       isActive: productCategory.isActive,
       localizations: productCategory.localizations?.map(loc => ({
         id: loc.id,
@@ -588,9 +638,7 @@ const ProductCategories: React.FC = () => {
                   <TableRow key={productCategory.id} className={`hover:bg-muted/50 ${isRTL ? 'text-right' : 'text-left'}`}>
                     <TableCell className={isRTL ? 'text-right' : 'text-left'}>
                       <div className={`flex items-center gap-3 ${isRTL ? 'text-right' : 'flex-row'}`}>
-                        <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center">
-                          <ShoppingBag className="h-4 w-4 text-primary-foreground" />
-                        </div>
+                        <ProductCategoryAvatar productCategory={productCategory} />
                         <div>
                           <p className="font-medium">{productCategory.name}</p>
                         </div>
@@ -781,6 +829,24 @@ const ProductCategories: React.FC = () => {
                           ))}
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={createForm.control}
+                  name="imageUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{isRTL ? 'صورة فئة المنتج (اختياري)' : 'Product Category Image (Optional)'}</FormLabel>
+                      <FormControl>
+                        <ImageUpload
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          folder="categories"
+                          placeholder={isRTL ? 'https://example.com/image.jpg' : 'https://example.com/image.jpg'}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -1015,6 +1081,24 @@ const ProductCategories: React.FC = () => {
                 />
                 <FormField
                   control={editForm.control}
+                  name="imageUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{isRTL ? 'صورة فئة المنتج (اختياري)' : 'Product Category Image (Optional)'}</FormLabel>
+                      <FormControl>
+                        <ImageUpload
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          folder="categories"
+                          placeholder={isRTL ? 'https://example.com/image.jpg' : 'https://example.com/image.jpg'}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
                   name="isActive"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
@@ -1200,8 +1284,8 @@ const ProductCategories: React.FC = () => {
         <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
           <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Package className="h-5 w-5 text-primary" />
+              <DialogTitle className="flex items-center gap-3">
+                <ProductCategoryAvatar productCategory={selectedProductCategoryForDetails} size="md" />
                 {isRTL ? 'تفاصيل فئة المنتج' : 'Product Category Details'}
               </DialogTitle>
               <DialogDescription>
@@ -1220,6 +1304,16 @@ const ProductCategories: React.FC = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    {/* Product Category Image */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-muted-foreground">
+                        {isRTL ? 'صورة فئة المنتج' : 'Product Category Image'}
+                      </label>
+                      <div className="p-3 bg-muted/50 rounded-lg flex justify-center">
+                        <ProductCategoryImagePreview productCategory={selectedProductCategoryForDetails} />
+                      </div>
+                    </div>
+
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <label className="text-sm font-medium text-muted-foreground">

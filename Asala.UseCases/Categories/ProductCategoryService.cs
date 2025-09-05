@@ -106,6 +106,7 @@ public class ProductCategoryService : IProductCategoryService
             Name = createDto.Name.Trim(),
             Description = createDto.Description.Trim(),
             ParentId = createDto.ParentId,
+            ImageUrl = createDto.ImageUrl,
             IsActive = createDto.IsActive,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
@@ -179,6 +180,7 @@ public class ProductCategoryService : IProductCategoryService
         productCategory.Value.Name = updateDto.Name.Trim();
         productCategory.Value.Description = updateDto.Description.Trim();
         productCategory.Value.ParentId = updateDto.ParentId;
+        productCategory.Value.ImageUrl = updateDto.ImageUrl;
         productCategory.Value.IsActive = updateDto.IsActive;
         productCategory.Value.UpdatedAt = DateTime.UtcNow;
 
@@ -255,6 +257,7 @@ public class ProductCategoryService : IProductCategoryService
                 Id = pc.Id,
                 Name = pc.Name,
                 ParentId = pc.ParentId,
+                ImageUrl = pc.ImageUrl,
             })
             .ToList();
 
@@ -367,6 +370,7 @@ public class ProductCategoryService : IProductCategoryService
             Name = productCategory.Name,
             Description = productCategory.Description,
             ParentId = productCategory.ParentId,
+            ImageUrl = productCategory.ImageUrl,
             IsActive = productCategory.IsActive,
             Localizations = localizations,
             Children = new List<ProductCategoryTreeDto>(),
@@ -477,6 +481,7 @@ public class ProductCategoryService : IProductCategoryService
             Name = productCategory.Name,
             Description = productCategory.Description,
             ParentId = productCategory.ParentId,
+            ImageUrl = productCategory.ImageUrl,
             IsActive = productCategory.IsActive,
             CreatedAt = productCategory.CreatedAt,
             UpdatedAt = productCategory.UpdatedAt,

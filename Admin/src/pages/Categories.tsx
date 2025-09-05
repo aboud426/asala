@@ -79,8 +79,52 @@ import categoryService, {
 import languageService, { LanguageDropdownDto } from '@/services/languageService';
 import MissingTranslationsWarning from '@/components/ui/missing-translations-warning';
 import MissingTranslationsModal from '@/components/ui/missing-translations-modal';
+import { ImageUpload } from '@/components/ui/image-upload';
 
+// Default placeholder image as data URI - Professional category placeholder
+const DEFAULT_CATEGORY_IMAGE = "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48IS0tIFVwbG9hZGVkIHRvOiBTVkcgUmVwbywgd3d3LnN2Z3JlcG8uY29tLCBHZW5lcmF0b3I6IFNWRyBSZXBvIE1peGVyIFRvb2xzIC0tPgo8c3ZnIHdpZHRoPSI4MDBweCIgaGVpZ2h0PSI4MDBweCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiBmaWxsPSIjRUZGMUYzIi8+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMzMuMjUwMyAzOC40ODE2QzMzLjI2MDMgMzcuMDQ3MiAzNC40MTk5IDM1Ljg4NjQgMzUuODU0MyAzNS44NzVIODMuMTQ2M0M4NC41ODQ4IDM1Ljg3NSA4NS43NTAzIDM3LjA0MzEgODUuNzUwMyAzOC40ODE2VjgwLjUxODRDODUuNzQwMyA4MS45NTI4IDg0LjU4MDcgODMuMTEzNiA4My4xNDYzIDgzLjEyNUgzNS44NTQzQzM0LjQxNTggODMuMTIzNiAzMy4yNTAzIDgxLjk1NyAzMy4yNTAzIDgwLjUxODRWMzguNDgxNlpNODAuNTAwNiA0MS4xMjUxSDM4LjUwMDZWNzcuODc1MUw2Mi44OTIxIDUzLjQ3ODNDNjMuOTE3MiA1Mi40NTM2IDY1LjU3ODggNTIuNDUzNiA2Ni42MDM5IDUzLjQ3ODNMODAuNTAwNiA2Ny40MDEzVjQxLjEyNTFaTTQzLjc1IDUxLjYyNDlDNDMuNzUgNTQuNTI0NCA0Ni4xMDA1IDU2Ljg3NDkgNDkgNTYuODc0OUM1MS44OTk1IDU2Ljg3NDkgNTQuMjUgNTQuNTI0NCA1NC4yNSA1MS42MjQ5QzU0LjI1IDQ4LjcyNTQgNTEuODk5NSA0Ni4zNzQ5IDQ5IDQ2LjM3NDlDNDYuMTAwNSA0Ni4zNzQ5IDQzLjc1IDQ4LjcyNTQgNDMuNzUgNTEuNjI0OVoiIGZpbGw9IiM2ODc3ODciLz4KPC9zdmc+";
 
+// Category Avatar Component with error handling and placeholder
+const CategoryAvatar: React.FC<{ category: Category | null; size?: 'sm' | 'md' | 'lg' }> = ({ category, size = 'sm' }) => {
+  const [imageError, setImageError] = useState(false);
+
+  const sizeClasses = {
+    sm: 'w-8 h-8',
+    md: 'w-12 h-12',
+    lg: 'w-16 h-16'
+  };
+
+  const imageToShow = (category?.imageUrl && !imageError) ? category.imageUrl : DEFAULT_CATEGORY_IMAGE;
+
+  return (
+    <div className={`${sizeClasses[size]} rounded-full bg-gradient-primary flex items-center justify-center overflow-hidden border-2 border-border/20`}>
+      <img
+        src={imageToShow}
+        alt={category?.name || 'Category'}
+        className="w-full h-full object-cover"
+        onError={() => setImageError(true)}
+      />
+    </div>
+  );
+};
+
+// Category Image Preview Component for details dialog
+const CategoryImagePreview: React.FC<{ category: Category | null }> = ({ category }) => {
+  const [imageError, setImageError] = useState(false);
+
+  const imageToShow = (category?.imageUrl && !imageError) ? category.imageUrl : DEFAULT_CATEGORY_IMAGE;
+
+  return (
+    <div className="w-24 h-24 rounded-lg overflow-hidden border-2 border-border shadow-sm bg-gradient-to-br from-primary/10 to-primary/5">
+      <img
+        src={imageToShow}
+        alt={category?.name || 'Category'}
+        className="w-full h-full object-cover"
+        onError={() => setImageError(true)}
+      />
+    </div>
+  );
+};
 
 const Categories: React.FC = () => {
   const { isRTL } = useDirection();
@@ -105,6 +149,7 @@ const Categories: React.FC = () => {
       name: '',
       description: '',
       parentId: null,
+      imageUrl: '',
       isActive: true,
       localizations: [],
     },
@@ -115,6 +160,7 @@ const Categories: React.FC = () => {
       name: '',
       description: '',
       parentId: null,
+      imageUrl: '',
       isActive: true,
       localizations: [],
     },
@@ -147,6 +193,7 @@ const Categories: React.FC = () => {
         name: category.name,
         description: category.description,
         parentId: category.parentId,
+        imageUrl: category.imageUrl || '',
         isActive: category.isActive,
         localizations: category.localizations?.map(loc => ({
           id: loc.id,
@@ -317,6 +364,7 @@ const Categories: React.FC = () => {
       name: category.name,
       description: category.description,
       parentId: category.parentId,
+      imageUrl: category.imageUrl || '',
       isActive: category.isActive,
       localizations: category.localizations?.map(loc => ({
         id: loc.id,
@@ -567,9 +615,7 @@ const Categories: React.FC = () => {
                     <TableRow key={category.id} className={`hover:bg-muted/50 ${isRTL ? 'text-right' : 'text-left'}`}>
                       <TableCell className={isRTL ? 'text-right' : 'text-left'}>
                         <div className={`flex items-center gap-3 ${isRTL ? 'text-right' : 'flex-row'}`}>
-                          <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center">
-                            <Folder className="h-4 w-4 text-primary-foreground" />
-                          </div>
+                          <CategoryAvatar category={category} />
                           <div>
                             <p className="font-medium">{category.name}</p>
                           </div>
@@ -750,6 +796,24 @@ const Categories: React.FC = () => {
                           ))}
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={createForm.control}
+                  name="imageUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{isRTL ? 'صورة الفئة (اختياري)' : 'Category Image (Optional)'}</FormLabel>
+                      <FormControl>
+                        <ImageUpload
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          folder="categories"
+                          placeholder={isRTL ? 'https://example.com/image.jpg' : 'https://example.com/image.jpg'}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -961,6 +1025,24 @@ const Categories: React.FC = () => {
                 />
                 <FormField
                   control={editForm.control}
+                  name="imageUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{isRTL ? 'صورة الفئة (اختياري)' : 'Category Image (Optional)'}</FormLabel>
+                      <FormControl>
+                        <ImageUpload
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          folder="categories"
+                          placeholder={isRTL ? 'https://example.com/image.jpg' : 'https://example.com/image.jpg'}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
                   name="isActive"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
@@ -1124,9 +1206,7 @@ const Categories: React.FC = () => {
           <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center">
-                  <Folder className="h-5 w-5 text-primary-foreground" />
-                </div>
+                <CategoryAvatar category={selectedCategoryForDetails} size="md" />
                 {isRTL ? 'تفاصيل الفئة' : 'Category Details'}
               </DialogTitle>
               <DialogDescription>
@@ -1145,6 +1225,16 @@ const Categories: React.FC = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    {/* Category Image */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-muted-foreground">
+                        {isRTL ? 'صورة الفئة' : 'Category Image'}
+                      </label>
+                      <div className="p-3 bg-muted/50 rounded-lg flex justify-center">
+                        <CategoryImagePreview category={selectedCategoryForDetails} />
+                      </div>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-muted-foreground">

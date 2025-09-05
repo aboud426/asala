@@ -102,6 +102,7 @@ public class CategoryService : ICategoryService
             Name = createDto.Name.Trim(),
             Description = createDto.Description.Trim(),
             ParentId = createDto.ParentId,
+            ImageUrl = createDto.ImageUrl,
             IsActive = createDto.IsActive,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
@@ -170,6 +171,7 @@ public class CategoryService : ICategoryService
         category.Value.Name = updateDto.Name.Trim();
         category.Value.Description = updateDto.Description.Trim();
         category.Value.ParentId = updateDto.ParentId;
+        category.Value.ImageUrl = updateDto.ImageUrl;
         category.Value.IsActive = updateDto.IsActive;
         category.Value.UpdatedAt = DateTime.UtcNow;
 
@@ -244,6 +246,7 @@ public class CategoryService : ICategoryService
                 Id = c.Id,
                 Name = c.Name,
                 ParentId = c.ParentId,
+                ImageUrl = c.ImageUrl,
             })
             .ToList();
 
@@ -352,6 +355,7 @@ public class CategoryService : ICategoryService
             Name = category.Name,
             Description = category.Description,
             ParentId = category.ParentId,
+            ImageUrl = category.ImageUrl,
             IsActive = category.IsActive,
             Localizations = localizations,
             Children = new List<CategoryTreeDto>(),
@@ -456,6 +460,7 @@ public class CategoryService : ICategoryService
             Name = category.Name,
             Description = category.Description,
             ParentId = category.ParentId,
+            ImageUrl = category.ImageUrl,
             IsActive = category.IsActive,
             CreatedAt = category.CreatedAt,
             UpdatedAt = category.UpdatedAt,

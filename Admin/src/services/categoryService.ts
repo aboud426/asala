@@ -33,6 +33,7 @@ export interface Category {
     name: string;
     description: string;
     parentId?: number | null;
+    imageUrl?: string | null;
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
@@ -43,6 +44,7 @@ export interface CreateCategoryDto {
     name: string;
     description: string;
     parentId?: number | null;
+    imageUrl?: string | null;
     isActive?: boolean;
     localizations?: CreateCategoryLocalizedDto[];
 }
@@ -51,6 +53,7 @@ export interface UpdateCategoryDto {
     name: string;
     description: string;
     parentId?: number | null;
+    imageUrl?: string | null;
     isActive: boolean;
     localizations?: UpdateCategoryLocalizedDto[];
 }
@@ -59,6 +62,7 @@ export interface CategoryDropdownDto {
     id: number;
     name: string;
     parentId?: number | null;
+    imageUrl?: string | null;
 }
 
 export interface CategoryTreeDto {
@@ -66,6 +70,7 @@ export interface CategoryTreeDto {
     name: string;
     description: string;
     parentId?: number | null;
+    imageUrl?: string | null;
     isActive: boolean;
     localizations: CategoryLocalizedDto[];
     children: CategoryTreeDto[];

@@ -33,6 +33,7 @@ export interface ProductCategory {
     name: string;
     description: string;
     parentId?: number | null;
+    imageUrl?: string;
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
@@ -43,6 +44,7 @@ export interface CreateProductCategoryDto {
     name: string;
     description: string;
     parentId?: number | null;
+    imageUrl?: string;
     isActive?: boolean;
     localizations?: CreateProductCategoryLocalizedDto[];
 }
@@ -51,6 +53,7 @@ export interface UpdateProductCategoryDto {
     name: string;
     description: string;
     parentId?: number | null;
+    imageUrl?: string;
     isActive: boolean;
     localizations?: UpdateProductCategoryLocalizedDto[];
 }
@@ -59,6 +62,7 @@ export interface ProductCategoryDropdownDto {
     id: number;
     name: string;
     parentId?: number | null;
+    imageUrl?: string;
 }
 
 export interface ProductCategoryTreeDto {
@@ -66,6 +70,7 @@ export interface ProductCategoryTreeDto {
     name: string;
     description: string;
     parentId?: number | null;
+    imageUrl?: string;
     isActive: boolean;
     localizations: ProductCategoryLocalizedDto[];
     children: ProductCategoryTreeDto[];

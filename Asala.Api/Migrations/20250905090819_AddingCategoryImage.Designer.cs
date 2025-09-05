@@ -4,6 +4,7 @@ using Asala.Core.Db;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Asala.Api.Migrations
 {
     [DbContext(typeof(AsalaDbContext))]
-    partial class AsalaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250905090819_AddingCategoryImage")]
+    partial class AddingCategoryImage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -136,10 +139,6 @@ namespace Asala.Api.Migrations
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("ImageUrl")
-                        .HasMaxLength(1024)
-                        .HasColumnType("nvarchar(1024)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
