@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using System.Collections.Generic;
 using Asala.Core.Common.Abstractions;
 using Asala.Core.Common.Models;
 using Asala.Core.Db;
@@ -498,11 +499,12 @@ public class ProductService : IProductService
                 return Result.Failure<ProductDto?>(updateProductResult.MessageCode);
             }
 
-            // Update Media: Remove existing and add new ones
+            // Update Media: Replace all existing with new ones
             var existingMedia = await _productMediaRepository.GetAsync(pm =>
                 pm.ProductId == id && !pm.IsDeleted
             );
 
+            // Mark all existing media as deleted
             if (existingMedia.IsSuccess && existingMedia.Value != null)
             {
                 foreach (var media in existingMedia.Value)
@@ -540,22 +542,23 @@ public class ProductService : IProductService
                 }
             }
 
-            // Update Product Localizations: Remove existing and add new ones
+            // Update Product Localizations: Update existing and add new ones
             var existingLocalizations = await _productLocalizedRepository.GetAsync(pl =>
                 pl.ProductId == id && !pl.IsDeleted
             );
 
+            var existingLocalizationsDict = new Dictionary<int, ProductLocalized>();
             if (existingLocalizations.IsSuccess && existingLocalizations.Value != null)
             {
                 foreach (var localization in existingLocalizations.Value)
                 {
-                    localization.IsDeleted = true;
-                    localization.UpdatedAt = DateTime.UtcNow;
-                    _productLocalizedRepository.Update(localization);
+                    existingLocalizationsDict[localization.LanguageId] = localization;
                 }
             }
 
-            // Create new localizations
+            var incomingLanguageIds = new HashSet<int>();
+
+            // Process incoming localizations - update existing or create new
             foreach (var localizationDto in updateDto.Localizations)
             {
                 // Validate that Language exists
@@ -566,25 +569,52 @@ public class ProductService : IProductService
                 if (languageExistsResult.IsFailure || !languageExistsResult.Value)
                     continue;
 
-                var productLocalized = new ProductLocalized
-                {
-                    ProductId = id,
-                    LanguageId = localizationDto.LanguageId,
-                    NameLocalized = localizationDto.NameLocalized.Trim(),
-                    DescriptionLocalized = localizationDto.DescriptionLocalized?.Trim(),
-                    IsActive = localizationDto.IsActive,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                };
+                incomingLanguageIds.Add(localizationDto.LanguageId);
 
-                var addLocalizedResult = await _productLocalizedRepository.AddAsync(
-                    productLocalized,
-                    cancellationToken
-                );
-                if (addLocalizedResult.IsFailure)
+                if (existingLocalizationsDict.TryGetValue(localizationDto.LanguageId, out var existingLocalization))
                 {
-                    await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-                    return Result.Failure<ProductDto?>(addLocalizedResult.MessageCode);
+                    // Update existing localization
+                    existingLocalization.NameLocalized = localizationDto.NameLocalized.Trim();
+                    existingLocalization.DescriptionLocalized = localizationDto.DescriptionLocalized?.Trim();
+                    existingLocalization.IsActive = localizationDto.IsActive;
+                    existingLocalization.UpdatedAt = DateTime.UtcNow;
+                    
+                    _productLocalizedRepository.Update(existingLocalization);
+                }
+                else
+                {
+                    // Create new localization
+                    var productLocalized = new ProductLocalized
+                    {
+                        ProductId = id,
+                        LanguageId = localizationDto.LanguageId,
+                        NameLocalized = localizationDto.NameLocalized.Trim(),
+                        DescriptionLocalized = localizationDto.DescriptionLocalized?.Trim(),
+                        IsActive = localizationDto.IsActive,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow,
+                    };
+
+                    var addLocalizedResult = await _productLocalizedRepository.AddAsync(
+                        productLocalized,
+                        cancellationToken
+                    );
+                    if (addLocalizedResult.IsFailure)
+                    {
+                        await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                        return Result.Failure<ProductDto?>(addLocalizedResult.MessageCode);
+                    }
+                }
+            }
+
+            // Mark any existing localizations that weren't in the update as deleted
+            foreach (var kvp in existingLocalizationsDict)
+            {
+                if (!incomingLanguageIds.Contains(kvp.Key))
+                {
+                    kvp.Value.IsDeleted = true;
+                    kvp.Value.UpdatedAt = DateTime.UtcNow;
+                    _productLocalizedRepository.Update(kvp.Value);
                 }
             }
 
@@ -602,8 +632,8 @@ public class ProductService : IProductService
                 return Result.Failure<ProductDto?>(commitResult.MessageCode);
             }
 
-            var dto = await MapToDtoAsync(product, cancellationToken);
-            return Result.Success<ProductDto?>(dto);
+            // var dto = await MapToDtoAsync(product, cancellationToken);
+            return Result.Success<ProductDto?>(new ProductDto { Id = product.Id });
         }
         catch (Exception)
         {

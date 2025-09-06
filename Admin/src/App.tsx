@@ -27,6 +27,8 @@ import RolePermissions from "./pages/RolePermissions";
 import Permissions from "./pages/Permissions";
 import Currencies from "./pages/Currencies";
 import CreateProduct from "./pages/CreateProduct";
+import ProductDetails from "./pages/ProductDetails";
+import EditProduct from "./pages/EditProduct";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +46,8 @@ const App = () => (
               <Route path="/orders" element={<Orders />} />
               <Route path="/products" element={<Products />} />
               <Route path="/products/create" element={<CreateProduct />} />
+              <Route path="/products/:id/edit" element={<EditProduct />} />
+              <Route path="/products/:id" element={<ProductDetails />} />
               <Route path="/customers" element={<Customers />} />
               <Route path="/providers" element={<Providers />} />
               <Route path="/providers/create" element={<CreateProvider />} />
