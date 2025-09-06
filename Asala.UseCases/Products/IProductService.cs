@@ -18,4 +18,15 @@ public interface IProductService
         bool? activeOnly = null,
         CancellationToken cancellationToken = default
     );
+
+    Task<Result<ProductDto?>> UpdateWithMediaAsync(
+        int id,
+        UpdateProductWithMediaDto updateDto,
+        CancellationToken cancellationToken = default
+    );
+
+    Task<Result<ProductDto?>> GetByIdAsync(
+        int id,
+        CancellationToken cancellationToken = default
+    );
 }

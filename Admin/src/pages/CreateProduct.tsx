@@ -39,6 +39,7 @@ import productService, {
   CreateProductWithMediaDto,
   CreateProductLocalizedDto,
   ProviderDropdownDto,
+  CurrencyDropdownDto,
 } from '@/services/productService';
 import productCategoryService, {
   ProductCategoryDropdownDto,
@@ -51,6 +52,7 @@ interface CreateProductFormData {
   providerId: number;
   price: number;
   quantity: number;
+  currencyId: number;
   description: string;
   isActive: boolean;
   localizations: CreateProductLocalizedDto[];
@@ -80,6 +82,12 @@ const CreateProduct: React.FC = () => {
     queryFn: () => languageService.getLanguagesDropdown(),
   });
 
+  // Query to get currencies for dropdown
+  const { data: currencies = [] } = useQuery({
+    queryKey: ['currencies', 'dropdown'],
+    queryFn: () => productService.getCurrenciesDropdown(),
+  });
+
   // Create product mutation
   const createMutation = useMutation({
     mutationFn: productService.createProduct,
@@ -100,6 +108,7 @@ const CreateProduct: React.FC = () => {
       providerId: 0,
       price: 0,
       quantity: 1,
+      currencyId: 0,
       description: '',
       isActive: true,
       localizations: [],
@@ -125,6 +134,7 @@ const CreateProduct: React.FC = () => {
         providerId: data.providerId,
         price: data.price,
         quantity: data.quantity,
+        currencyId: data.currencyId,
         description: data.description,
         isActive: data.isActive,
         localizeds: data.localizations,
@@ -301,6 +311,40 @@ const CreateProduct: React.FC = () => {
                             onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                           />
                         </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="currencyId"
+                    rules={{ 
+                      required: isRTL ? 'العملة مطلوبة' : 'Currency is required',
+                      validate: (value) => value > 0 || (isRTL ? 'يرجى اختيار عملة' : 'Please select a currency')
+                    }}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{isRTL ? 'العملة' : 'Currency'}</FormLabel>
+                        <Select
+                          value={field.value?.toString() || ''}
+                          onValueChange={(value) => field.onChange(parseInt(value))}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue
+                                placeholder={isRTL ? 'اختر العملة' : 'Select currency'}
+                              />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {currencies.map((currency) => (
+                              <SelectItem key={currency.id} value={currency.id.toString()}>
+                                {currency.symbol} {currency.code} - {currency.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}

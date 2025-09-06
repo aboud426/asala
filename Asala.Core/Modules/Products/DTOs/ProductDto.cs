@@ -20,6 +20,10 @@ public class ProductDto
     public string? ProviderName { get; set; }
     public decimal Price { get; set; }
     public int Quantity { get; set; }
+    public int CurrencyId { get; set; }
+    public string CurrencyName { get; set; } = null!;
+    public string CurrencyCode { get; set; } = null!;
+    public string CurrencySymbol { get; set; } = null!;
     public string? Description { get; set; }
     public string? LocalizedDescription { get; set; }
     public bool IsActive { get; set; }
@@ -36,6 +40,7 @@ public class CreateProductDto
     public int ProviderId { get; set; }
     public decimal Price { get; set; }
     public int Quantity { get; set; }
+    public int CurrencyId { get; set; }
     public string? Description { get; set; }
     public bool IsActive { get; set; } = true;
     public List<CreateProductLocalizedDto> Localizations { get; set; } = [];
@@ -48,6 +53,7 @@ public class UpdateProductDto
     public int ProviderId { get; set; }
     public decimal Price { get; set; }
     public int Quantity { get; set; }
+    public int CurrencyId { get; set; }
     public string? Description { get; set; }
     public bool IsActive { get; set; }
     public List<UpdateProductLocalizedDto> Localizations { get; set; } = [];
@@ -58,6 +64,9 @@ public class ProductDropdownDto
     public int Id { get; set; }
     public string Name { get; set; } = null!;
     public decimal Price { get; set; }
+    public int CurrencyId { get; set; }
+    public string CurrencyCode { get; set; } = null!;
+    public string CurrencySymbol { get; set; } = null!;
 }
 
 public class ProductLocalizedDropdownDto
@@ -65,6 +74,9 @@ public class ProductLocalizedDropdownDto
     public int Id { get; set; }
     public string Name { get; set; } = null!; // Will be localized if available, fallback to original
     public decimal Price { get; set; }
+    public int CurrencyId { get; set; }
+    public string CurrencyCode { get; set; } = null!;
+    public string CurrencySymbol { get; set; } = null!;
 }
 
 public class ProductTreeDto
@@ -74,6 +86,7 @@ public class ProductTreeDto
     public string? Description { get; set; }
     public decimal Price { get; set; }
     public int Quantity { get; set; }
+    public int CurrencyId { get; set; }
     public int CategoryId { get; set; }
     public int ProviderId { get; set; }
     public bool IsActive { get; set; }
@@ -88,6 +101,7 @@ public class CreateProductByAdminDto
     public int ProviderId { get; set; }
     public decimal Price { get; set; }
     public int Quantity { get; set; }
+    public int CurrencyId { get; set; }
     public string? Description { get; set; }
     public bool IsActive { get; set; } = true;
     public List<CreateProductLocalizedDto> Localizations { get; set; } = [];
@@ -101,6 +115,7 @@ public class UpdateProductByAdminDto
     public int ProviderId { get; set; }
     public decimal Price { get; set; }
     public int Quantity { get; set; }
+    public int CurrencyId { get; set; }
     public string? Description { get; set; }
     public bool IsActive { get; set; }
     public List<UpdateProductLocalizedDto> Localizations { get; set; } = [];

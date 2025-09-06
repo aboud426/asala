@@ -38,7 +38,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { useDirection } from '@/contexts/DirectionContext';
-import { ProductDto, PaginatedResult, productService } from '@/services/productService';
+import { ProductDto, PaginatedResult, CurrencyDropdownDto, productService } from '@/services/productService';
 
 // Default placeholder image as data URI
 const DEFAULT_PRODUCT_IMAGE = "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48IS0tIFVwbG9hZGVkIHRvOiBTVkcgUmVwbywgd3d3LnN2Z3JlcG8uY29tLCBHZW5lcmF0b3I6IFNWRyBSZXBvIE1peGVyIFRvb2xzIC0tPgo8c3ZnIHdpZHRoPSI4MDBweCIgaGVpZ2h0PSI4MDBweCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJNMyA3VjE3QzMgMTguMTA0NiAzLjg5NTQzIDE5IDUgMTlIMTlDMjAuMTA0NiAxOSAyMSAxOC4xMDQ2IDIxIDE3VjdNMyA3QzMgNS44OTU0MyAzLjg5NTQzIDUgNSA1SDE5QzIwLjEwNDYgNSAyMSA1Ljg5NTQzIDIxIDdNMyA3SDIxTTkgMTNIMTUiIHN0cm9rZT0iIzY4Nzc4NyIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+";
@@ -73,7 +73,9 @@ const Products: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [currencyFilter, setCurrencyFilter] = useState('all');
   const [paginatedResult, setPaginatedResult] = useState<PaginatedResult<ProductDto> | null>(null);
+  const [currencies, setCurrencies] = useState<CurrencyDropdownDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -90,6 +92,16 @@ const Products: React.FC = () => {
   const handleEditProduct = (productId: number) => {
     navigate(`/products/${productId}/edit`);
   };
+
+  const fetchCurrencies = useCallback(async () => {
+    try {
+      const currenciesData = await productService.getCurrenciesDropdown();
+      setCurrencies(currenciesData);
+    } catch (err) {
+      console.error('Failed to fetch currencies:', err);
+      // Don't show error for currencies as it's not critical
+    }
+  }, []);
 
   const fetchProducts = useCallback(async (page: number = currentPage) => {
     try {
@@ -115,7 +127,8 @@ const Products: React.FC = () => {
 
   useEffect(() => {
     fetchProducts(1);
-  }, [fetchProducts]);
+    fetchCurrencies();
+  }, [fetchProducts, fetchCurrencies]);
 
   // Get current products
   const products = paginatedResult?.items || [];
@@ -124,7 +137,10 @@ const Products: React.FC = () => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.id.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
       (product.localizedName && product.localizedName.toLowerCase().includes(searchTerm.toLowerCase()));
-    return matchesSearch;
+    
+    const matchesCurrency = currencyFilter === 'all' || product.currencyId.toString() === currencyFilter;
+    
+    return matchesSearch && matchesCurrency;
   });
 
   const handlePageChange = (page: number) => {
@@ -167,11 +183,20 @@ const Products: React.FC = () => {
     return <span className="text-success font-medium">{isRTL ? 'متوفر' : 'In Stock'}</span>;
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(price);
+  const formatPrice = (price: number, currencyCode?: string, currencySymbol?: string) => {
+    // If we have currency information, use it; otherwise fallback to USD
+    const currency = currencyCode || 'USD';
+    const symbol = currencySymbol || '$';
+    
+    try {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: currency
+      }).format(price);
+    } catch (error) {
+      // If the currency code is not supported by Intl, use the symbol manually
+      return `${symbol}${price.toFixed(2)}`;
+    }
   };
 
   return (
@@ -345,6 +370,28 @@ const Products: React.FC = () => {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="flex items-center gap-2">
+                      <Filter className="h-4 w-4" />
+                      {isRTL ? 'العملة' : 'Currency'}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => setCurrencyFilter('all')}>
+                      {isRTL ? 'جميع العملات' : 'All Currencies'}
+                    </DropdownMenuItem>
+                    {currencies.map((currency) => (
+                      <DropdownMenuItem 
+                        key={currency.id}
+                        onClick={() => setCurrencyFilter(currency.id.toString())}
+                      >
+                        {currency.symbol} {currency.code} - {currency.name}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </CardContent>
@@ -365,7 +412,7 @@ const Products: React.FC = () => {
                   <TableHead className={isRTL ? 'text-right' : 'text-left'}>{isRTL ? 'المنتج' : 'Product'}</TableHead>
                   <TableHead className={isRTL ? 'text-right' : 'text-left'}>{isRTL ? 'الفئة' : 'Category'}</TableHead>
                   <TableHead className={isRTL ? 'text-right' : 'text-left'}>{isRTL ? 'المزود' : 'Provider'}</TableHead>
-                  <TableHead className={isRTL ? 'text-right' : 'text-left'}>{isRTL ? 'السعر' : 'Price'}</TableHead>
+                  <TableHead className={isRTL ? 'text-right' : 'text-left'}>{isRTL ? 'السعر والعملة' : 'Price & Currency'}</TableHead>
                   <TableHead className={isRTL ? 'text-right' : 'text-left'}>{isRTL ? 'المخزون' : 'Stock'}</TableHead>
                   <TableHead className={isRTL ? 'text-right' : 'text-left'}>{isRTL ? 'الحالة' : 'Status'}</TableHead>
                   <TableHead className="text-center">{isRTL ? 'الإجراءات' : 'Actions'}</TableHead>
@@ -425,7 +472,16 @@ const Products: React.FC = () => {
                           </Badge>
                         </TableCell>
                         <TableCell className={`font-medium ${isRTL ? 'text-right' : 'text-left'}`}>
-                          {formatPrice(product.price)}
+                          <div className="space-y-1">
+                            <p className="font-medium">
+                              {formatPrice(product.price, product.currencyCode, product.currencySymbol)}
+                            </p>
+                            {product.currencyName && (
+                              <p className="text-xs text-muted-foreground">
+                                {product.currencyCode} - {product.currencyName}
+                              </p>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell className={isRTL ? 'text-right' : 'text-left'}>
                           <div className="space-y-1">

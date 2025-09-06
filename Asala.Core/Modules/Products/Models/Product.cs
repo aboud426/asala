@@ -14,7 +14,8 @@ public class Product : BaseEntity<int>
     public Provider Provider { get; set; } = null!;
     public decimal Price { get; set; }
     public int Quantity { get; set; }
-
+    public int CurrencyId { get; set; }
+    public Currency Currency { get; set; } = null!;
     public List<ProductLocalized> ProductLocalizeds { get; set; } = [];
     public List<ProductMedia> ProductMedias { get; set; } = [];
 }

@@ -45,6 +45,27 @@ public class ProductController : BaseController
         return CreateResponse(result);
     }
 
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(
+        [FromRoute] int id,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var result = await _productService.GetByIdAsync(id, cancellationToken);
+        return CreateResponse(result);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(
+        [FromRoute] int id,
+        [FromBody] UpdateProductWithMediaDto updateDto,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var result = await _productService.UpdateWithMediaAsync(id, updateDto, cancellationToken);
+        return CreateResponse(result);
+    }
+
     // [HttpPost("create-post")]
     // public async Task<IActionResult> CreateProductPost(
     //     [FromBody] CreateProductPostDto createDto,

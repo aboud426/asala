@@ -30,10 +30,32 @@ export interface CreateProductWithMediaDto {
     providerId: number;
     price: number;
     quantity: number;
+    currencyId: number;
     description?: string;
     mediaUrls: string[];
     isActive: boolean;
     localizeds: CreateProductLocalizedDto[];
+}
+
+export interface UpdateProductWithMediaDto {
+    name: string;
+    categoryId: number;
+    providerId: number;
+    price: number;
+    quantity: number;
+    currencyId: number;
+    description?: string;
+    mediaUrls: string[];
+    isActive: boolean;
+    localizations: UpdateProductLocalizedDto[];
+}
+
+export interface UpdateProductLocalizedDto {
+    id?: number;
+    languageId: number;
+    nameLocalized: string;
+    descriptionLocalized?: string;
+    isActive: boolean;
 }
 
 export interface ProductDto {
@@ -46,6 +68,10 @@ export interface ProductDto {
     providerName?: string; // Added by API join, not in base DTO
     price: number;
     quantity: number;
+    currencyId: number;
+    currencyName: string;
+    currencyCode: string;
+    currencySymbol: string;
     description?: string;
     localizedDescription?: string;
     isActive: boolean;
@@ -67,6 +93,13 @@ export interface ProviderDropdownDto {
     userId: number;
     businessName: string;
     phoneNumber?: string;
+}
+
+export interface CurrencyDropdownDto {
+    id: number;
+    name: string;
+    code: string;
+    symbol: string;
 }
 
 export interface PaginatedResult<T> {
@@ -149,6 +182,45 @@ class ProductService {
 
         if (!response.success) {
             throw new Error(response.message || 'Failed to create product');
+        }
+
+        if (!response.data) {
+            throw new Error('No data returned from server');
+        }
+
+        return this.processProductDto(response.data);
+    };
+
+    /**
+     * Get product by ID
+     * GET /api/products/{id}
+     */
+    getProductById = async (id: number): Promise<ProductDto> => {
+        const response = await this.request<ProductDto>(`/${id}`);
+
+        if (!response.success) {
+            throw new Error(response.message || 'Failed to get product');
+        }
+
+        if (!response.data) {
+            throw new Error('No data returned from server');
+        }
+
+        return this.processProductDto(response.data);
+    };
+
+    /**
+     * Update product with media
+     * PUT /api/products/{id}
+     */
+    updateProduct = async (id: number, data: UpdateProductWithMediaDto): Promise<ProductDto> => {
+        const response = await this.request<ProductDto>(`/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        });
+
+        if (!response.success) {
+            throw new Error(response.message || 'Failed to update product');
         }
 
         if (!response.data) {
@@ -270,6 +342,36 @@ class ProductService {
 
         if (!data.success) {
             throw new Error(data.message || 'Failed to fetch providers dropdown');
+        }
+
+        if (!data.data) {
+            throw new Error('No data returned from server');
+        }
+
+        return data.data;
+    };
+
+    /**
+     * Get currencies for dropdown/select components
+     * GET /api/currencies/dropdown
+     */
+    getCurrenciesDropdown = async (activeOnly: boolean = true): Promise<CurrencyDropdownDto[]> => {
+        const url = `/api/currencies/dropdown?activeOnly=${activeOnly}`;
+
+        const response = await fetch(url, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data: ApiResponse<CurrencyDropdownDto[]> = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message || 'Failed to fetch currencies dropdown');
         }
 
         if (!data.data) {
