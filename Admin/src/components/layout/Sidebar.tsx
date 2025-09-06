@@ -14,6 +14,7 @@ import {
   FolderTree,
   ShoppingBag,
   Shield,
+  Key,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -84,6 +85,12 @@ const navigationItems = [
     titleAr: 'الأدوار',
     href: '/roles',
     icon: Shield,
+  },
+  {
+    title: 'Permissions',
+    titleAr: 'الصلاحيات',
+    href: '/permissions',
+    icon: Key,
   },
   {
     title: 'Settings',

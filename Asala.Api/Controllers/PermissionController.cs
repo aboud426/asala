@@ -24,9 +24,9 @@ public class PermissionController : BaseController
     /// </summary>
     /// <param name="page">Page number (default: 1)</param>
     /// <param name="pageSize">Number of items per page (default: 10)</param>
-    /// <param name="activeOnly">Filter by active permissions only (default: true)</param>
+    /// <param name="activeOnly">Filter by active permissions only (default: null for all)</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Paginated list of permissions</returns>
+    /// <returns>Paginated list of permissions with localizations</returns>
     /// <response code="200">Permissions retrieved successfully</response>
     /// <response code="400">Invalid pagination parameters</response>
     /// <response code="500">Internal server error</response>
@@ -34,7 +34,7 @@ public class PermissionController : BaseController
     public async Task<IActionResult> GetPaginated(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
-        [FromQuery] bool activeOnly = true,
+        [FromQuery] bool? activeOnly = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -48,21 +48,37 @@ public class PermissionController : BaseController
     }
 
     /// <summary>
-    /// Get permission details by ID
+    /// Get permission details by ID with localizations
     /// </summary>
     /// <param name="id">Permission ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Permission details</returns>
+    /// <returns>Permission details with localizations</returns>
     /// <response code="200">Permission found</response>
     /// <response code="404">Permission not found</response>
     /// <response code="500">Internal server error</response>
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(
-        int id,
+    public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken = default)
+    {
+        var result = await _permissionService.GetByIdAsync(id, cancellationToken);
+        return CreateResponse(result);
+    }
+
+    /// <summary>
+    /// Get permission details by name with localizations
+    /// </summary>
+    /// <param name="name">Permission name</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Permission details with localizations</returns>
+    /// <response code="200">Permission found</response>
+    /// <response code="404">Permission not found</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("by-name/{name}")]
+    public async Task<IActionResult> GetByName(
+        string name,
         CancellationToken cancellationToken = default
     )
     {
-        var result = await _permissionService.GetByIdAsync(id, cancellationToken);
+        var result = await _permissionService.GetByNameAsync(name, cancellationToken);
         return CreateResponse(result);
     }
 
@@ -85,11 +101,11 @@ public class PermissionController : BaseController
     }
 
     /// <summary>
-    /// Create a new permission
+    /// Create a new permission with optional localizations
     /// </summary>
-    /// <param name="createDto">Permission creation data including name and description</param>
+    /// <param name="createDto">Permission creation data including name, description, and optional localizations</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Created permission details</returns>
+    /// <returns>Created permission details with localizations</returns>
     /// <response code="200">Permission created successfully</response>
     /// <response code="400">Invalid permission data or permission name already exists</response>
     /// <response code="500">Internal server error</response>
@@ -104,12 +120,12 @@ public class PermissionController : BaseController
     }
 
     /// <summary>
-    /// Update an existing permission
+    /// Update an existing permission including its localizations
     /// </summary>
     /// <param name="id">Permission ID to update</param>
-    /// <param name="updateDto">Updated permission data</param>
+    /// <param name="updateDto">Updated permission data including localizations</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Updated permission details</returns>
+    /// <returns>Updated permission details with localizations</returns>
     /// <response code="200">Permission updated successfully</response>
     /// <response code="400">Invalid permission data or permission name already exists</response>
     /// <response code="404">Permission not found</response>
@@ -141,6 +157,22 @@ public class PermissionController : BaseController
     )
     {
         var result = await _permissionService.ToggleActivationAsync(id, cancellationToken);
+        return CreateResponse(result);
+    }
+
+    /// <summary>
+    /// Get permissions that are missing translations in one or more active languages
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of permission IDs that need translations</returns>
+    /// <response code="200">Missing translations retrieved successfully</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("missing-translations")]
+    public async Task<IActionResult> GetPermissionsMissingTranslations(
+        CancellationToken cancellationToken = default
+    )
+    {
+        var result = await _permissionService.GetPermissionsMissingTranslationsAsync(cancellationToken);
         return CreateResponse(result);
     }
 

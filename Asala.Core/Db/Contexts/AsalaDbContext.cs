@@ -26,6 +26,7 @@ public class AsalaDbContext : DbContext
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<RoleLocalized> RoleLocalizations => Set<RoleLocalized>();
     public DbSet<Permission> Permissions => Set<Permission>();
+    public DbSet<PermissionLocalized> PermissionLocalizations => Set<PermissionLocalized>();
     public DbSet<UserRole> UserRoles => Set<UserRole>();
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
     public DbSet<Customer> Customers => Set<Customer>();

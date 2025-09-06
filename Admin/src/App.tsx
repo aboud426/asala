@@ -18,6 +18,7 @@ import ProductCategories from "./pages/ProductCategories";
 import ProductCategoriesTree from "./pages/ProductCategoriesTree";
 import Messages from "./pages/Messages";
 import Roles from "./pages/Roles";
+import Permissions from "./pages/Permissions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ const App = () => (
               <Route path="/product-categories/tree" element={<ProductCategoriesTree />} />
               <Route path="/messages" element={<Messages />} />
               <Route path="/roles" element={<Roles />} />
+              <Route path="/permissions" element={<Permissions />} />
               <Route path="/settings" element={<Settings />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

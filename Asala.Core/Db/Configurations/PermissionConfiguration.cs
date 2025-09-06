@@ -14,7 +14,11 @@ public class PermissionConfiguration : IEntityTypeConfiguration<Permission>
         
         builder.Property(e => e.Name)
             .IsRequired()
-            .HasMaxLength(10);
+            .HasMaxLength(100);
+            
+        builder.Property(e => e.Description)
+            .IsRequired()
+            .HasMaxLength(500);
             
         // Base entity properties
         builder.Property(e => e.IsActive)

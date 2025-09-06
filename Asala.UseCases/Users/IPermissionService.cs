@@ -8,12 +8,17 @@ public interface IPermissionService
     Task<Result<PaginatedResult<PermissionDto>>> GetPaginatedAsync(
         int page,
         int pageSize,
-        bool activeOnly = true,
+        bool? activeOnly = null,
         CancellationToken cancellationToken = default
     );
     
     Task<Result<PermissionDto?>> GetByIdAsync(
         int id,
+        CancellationToken cancellationToken = default
+    );
+    
+    Task<Result<PermissionDto?>> GetByNameAsync(
+        string name,
         CancellationToken cancellationToken = default
     );
     
@@ -34,6 +39,10 @@ public interface IPermissionService
     
     Task<Result<IEnumerable<PermissionDropdownDto>>> GetDropdownAsync(
         bool activeOnly = true,
+        CancellationToken cancellationToken = default
+    );
+
+    Task<Result<IEnumerable<int>>> GetPermissionsMissingTranslationsAsync(
         CancellationToken cancellationToken = default
     );
 }

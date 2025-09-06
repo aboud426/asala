@@ -132,6 +132,16 @@ export const searchablePages: SearchableItem[] = [
     keywordsAr: ['أدوار', 'صلاحيات', 'وصول', 'تخويل', 'أمان', 'مستخدمين']
   },
   {
+    id: 'permissions',
+    title: 'Permissions',
+    titleAr: 'الصلاحيات',
+    description: 'Manage user permissions and access control system',
+    descriptionAr: 'إدارة صلاحيات المستخدمين ونظام التحكم في الوصول',
+    href: '/permissions',
+    keywords: ['permissions', 'access', 'authorization', 'security', 'rights', 'privileges', 'control'],
+    keywordsAr: ['صلاحيات', 'وصول', 'تخويل', 'أمان', 'حقوق', 'امتيازات', 'تحكم']
+  },
+  {
     id: 'settings',
     title: 'Settings',
     titleAr: 'الإعدادات',
@@ -145,17 +155,17 @@ export const searchablePages: SearchableItem[] = [
 
 export function searchPages(query: string, isRTL: boolean = false): SearchableItem[] {
   if (!query.trim()) return [];
-  
+
   const searchTerm = query.toLowerCase().trim();
   const results: { item: SearchableItem; score: number }[] = [];
-  
+
   searchablePages.forEach(item => {
     let score = 0;
-    
+
     const title = isRTL ? item.titleAr : item.title;
     const description = isRTL ? item.descriptionAr : item.description;
     const keywords = isRTL ? item.keywordsAr || [] : item.keywords || [];
-    
+
     // Check title match (highest priority)
     if (title.toLowerCase().includes(searchTerm)) {
       score += 10;
@@ -163,24 +173,24 @@ export function searchPages(query: string, isRTL: boolean = false): SearchableIt
         score += 5; // Bonus for starting with search term
       }
     }
-    
+
     // Check description match
     if (description.toLowerCase().includes(searchTerm)) {
       score += 3;
     }
-    
+
     // Check keywords match
     keywords.forEach(keyword => {
       if (keyword.toLowerCase().includes(searchTerm)) {
         score += 2;
       }
     });
-    
+
     if (score > 0) {
       results.push({ item, score });
     }
   });
-  
+
   // Sort by score (descending) and return top 5
   return results
     .sort((a, b) => b.score - a.score)
