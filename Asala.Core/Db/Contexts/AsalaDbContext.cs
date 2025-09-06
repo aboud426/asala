@@ -4,7 +4,6 @@ using Asala.Core.Modules.Languages;
 using Asala.Core.Modules.Messages.Models;
 using Asala.Core.Modules.Posts.Models;
 using Asala.Core.Modules.Products.Models;
-using Asala.Core.Modules.Media.Models;
 using Asala.Core.Modules.Users.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,23 +20,20 @@ public class AsalaDbContext : DbContext
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<CategoryLocalized> CategoryLocalizeds => Set<CategoryLocalized>();
     public DbSet<ProductCategory> ProductCategories => Set<ProductCategory>();
-    public DbSet<ProductCategoryLocalized> ProductCategoryLocalizeds => Set<ProductCategoryLocalized>();
+    public DbSet<ProductCategoryLocalized> ProductCategoryLocalizeds =>
+        Set<ProductCategoryLocalized>();
     public DbSet<ProviderCategory> ProviderCategories => Set<ProviderCategory>();
-    
+
     // Posts module
     public DbSet<Post> Posts => Set<Post>();
     public DbSet<PostLocalized> PostLocalizeds => Set<PostLocalized>();
     public DbSet<PostMedia> PostMedias => Set<PostMedia>();
-    
+
     // Products module
     public DbSet<Product> Products => Set<Product>();
     public DbSet<ProductLocalized> ProductLocalizeds => Set<ProductLocalized>();
     public DbSet<ProductMedia> ProductMedias => Set<ProductMedia>();
     public DbSet<ProductsPost> ProductsPosts => Set<ProductsPost>();
-    
-    // Media module
-    public DbSet<Media> Medias => Set<Media>();
-    public DbSet<MediaType> MediaTypes => Set<MediaType>();
 
     // Users module
     public DbSet<User> Users => Set<User>();
@@ -52,6 +48,8 @@ public class AsalaDbContext : DbContext
     public DbSet<Provider> Providers => Set<Provider>();
     public DbSet<ProviderLocalized> ProviderLocalizeds => Set<ProviderLocalized>();
     public DbSet<ProviderMedia> ProviderMedias => Set<ProviderMedia>();
+    public DbSet<Currency> Currencies => Set<Currency>();
+    public DbSet<CurrencyLocalized> CurrencyLocalizations => Set<CurrencyLocalized>();
     public DbSet<Otp> Otps => Set<Otp>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

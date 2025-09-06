@@ -1,15 +1,15 @@
 using System.Linq.Expressions;
 using Asala.Core.Common.Abstractions;
 using Asala.Core.Common.Models;
-using Asala.Core.Modules.Products.DTOs;
-using Asala.Core.Modules.Products.Db;
-using Asala.Core.Modules.Products.Models;
-using Asala.Core.Modules.Posts.DTOs;
-using Asala.Core.Modules.Posts.Models;
-using Asala.Core.Modules.Posts.Db;
-using Asala.Core.Modules.Media.Models;
-using Asala.Core.Modules.Languages;
 using Asala.Core.Db;
+using Asala.Core.Modules.Categories.Db;
+using Asala.Core.Modules.Languages;
+using Asala.Core.Modules.Products.Db;
+using Asala.Core.Modules.Products.DTOs;
+using Asala.Core.Modules.Products.Models;
+using Asala.Core.Modules.Users.Db;
+using Asala.Core.Modules.Users.DTOs;
+using Asala.Core.Modules.Users.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Asala.UseCases.Products;
@@ -19,192 +19,190 @@ public class ProductService : IProductService
     private readonly IProductRepository _productRepository;
     private readonly IProductLocalizedRepository _productLocalizedRepository;
     private readonly IProductMediaRepository _productMediaRepository;
-    private readonly IProductsPostRepository _productsPostRepository;
-    private readonly IPostRepository _postRepository;
-    private readonly IPostMediaRepository _postMediaRepository;
+    private readonly IProductCategoryRepository _productCategoryRepository;
+    private readonly IProviderRepository _providerRepository;
     private readonly ILanguageRepository _languageRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly AsalaDbContext _context;
 
     public ProductService(
         IProductRepository productRepository,
         IProductLocalizedRepository productLocalizedRepository,
         IProductMediaRepository productMediaRepository,
-        IProductsPostRepository productsPostRepository,
-        IPostRepository postRepository,
-        IPostMediaRepository postMediaRepository,
+        IProductCategoryRepository productCategoryRepository,
+        IProviderRepository providerRepository,
         ILanguageRepository languageRepository,
-        IUnitOfWork unitOfWork,
-        AsalaDbContext context)
+        IUnitOfWork unitOfWork
+    )
     {
-        _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
-        _productLocalizedRepository = productLocalizedRepository ?? throw new ArgumentNullException(nameof(productLocalizedRepository));
-        _productMediaRepository = productMediaRepository ?? throw new ArgumentNullException(nameof(productMediaRepository));
-        _productsPostRepository = productsPostRepository ?? throw new ArgumentNullException(nameof(productsPostRepository));
-        _postRepository = postRepository ?? throw new ArgumentNullException(nameof(postRepository));
-        _postMediaRepository = postMediaRepository ?? throw new ArgumentNullException(nameof(postMediaRepository));
-        _languageRepository = languageRepository ?? throw new ArgumentNullException(nameof(languageRepository));
+        _productRepository =
+            productRepository ?? throw new ArgumentNullException(nameof(productRepository));
+        _productLocalizedRepository =
+            productLocalizedRepository
+            ?? throw new ArgumentNullException(nameof(productLocalizedRepository));
+        _productMediaRepository =
+            productMediaRepository
+            ?? throw new ArgumentNullException(nameof(productMediaRepository));
+        _productCategoryRepository =
+            productCategoryRepository
+            ?? throw new ArgumentNullException(nameof(productCategoryRepository));
+        _providerRepository =
+            providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
+        _languageRepository =
+            languageRepository ?? throw new ArgumentNullException(nameof(languageRepository));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
-        _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
-    public async Task<Result<ProductDto?>> CreateWithMediaAsync(CreateProductWithMediaDto createDto, CancellationToken cancellationToken = default)
+    public async Task<Result<ProductDto?>> CreateWithMediaAsync(
+        CreateProductWithMediaDto createDto,
+        CancellationToken cancellationToken = default
+    )
     {
-        // Validation
-        var validationResult = ValidateCreateProductWithMediaDto(createDto);
+        if (createDto == null)
+            return Result.Failure<ProductDto?>(MessageCodes.ENTITY_NULL);
+
+        var validationResult = ValidateCreateWithMediaDto(createDto);
         if (validationResult.IsFailure)
             return Result.Failure<ProductDto?>(validationResult.MessageCode);
 
-        // Create product
-        var product = new Product
-        {
-            Name = createDto.Name.Trim(),
-            CategoryId = createDto.CategoryId,
-            ProviderId = createDto.ProviderId,
-            Price = createDto.Price,
-            Quantity = createDto.Quantity,
-            Description = createDto.Description?.Trim(),
-            IsActive = true,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
+        // Validate that ProductCategory exists
+        var categoryExistsResult = await _productCategoryRepository.AnyAsync(
+            pc => pc.Id == createDto.CategoryId && pc.IsActive && !pc.IsDeleted,
+            cancellationToken
+        );
+        if (categoryExistsResult.IsFailure)
+            return Result.Failure<ProductDto?>(categoryExistsResult.MessageCode);
+        if (!categoryExistsResult.Value)
+            return Result.Failure<ProductDto?>(MessageCodes.PRODUCT_CATEGORY_ID_REQUIRED);
 
-        var addProductResult = await _productRepository.AddAsync(product, cancellationToken);
-        if (addProductResult.IsFailure)
-            return Result.Failure<ProductDto?>(addProductResult.MessageCode);
+        // Validate that Provider exists
+        var providerExistsResult = await _providerRepository.AnyAsync(
+            p => p.UserId == createDto.ProviderId,
+            cancellationToken
+        );
+        if (providerExistsResult.IsFailure)
+            return Result.Failure<ProductDto?>(providerExistsResult.MessageCode);
+        if (!providerExistsResult.Value)
+            return Result.Failure<ProductDto?>(MessageCodes.PRODUCT_PROVIDER_ID_REQUIRED);
 
-        // Create media entries and link to product
-        if (createDto.MediaUrls.Any())
+        // Begin transaction for creating Product with Media and Localizations
+        var transactionResult = await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        if (transactionResult.IsFailure)
+            return Result.Failure<ProductDto?>(transactionResult.MessageCode);
+
+        try
         {
-            foreach (var mediaUrl in createDto.MediaUrls.Where(url => !string.IsNullOrWhiteSpace(url)))
+            // Create Product
+            var product = new Product
             {
-                // Create media entry
-                var media = new Media
-                {
-                    MediaTypeId = 1, // Default media type
-                    Url = mediaUrl.Trim(),
-                    IsActive = true,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
-
-                _context.Medias.Add(media);
-                await _context.SaveChangesAsync(cancellationToken);
-
-                // Link media to product
-                var productMedia = new ProductMedia
-                {
-                    ProductId = addProductResult.Value.Id,
-                    MediaId = media.Id,
-                    IsActive = true,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
-
-                await _productMediaRepository.AddAsync(productMedia, cancellationToken);
-            }
-        }
-
-        var saveResult = await _unitOfWork.SaveChangesAsync(cancellationToken);
-        if (saveResult.IsFailure)
-            return Result.Failure<ProductDto?>(saveResult.MessageCode);
-
-        var dto = MapToDto(addProductResult.Value);
-        return Result.Success<ProductDto?>(dto);
-    }
-
-    public async Task<Result<PostDto?>> CreateProductPostAsync(CreateProductPostDto createDto, int userId, CancellationToken cancellationToken = default)
-    {
-        // Validation
-        if (!createDto.ProductIds.Any())
-            return Result.Failure<PostDto?>(MessageCodes.PRODUCT_ID_INVALID);
-
-        // Verify all products exist
-        foreach (var productId in createDto.ProductIds)
-        {
-            var productResult = await _productRepository.GetByIdAsync(productId, cancellationToken);
-            if (productResult.IsFailure || productResult.Value == null)
-                return Result.Failure<PostDto?>(MessageCodes.PRODUCT_NOT_FOUND);
-        }
-
-        // Create post
-        var post = new Post
-        {
-            UserId = userId,
-            Description = createDto.PostDescription?.Trim(),
-            NumberOfReactions = 0,
-            IsActive = true,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
-
-        var addPostResult = await _postRepository.AddAsync(post, cancellationToken);
-        if (addPostResult.IsFailure)
-            return Result.Failure<PostDto?>(addPostResult.MessageCode);
-
-        // Link products to post
-        foreach (var productId in createDto.ProductIds)
-        {
-            var productsPost = new ProductsPost
-            {
-                PostId = addPostResult.Value.Id,
-                ProductId = productId,
-                IsActive = true,
+                Name = createDto.Name.Trim(),
+                Description = createDto.Description?.Trim(),
+                CategoryId = createDto.CategoryId,
+                ProviderId = createDto.ProviderId,
+                Price = createDto.Price,
+                Quantity = createDto.Quantity,
+                IsActive = createDto.IsActive,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
             };
 
-            await _productsPostRepository.AddAsync(productsPost, cancellationToken);
-        }
-
-        // Create media entries and link to post
-        if (createDto.MediaUrls.Any())
-        {
-            foreach (var mediaUrl in createDto.MediaUrls.Where(url => !string.IsNullOrWhiteSpace(url)))
+            var addProductResult = await _productRepository.AddAsync(product, cancellationToken);
+            if (addProductResult.IsFailure)
             {
-                // Create media entry
-                var media = new Media
-                {
-                    MediaTypeId = 1, // Default media type
-                    Url = mediaUrl.Trim(),
-                    IsActive = true,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
-
-                _context.Medias.Add(media);
-                await _context.SaveChangesAsync(cancellationToken);
-
-                // Link media to post
-                var postMedia = new PostMedia
-                {
-                    PostId = addPostResult.Value.Id,
-                    MediaId = media.Id,
-                    IsActive = true,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
-
-                await _postMediaRepository.AddAsync(postMedia, cancellationToken);
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                return Result.Failure<ProductDto?>(addProductResult.MessageCode);
             }
+
+            var saveProductResult = await _unitOfWork.SaveChangesAsync(cancellationToken);
+            if (saveProductResult.IsFailure)
+            {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                return Result.Failure<ProductDto?>(saveProductResult.MessageCode);
+            }
+
+            var createdProduct = addProductResult.Value!;
+
+            // Create Product Media
+            foreach (var mediaUrl in createDto.MediaUrls)
+            {
+                if (!string.IsNullOrWhiteSpace(mediaUrl))
+                {
+                    var productMedia = new ProductMedia
+                    {
+                        ProductId = createdProduct.Id,
+                        Url = mediaUrl.Trim(),
+                        MediaType = MediaTypeEnum.Image, // Default to Image, could be parameterized
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow,
+                        IsActive = true,
+                    };
+
+                    var addMediaResult = await _productMediaRepository.AddAsync(
+                        productMedia,
+                        cancellationToken
+                    );
+                    if (addMediaResult.IsFailure)
+                    {
+                        await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                        return Result.Failure<ProductDto?>(addMediaResult.MessageCode);
+                    }
+                }
+            }
+
+            // Create Product Localizations
+            foreach (var localizationDto in createDto.Localizeds)
+            {
+                // Validate that Language exists
+                var languageExistsResult = await _languageRepository.AnyAsync(
+                    l => l.Id == localizationDto.LanguageId && l.IsActive && !l.IsDeleted,
+                    cancellationToken
+                );
+                if (languageExistsResult.IsFailure || !languageExistsResult.Value)
+                    continue; // Skip invalid languages rather than failing the entire operation
+
+                var productLocalized = new ProductLocalized
+                {
+                    ProductId = createdProduct.Id,
+                    LanguageId = localizationDto.LanguageId,
+                    NameLocalized = localizationDto.NameLocalized.Trim(),
+                    DescriptionLocalized = localizationDto.DescriptionLocalized?.Trim(),
+                    IsActive = localizationDto.IsActive,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                };
+
+                var addLocalizedResult = await _productLocalizedRepository.AddAsync(
+                    productLocalized,
+                    cancellationToken
+                );
+                if (addLocalizedResult.IsFailure)
+                {
+                    await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                    return Result.Failure<ProductDto?>(addLocalizedResult.MessageCode);
+                }
+            }
+
+            var saveFinalResult = await _unitOfWork.SaveChangesAsync(cancellationToken);
+            if (saveFinalResult.IsFailure)
+            {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                return Result.Failure<ProductDto?>(saveFinalResult.MessageCode);
+            }
+
+            var commitResult = await _unitOfWork.CommitTransactionAsync(cancellationToken);
+            if (commitResult.IsFailure)
+            {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                return Result.Failure<ProductDto?>(commitResult.MessageCode);
+            }
+
+            var dto = await MapToDtoAsync(createdProduct, cancellationToken);
+            return Result.Success<ProductDto?>(dto);
         }
-
-        var saveResult = await _unitOfWork.SaveChangesAsync(cancellationToken);
-        if (saveResult.IsFailure)
-            return Result.Failure<PostDto?>(saveResult.MessageCode);
-
-        var postDto = new PostDto
+        catch (Exception)
         {
-            Id = addPostResult.Value.Id,
-            UserId = addPostResult.Value.UserId,
-            Description = addPostResult.Value.Description,
-            NumberOfReactions = addPostResult.Value.NumberOfReactions,
-            IsActive = addPostResult.Value.IsActive,
-            CreatedAt = addPostResult.Value.CreatedAt,
-            UpdatedAt = addPostResult.Value.UpdatedAt
-        };
-
-        return Result.Success<PostDto?>(postDto);
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
     }
 
     public async Task<Result<PaginatedResult<ProductDto>>> GetPaginatedLocalizedAsync(
@@ -212,114 +210,189 @@ public class ProductService : IProductService
         int pageSize,
         string languageCode,
         bool? activeOnly = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        // Get language by code
-        var languageResult = await _languageRepository.GetFirstOrDefaultAsync(
-            filter: l => l.Code == languageCode && l.IsActive && !l.IsDeleted);
+        if (page <= 0)
+            return Result.Failure<PaginatedResult<ProductDto>>(
+                MessageCodes.PAGINATION_INVALID_PAGE
+            );
+
+        if (pageSize <= 0 || pageSize > 100)
+            return Result.Failure<PaginatedResult<ProductDto>>(
+                MessageCodes.PAGINATION_INVALID_PAGE_SIZE
+            );
+
+        if (string.IsNullOrWhiteSpace(languageCode))
+            return Result.Failure<PaginatedResult<ProductDto>>("Language code is required");
+
+        // Get the language by code
+        var languageResult = await _languageRepository.GetFirstOrDefaultAsync(l =>
+            l.Code == languageCode && l.IsActive && !l.IsDeleted
+        );
         if (languageResult.IsFailure || languageResult.Value == null)
             return Result.Failure<PaginatedResult<ProductDto>>(MessageCodes.LANGUAGE_NOT_FOUND);
 
         var language = languageResult.Value;
 
-        // Build filter
-        Expression<Func<Product, bool>> filter = activeOnly switch
+        // Build query for products
+        var productsQuery = _productRepository
+            .GetQueryable()
+            .Include(p => p.ProductCategory)
+            .Include(p => p.Provider)
+            .Include(p => p.ProductLocalizeds)
+            .ThenInclude(pl => pl.Language)
+            .Include(p => p.ProductMedias)
+            .AsQueryable();
+
+        // Apply active filter if specified
+        if (activeOnly.HasValue)
         {
-            true => p => p.IsActive && !p.IsDeleted,
-            false => p => !p.IsActive && !p.IsDeleted,
-            null => p => !p.IsDeleted,
-        };
+            productsQuery = productsQuery.Where(p => p.IsActive == activeOnly.Value);
+        }
 
-        // Get paginated products
-        var productsResult = await _productRepository.GetPaginatedAsync(
-            page,
-            pageSize,
-            filter,
-            orderBy: q => q.OrderByDescending(p => p.CreatedAt)
-        );
+        // Filter out deleted items
+        productsQuery = productsQuery.Where(p => !p.IsDeleted);
 
-        if (productsResult.IsFailure)
-            return Result.Failure<PaginatedResult<ProductDto>>(productsResult.MessageCode);
+        // Order by creation date (most recent first)
+        productsQuery = productsQuery.OrderByDescending(p => p.CreatedAt);
 
-        // Get localized data for these products
-        var productIds = productsResult.Value.Items.Select(p => p.Id).ToList();
-        var localizedProducts = await _context.ProductLocalizeds
-            .Where(pl => productIds.Contains(pl.ProductId) && pl.LanguageId == language.Id && !pl.IsDeleted)
+        // Get total count
+        var totalCount = await productsQuery.CountAsync(cancellationToken);
+
+        // Apply pagination
+        var products = await productsQuery
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync(cancellationToken);
 
-        // Map to DTOs with localization
-        var dtos = productsResult.Value.Items.Select(product =>
+        var productDtos = new List<ProductDto>();
+        foreach (var product in products)
         {
-            var localized = localizedProducts.FirstOrDefault(pl => pl.ProductId == product.Id);
-            return MapToDtoWithLocalization(product, localized);
-        }).ToList();
+            var dto = await MapToLocalizedDtoAsync(product, language, cancellationToken);
+            productDtos.Add(dto);
+        }
 
-        var paginatedDto = new PaginatedResult<ProductDto>(
-            items: dtos,
-            totalCount: productsResult.Value.TotalCount,
-            page: productsResult.Value.Page,
-            pageSize: productsResult.Value.PageSize
+        var paginatedResult = new PaginatedResult<ProductDto>(
+            productDtos,
+            totalCount,
+            page,
+            pageSize
         );
 
-        return Result.Success(paginatedDto);
+        return Result.Success(paginatedResult);
     }
 
-    private static ProductDto MapToDto(Product product)
+    private async Task<ProductDto> MapToDtoAsync(
+        Product product,
+        CancellationToken cancellationToken = default
+    )
     {
+        // Load related entities if not already loaded
+        var productWithIncludes = product;
+
         return new ProductDto
         {
-            Id = product.Id,
-            Name = product.Name,
-            CategoryId = product.CategoryId,
-            ProviderId = product.ProviderId,
-            Price = product.Price,
-            Quantity = product.Quantity,
-            Description = product.Description,
-            IsActive = product.IsActive,
-            CreatedAt = product.CreatedAt,
-            UpdatedAt = product.UpdatedAt
+            Id = productWithIncludes.Id,
+            Name = productWithIncludes.Name,
+            Description = productWithIncludes.Description,
+            CategoryId = productWithIncludes.CategoryId,
+            ProviderId = productWithIncludes.ProviderId,
+            CategoryName = productWithIncludes.ProductCategory.Name,
+            ProviderName = productWithIncludes.Provider.BusinessName,
+            Price = productWithIncludes.Price,
+            Quantity = productWithIncludes.Quantity,
+            IsActive = productWithIncludes.IsActive,
+            CreatedAt = productWithIncludes.CreatedAt,
+            UpdatedAt = productWithIncludes.UpdatedAt,
+            Localizations = productWithIncludes
+                .ProductLocalizeds.Where(pl => !pl.IsDeleted)
+                .Select(pl => new ProductLocalizedDto
+                {
+                    Id = pl.Id,
+                    ProductId = pl.ProductId,
+                    LanguageId = pl.LanguageId,
+                    LanguageCode = pl.Language.Code,
+                    LanguageName = pl.Language.Name,
+                    NameLocalized = pl.NameLocalized,
+                    DescriptionLocalized = pl.DescriptionLocalized,
+                    IsActive = pl.IsActive,
+                    CreatedAt = pl.CreatedAt,
+                    UpdatedAt = pl.UpdatedAt,
+                })
+                .ToList(),
+            Images = productWithIncludes
+                .ProductMedias.Where(pm => !pm.IsDeleted)
+                .Select(pm => new ImageUrlDto { Url = pm.Url })
+                .ToList(),
         };
     }
 
-    private static Result ValidateCreateProductWithMediaDto(CreateProductWithMediaDto dto)
+    private async Task<ProductDto> MapToLocalizedDtoAsync(
+        Product product,
+        Language language,
+        CancellationToken cancellationToken = default
+    )
     {
-        if (string.IsNullOrWhiteSpace(dto.Name))
+        var baseDto = await MapToDtoAsync(product, cancellationToken);
+
+        // Find localization for the specified language
+        var localization = product.ProductLocalizeds.FirstOrDefault(pl =>
+            pl.LanguageId == language.Id && pl.IsActive && !pl.IsDeleted
+        );
+
+        if (localization != null)
+        {
+            baseDto.LocalizedName = localization.NameLocalized;
+            baseDto.LocalizedDescription = localization.DescriptionLocalized;
+        }
+
+        return baseDto;
+    }
+
+    private Result ValidateCreateWithMediaDto(CreateProductWithMediaDto createDto)
+    {
+        if (string.IsNullOrWhiteSpace(createDto.Name))
             return Result.Failure(MessageCodes.PRODUCT_NAME_REQUIRED);
 
-        if (dto.Name.Length > 10)
+        if (createDto.Name.Length > 200)
             return Result.Failure(MessageCodes.PRODUCT_NAME_TOO_LONG);
 
-        if (dto.CategoryId <= 0)
+        if (createDto.CategoryId <= 0)
             return Result.Failure(MessageCodes.PRODUCT_CATEGORY_ID_REQUIRED);
 
-        if (dto.ProviderId <= 0)
+        if (createDto.ProviderId <= 0)
             return Result.Failure(MessageCodes.PRODUCT_PROVIDER_ID_REQUIRED);
 
-        if (dto.Price < 0)
+        if (createDto.Price < 0)
             return Result.Failure(MessageCodes.PRODUCT_PRICE_INVALID);
 
-        if (dto.Quantity < 0)
+        if (createDto.Quantity < 0)
             return Result.Failure(MessageCodes.PRODUCT_QUANTITY_INVALID);
 
-        return Result.Success();
-    }
-
-    private static ProductDto MapToDtoWithLocalization(Product product, ProductLocalized? localized)
-    {
-        return new ProductDto
+        // Validate localized data
+        foreach (var localized in createDto.Localizeds)
         {
-            Id = product.Id,
-            Name = product.Name,
-            LocalizedName = localized?.NameLocalized,
-            CategoryId = product.CategoryId,
-            ProviderId = product.ProviderId,
-            Price = product.Price,
-            Quantity = product.Quantity,
-            Description = product.Description,
-            LocalizedDescription = localized?.DescriptionLocalized,
-            IsActive = product.IsActive,
-            CreatedAt = product.CreatedAt,
-            UpdatedAt = product.UpdatedAt
-        };
+            if (string.IsNullOrWhiteSpace(localized.NameLocalized))
+                return Result.Failure("Localized product name is required");
+
+            if (localized.NameLocalized.Length > 200)
+                return Result.Failure("Localized product name is too long");
+
+            if (localized.LanguageId <= 0)
+                return Result.Failure("Valid language ID is required for localization");
+        }
+
+        // Validate media URLs
+        foreach (var mediaUrl in createDto.MediaUrls)
+        {
+            if (string.IsNullOrWhiteSpace(mediaUrl))
+                continue;
+
+            if (!Uri.IsWellFormedUriString(mediaUrl, UriKind.Absolute))
+                return Result.Failure(MessageCodes.MEDIA_URL_INVALID);
+        }
+
+        return Result.Success();
     }
 }

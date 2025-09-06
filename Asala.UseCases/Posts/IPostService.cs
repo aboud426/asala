@@ -5,8 +5,12 @@ namespace Asala.UseCases.Posts;
 
 public interface IPostService
 {
-    Task<Result<PostDto?>> CreateWithMediaAsync(CreatePostWithMediaDto createDto, int userId, CancellationToken cancellationToken = default);
-    
+    Task<Result<PostDto?>> CreateWithMediaAsync(
+        CreatePostWithMediaDto createDto,
+        int userId,
+        CancellationToken cancellationToken = default
+    );
+
     Task<Result<PaginatedResult<PostDto>>> GetPaginatedLocalizedAsync(
         int page,
         int pageSize,

@@ -387,4 +387,9 @@ public class Repository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey
             return Result.Failure(MessageCodes.DB_ERROR, ex);
         }
     }
+
+    public IQueryable<TEntity> GetQueryable()
+    {
+        return _dbSet;
+    }
 }

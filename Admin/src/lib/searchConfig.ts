@@ -142,6 +142,16 @@ export const searchablePages: SearchableItem[] = [
     keywordsAr: ['أدوار', 'صلاحيات', 'وصول', 'تخويل', 'أمان', 'مستخدمين']
   },
   {
+    id: 'currencies',
+    title: 'Currencies',
+    titleAr: 'العملات',
+    description: 'Manage currencies and their translations for multilingual support',
+    descriptionAr: 'إدارة العملات وترجماتها لدعم متعدد اللغات',
+    href: '/currencies',
+    keywords: ['currencies', 'money', 'exchange', 'currency code', 'currency symbol', 'financial', 'localization'],
+    keywordsAr: ['عملات', 'عملة', 'أموال', 'صرف', 'رمز العملة', 'رمز عملة', 'مالي', 'توطين']
+  },
+  {
     id: 'permissions',
     title: 'Permissions',
     titleAr: 'الصلاحيات',

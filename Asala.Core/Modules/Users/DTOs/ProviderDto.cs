@@ -55,6 +55,13 @@ public class ProviderDropdownDto
     public string? PhoneNumber { get; set; }
 }
 
+public class ProviderLocalizedDropdownDto
+{
+    public int UserId { get; set; } // Primary Key
+    public string BusinessName { get; set; } = null!; // Will be localized if available, fallback to original
+    public string? PhoneNumber { get; set; }
+}
+
 public class ProviderTreeDto
 {
     public int UserId { get; set; } // Primary Key

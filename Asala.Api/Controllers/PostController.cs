@@ -41,10 +41,11 @@ public class PostController : BaseController
         CancellationToken cancellationToken = default
     )
     {
-        // TODO: Get userId from JWT token instead of hardcoding
-        int userId = 1; // This should come from authentication context
-        
-        var result = await _postService.CreateWithMediaAsync(createDto, userId, cancellationToken);
+        var result = await _postService.CreateWithMediaAsync(
+            createDto,
+            createDto.ProviderId,
+            cancellationToken
+        );
         return CreateResponse(result);
     }
 }

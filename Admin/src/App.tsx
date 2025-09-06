@@ -25,6 +25,8 @@ import Employees from "./pages/Employees";
 import Roles from "./pages/Roles";
 import RolePermissions from "./pages/RolePermissions";
 import Permissions from "./pages/Permissions";
+import Currencies from "./pages/Currencies";
+import CreateProduct from "./pages/CreateProduct";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +43,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/orders" element={<Orders />} />
               <Route path="/products" element={<Products />} />
+              <Route path="/products/create" element={<CreateProduct />} />
               <Route path="/customers" element={<Customers />} />
               <Route path="/providers" element={<Providers />} />
               <Route path="/providers/create" element={<CreateProvider />} />
@@ -57,6 +60,7 @@ const App = () => (
               <Route path="/roles" element={<Roles />} />
               <Route path="/roles/:roleId/permissions" element={<RolePermissions />} />
               <Route path="/permissions" element={<Permissions />} />
+              <Route path="/currencies" element={<Currencies />} />
               <Route path="/settings" element={<Settings />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

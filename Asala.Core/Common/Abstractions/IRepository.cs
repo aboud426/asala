@@ -6,6 +6,7 @@ namespace Asala.Core.Common.Abstractions;
 public interface IRepository<TEntity, TPrimaryKey>
     where TEntity : class
 {
+    IQueryable<TEntity> GetQueryable();
     Task<Result<TEntity?>> GetByIdAsync(
         TPrimaryKey id,
         CancellationToken cancellationToken = default

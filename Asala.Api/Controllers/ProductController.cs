@@ -35,7 +35,7 @@ public class ProductController : BaseController
         return CreateResponse(result);
     }
 
-    [HttpPost]
+    [HttpPost("create-product")]
     public async Task<IActionResult> Create(
         [FromBody] CreateProductWithMediaDto createDto,
         CancellationToken cancellationToken = default
@@ -45,16 +45,19 @@ public class ProductController : BaseController
         return CreateResponse(result);
     }
 
-    [HttpPost("create-post")]
-    public async Task<IActionResult> CreateProductPost(
-        [FromBody] CreateProductPostDto createDto,
-        CancellationToken cancellationToken = default
-    )
-    {
-        // TODO: Get userId from JWT token instead of hardcoding
-        int userId = 1; // This should come from authentication context
-        
-        var result = await _productService.CreateProductPostAsync(createDto, userId, cancellationToken);
-        return CreateResponse(result);
-    }
+    // [HttpPost("create-post")]
+    // public async Task<IActionResult> CreateProductPost(
+    //     [FromBody] CreateProductPostDto createDto,
+    //     CancellationToken cancellationToken = default
+    // )
+    // {
+    //     int userId = 1; // This should come from authentication context
+
+    //     var result = await _productService.CreateProductPostAsync(
+    //         createDto,
+    //         userId,
+    //         cancellationToken
+    //     );
+    //     return CreateResponse(result);
+    // }
 }

@@ -420,6 +420,71 @@ public class ProviderService : IProviderService
         return Result.Success<IEnumerable<ProviderDropdownDto>>(dropdownDtos);
     }
 
+    public async Task<Result<IEnumerable<ProviderLocalizedDropdownDto>>> GetLocalizedDropdownAsync(
+        string languageCode,
+        bool activeOnly = true,
+        CancellationToken cancellationToken = default
+    )
+    {
+        // Validate languageCode
+        if (string.IsNullOrWhiteSpace(languageCode))
+            return Result.Failure<IEnumerable<ProviderLocalizedDropdownDto>>(
+                "Language code is required"
+            );
+
+        // Get the language by code
+        var languageResult = await _languageRepository.GetFirstOrDefaultAsync(
+            l => l.Code == languageCode
+        );
+        if (languageResult.IsFailure || languageResult.Value == null)
+            return Result.Failure<IEnumerable<ProviderLocalizedDropdownDto>>("Language not found");
+
+        var language = languageResult.Value;
+
+        // Use repository method that joins with User table for filtering
+        var result = await _providerRepository.GetPaginatedWithUserAsync(
+            1,
+            1000,
+            activeOnly,
+            null,
+            cancellationToken
+        );
+
+        if (result.IsFailure)
+            return Result.Failure<IEnumerable<ProviderLocalizedDropdownDto>>(result.MessageCode);
+
+        var localizedDropdownDtos = new List<ProviderLocalizedDropdownDto>();
+        foreach (var provider in result.Value!.Items)
+        {
+            var userResult = await _userRepository.GetByIdAsync(provider.UserId, cancellationToken);
+
+            // Get localized business name for the specified language
+            string businessName = provider.BusinessName; // Default fallback
+            var localizationResult = await _providerLocalizedRepository.GetFirstOrDefaultAsync(
+                pl => pl.ProviderId == provider.UserId && pl.LanguageId == language.Id
+            );
+
+            if (localizationResult.IsSuccess && localizationResult.Value != null)
+            {
+                businessName = localizationResult.Value.BusinessNameLocalized;
+            }
+
+            localizedDropdownDtos.Add(
+                new ProviderLocalizedDropdownDto
+                {
+                    UserId = provider.UserId,
+                    BusinessName = businessName,
+                    PhoneNumber =
+                        userResult.IsSuccess && userResult.Value != null
+                            ? userResult.Value.PhoneNumber
+                            : null,
+                }
+            );
+        }
+
+        return Result.Success<IEnumerable<ProviderLocalizedDropdownDto>>(localizedDropdownDtos);
+    }
+
     public async Task<Result<IEnumerable<ProviderTreeDto>>> GetProviderTreeAsync(
         int? rootId = null,
         string? languageCode = null,

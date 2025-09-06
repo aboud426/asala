@@ -16,6 +16,7 @@ import {
   Shield,
   Key,
   UserCheck,
+  Coins,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -98,6 +99,12 @@ const navigationItems = [
     titleAr: 'الأدوار',
     href: '/roles',
     icon: Shield,
+  },
+  {
+    title: 'Currencies',
+    titleAr: 'العملات',
+    href: '/currencies',
+    icon: Coins,
   },
   {
     title: 'Permissions',

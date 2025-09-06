@@ -20,3 +20,4 @@ public class Role : BaseEntity<int>
     public List<RoleLocalized> Localizations { get; set; } = [];
     public List<RolePermission> RolePermissions { get; set; } = [];
 }
+

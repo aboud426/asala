@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Asala.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class InitDb : Migration
+    public partial class INIT : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -135,6 +135,65 @@ namespace Asala.Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Post",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    NumberOfReactions = table.Column<int>(type: "int", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Post", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Post_Localized",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DescriptionLocalized = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    LanguageId = table.Column<int>(type: "int", nullable: false),
+                    PostId = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Post_Localized", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Post_Medias",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PostId = table.Column<int>(type: "int", nullable: false),
+                    MediaId = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Post_Medias", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ProductCategory",
                 columns: table => new
                 {
@@ -174,6 +233,25 @@ namespace Asala.Api.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ProductCategory_Localized", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Products_Post",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PostId = table.Column<int>(type: "int", nullable: false),
+                    ProductId = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Products_Post", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -371,7 +449,8 @@ namespace Asala.Api.Migrations
                 columns: table => new
                 {
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    EmployeeName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
+                    EmployeeName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -439,6 +518,42 @@ namespace Asala.Api.Migrations
                         column: x => x.UserId,
                         principalTable: "User",
                         principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Product",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    CategoryId = table.Column<int>(type: "int", nullable: false),
+                    ProductCategoryId = table.Column<int>(type: "int", nullable: false),
+                    ProviderId = table.Column<int>(type: "int", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Product", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Product_ProductCategory_ProductCategoryId",
+                        column: x => x.ProductCategoryId,
+                        principalTable: "ProductCategory",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Product_Provider_ProviderId",
+                        column: x => x.ProviderId,
+                        principalTable: "Provider",
+                        principalColumn: "UserId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -530,6 +645,65 @@ namespace Asala.Api.Migrations
                         principalTable: "Provider",
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Product_Localized",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    LanguageId = table.Column<int>(type: "int", nullable: false),
+                    NameLocalized = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    DescriptionLocalized = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    ProductId = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Product_Localized", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Product_Localized_Language_LanguageId",
+                        column: x => x.LanguageId,
+                        principalTable: "Language",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Product_Localized_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Product",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProductMedias",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ProductId = table.Column<int>(type: "int", nullable: false),
+                    Url = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MediaType = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductMedias", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ProductMedias_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Product",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -674,6 +848,79 @@ namespace Asala.Api.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Post_UserId",
+                table: "Post",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Post_Localized_LanguageId",
+                table: "Post_Localized",
+                column: "LanguageId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Post_Localized_PostId",
+                table: "Post_Localized",
+                column: "PostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Post_Localized_PostId_LanguageId",
+                table: "Post_Localized",
+                columns: new[] { "PostId", "LanguageId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Post_Medias_MediaId",
+                table: "Post_Medias",
+                column: "MediaId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Post_Medias_PostId",
+                table: "Post_Medias",
+                column: "PostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Post_Medias_PostId_MediaId",
+                table: "Post_Medias",
+                columns: new[] { "PostId", "MediaId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Product_CategoryId",
+                table: "Product",
+                column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Product_Name",
+                table: "Product",
+                column: "Name");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Product_ProductCategoryId",
+                table: "Product",
+                column: "ProductCategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Product_ProviderId",
+                table: "Product",
+                column: "ProviderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Product_Localized_LanguageId",
+                table: "Product_Localized",
+                column: "LanguageId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Product_Localized_ProductId",
+                table: "Product_Localized",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Product_Localized_ProductId_LanguageId",
+                table: "Product_Localized",
+                columns: new[] { "ProductId", "LanguageId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ProductCategory_ParentId",
                 table: "ProductCategory",
                 column: "ParentId");
@@ -693,6 +940,27 @@ namespace Asala.Api.Migrations
                 name: "IX_ProductCategory_Localized_LanguageId",
                 table: "ProductCategory_Localized",
                 column: "LanguageId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductMedias_ProductId",
+                table: "ProductMedias",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_Post_PostId",
+                table: "Products_Post",
+                column: "PostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_Post_PostId_ProductId",
+                table: "Products_Post",
+                columns: new[] { "PostId", "ProductId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_Post_ProductId",
+                table: "Products_Post",
+                column: "ProductId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Provider_BusinessName",
@@ -886,10 +1154,25 @@ namespace Asala.Api.Migrations
                 name: "PermissionLocalizations");
 
             migrationBuilder.DropTable(
-                name: "ProductCategory");
+                name: "Post");
+
+            migrationBuilder.DropTable(
+                name: "Post_Localized");
+
+            migrationBuilder.DropTable(
+                name: "Post_Medias");
+
+            migrationBuilder.DropTable(
+                name: "Product_Localized");
 
             migrationBuilder.DropTable(
                 name: "ProductCategory_Localized");
+
+            migrationBuilder.DropTable(
+                name: "ProductMedias");
+
+            migrationBuilder.DropTable(
+                name: "Products_Post");
 
             migrationBuilder.DropTable(
                 name: "Provider_Localized");
@@ -913,10 +1196,10 @@ namespace Asala.Api.Migrations
                 name: "Messages");
 
             migrationBuilder.DropTable(
-                name: "Category");
+                name: "Product");
 
             migrationBuilder.DropTable(
-                name: "Provider");
+                name: "Category");
 
             migrationBuilder.DropTable(
                 name: "Permission");
@@ -926,6 +1209,12 @@ namespace Asala.Api.Migrations
 
             migrationBuilder.DropTable(
                 name: "Role");
+
+            migrationBuilder.DropTable(
+                name: "ProductCategory");
+
+            migrationBuilder.DropTable(
+                name: "Provider");
 
             migrationBuilder.DropTable(
                 name: "User");

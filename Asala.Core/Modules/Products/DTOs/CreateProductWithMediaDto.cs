@@ -10,4 +10,6 @@ public class CreateProductWithMediaDto
     public string? Description { get; set; }
     public List<string> MediaUrls { get; set; } = new List<string>();
     public bool IsActive { get; set; } = true;
+    public List<CreateProductLocalizedDto> Localizeds { get; set; } = [];
 }
+

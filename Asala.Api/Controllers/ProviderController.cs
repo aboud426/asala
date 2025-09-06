@@ -316,4 +316,29 @@ public class ProviderController : BaseController
         var result = await _providerService.GetLocalizationsAsync(id, cancellationToken);
         return CreateResponse(result);
     }
+
+    /// <summary>
+    /// Get providers dropdown list with localization support
+    /// </summary>
+    /// <param name="languageCode">Language code for localized content (e.g., 'en', 'ar')</param>
+    /// <param name="activeOnly">Filter by active providers only (default: true)</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of providers with localized business names for dropdown selection</returns>
+    /// <response code="200">Localized dropdown retrieved successfully</response>
+    /// <response code="400">Invalid language code</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("dropdown")]
+    public async Task<IActionResult> GetLocalizedDropdown(
+        [FromQuery] string languageCode,
+        [FromQuery] bool activeOnly = true,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var result = await _providerService.GetLocalizedDropdownAsync(
+            languageCode,
+            activeOnly,
+            cancellationToken
+        );
+        return CreateResponse(result);
+    }
 }

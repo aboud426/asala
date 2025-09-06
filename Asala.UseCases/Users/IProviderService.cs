@@ -42,6 +42,12 @@ public interface IProviderService
         CancellationToken cancellationToken = default
     );
     
+    Task<Result<IEnumerable<ProviderLocalizedDropdownDto>>> GetLocalizedDropdownAsync(
+        string languageCode,
+        bool activeOnly = true,
+        CancellationToken cancellationToken = default
+    );
+    
     Task<Result<IEnumerable<ProviderTreeDto>>> GetProviderTreeAsync(
         int? rootId = null,
         string? languageCode = null,

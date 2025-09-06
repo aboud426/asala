@@ -2,20 +2,20 @@ using Asala.Core.Common.Abstractions;
 using Asala.Core.Db;
 using Asala.Core.Db.Repositories;
 using Asala.Core.Db.UnitOfWork;
-using Asala.Core.Modules.Languages;
 using Asala.Core.Modules;
 using Asala.Core.Modules.Categories.Db;
-using Asala.Core.Modules.Posts.Db;
-using Asala.Core.Modules.Products.Db;
-using Asala.UseCases.Languages;
-using Asala.UseCases.Messages;
-using Asala.UseCases.Categories;
-using Asala.UseCases.Posts;
-using Asala.UseCases.Products;
 using Asala.Core.Modules.Categories.Db;
 using Asala.Core.Modules.Languages;
+using Asala.Core.Modules.Languages;
+using Asala.Core.Modules.Posts.Db;
+using Asala.Core.Modules.Products.Db;
 using Asala.Core.Modules.Users.Db;
 using Asala.UseCases.Categories;
+using Asala.UseCases.Categories;
+using Asala.UseCases.Languages;
+using Asala.UseCases.Messages;
+using Asala.UseCases.Posts;
+using Asala.UseCases.Products;
 using Asala.UseCases.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -32,7 +32,7 @@ public static class ServiceCollectionExtensions
     {
         // Language repositories
         services.AddScoped<ILanguageRepository, LanguageRepository>();
-        
+
         // Language services
         services.AddScoped<ILanguageService, LanguageService>();
         services.AddScoped<IMessageService, MessageService>();
@@ -53,24 +53,22 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IProductCategoryService, ProductCategoryService>();
         services.AddScoped<IProviderCategoryService, ProviderCategoryService>();
 
-        
         // Posts repositories
         services.AddScoped<IPostRepository, PostRepository>();
         services.AddScoped<IPostLocalizedRepository, PostLocalizedRepository>();
         services.AddScoped<IPostMediaRepository, PostMediaRepository>();
-        
+
         // Posts services
-        services.AddScoped<IPostService, PostService>();
-        
+        // services.AddScoped<IPostService, PostService>();
+
         // Products repositories
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IProductLocalizedRepository, ProductLocalizedRepository>();
         services.AddScoped<IProductMediaRepository, ProductMediaRepository>();
         services.AddScoped<IProductsPostRepository, ProductsPostRepository>();
-        
+
         // Products services
         services.AddScoped<IProductService, ProductService>();
-      
 
         // User repositories
         services.AddScoped<IUserRepository, UserRepository>();
@@ -82,6 +80,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IOtpRepository, OtpRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IPermissionRepository, PermissionRepository>();
+        services.AddScoped<ICurrencyRepository, CurrencyRepository>();
         services.AddScoped<IUserRoleRepository, UserRoleRepository>();
         services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
 
@@ -89,6 +88,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IPermissionService, PermissionService>();
+        services.AddScoped<ICurrencyService, CurrencyService>();
         services.AddScoped<IRolePermissionService, RolePermissionService>();
         services.AddScoped<ICustomerService, CustomerService>();
         services.AddScoped<IProviderService, ProviderService>();
