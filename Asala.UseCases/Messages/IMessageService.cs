@@ -49,4 +49,16 @@ public interface IMessageService
     /// Toggles the activation status of a message
     /// </summary>
     Task<Result> ToggleActivationAsync(int id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets a message by id with all its localizations
+    /// </summary>
+    Task<Result<MessageDto?>> GetByIdAsync(int id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets message IDs that are missing translations
+    /// </summary>
+    Task<Result<IEnumerable<int>>> GetMessagesMissingTranslationsAsync(
+        CancellationToken cancellationToken = default
+    );
 }

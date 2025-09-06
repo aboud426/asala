@@ -11,6 +11,11 @@ import {
   Store,
   Globe,
   MessageSquare,
+  FolderTree,
+  ShoppingBag,
+  Shield,
+  Key,
+  UserCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -47,6 +52,12 @@ const navigationItems = [
     icon: Users,
   },
   {
+    title: 'Providers',
+    titleAr: 'مقدمو الخدمات',
+    href: '/providers',
+    icon: Store,
+  },
+  {
     title: 'Analytics',
     titleAr: 'التحليلات',
     href: '/analytics',
@@ -59,10 +70,40 @@ const navigationItems = [
     icon: Globe,
   },
   {
+    title: 'Categories',
+    titleAr: 'الفئات',
+    href: '/categories',
+    icon: FolderTree,
+  },
+  {
+    title: 'Product Categories',
+    titleAr: 'فئات المنتجات',
+    href: '/product-categories',
+    icon: ShoppingBag,
+  },
+  {
     title: 'Messages',
     titleAr: 'الرسائل',
     href: '/messages',
     icon: MessageSquare,
+  },
+  {
+    title: 'Employees',
+    titleAr: 'الموظفين',
+    href: '/employees',
+    icon: UserCheck,
+  },
+  {
+    title: 'Roles',
+    titleAr: 'الأدوار',
+    href: '/roles',
+    icon: Shield,
+  },
+  {
+    title: 'Permissions',
+    titleAr: 'الصلاحيات',
+    href: '/permissions',
+    icon: Key,
   },
   {
     title: 'Settings',
@@ -97,7 +138,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
             </div>
           )}
         </div>
-        
+
         {/* <Button
           variant="ghost"
           size="sm"
@@ -107,7 +148,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
             isCollapsed && 'hidden'
           )}
         > */}
-          {/* <ChevronLeft className={cn('h-4 w-4', isRTL && 'rotate-180')} /> */}
+        {/* <ChevronLeft className={cn('h-4 w-4', isRTL && 'rotate-180')} /> */}
         {/* </Button> */}
       </div>
 
@@ -116,7 +157,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
         {navigationItems.map((item) => {
           const isActive = location.pathname === item.href;
           const Icon = item.icon;
-          
+
           return (
             <NavLink
               key={item.href}

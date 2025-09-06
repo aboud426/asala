@@ -2,8 +2,8 @@ using System;
 using System.Linq.Expressions;
 using Asala.Core.Common.Abstractions;
 using Asala.Core.Common.Models;
-using Asala.Core.Modules.Categories.DTOs;
 using Asala.Core.Modules.Categories.Db;
+using Asala.Core.Modules.Categories.DTOs;
 using Asala.Core.Modules.Categories.Models;
 using Asala.Core.Modules.Languages;
 
@@ -16,11 +16,20 @@ public class CategoryService : ICategoryService
     private readonly ILanguageRepository _languageRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public CategoryService(ICategoryRepository categoryRepository, ICategoryLocalizedRepository categoryLocalizedRepository, ILanguageRepository languageRepository, IUnitOfWork unitOfWork)
+    public CategoryService(
+        ICategoryRepository categoryRepository,
+        ICategoryLocalizedRepository categoryLocalizedRepository,
+        ILanguageRepository languageRepository,
+        IUnitOfWork unitOfWork
+    )
     {
-        _categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
-        _categoryLocalizedRepository = categoryLocalizedRepository ?? throw new ArgumentNullException(nameof(categoryLocalizedRepository));
-        _languageRepository = languageRepository ?? throw new ArgumentNullException(nameof(languageRepository));
+        _categoryRepository =
+            categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
+        _categoryLocalizedRepository =
+            categoryLocalizedRepository
+            ?? throw new ArgumentNullException(nameof(categoryLocalizedRepository));
+        _languageRepository =
+            languageRepository ?? throw new ArgumentNullException(nameof(languageRepository));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
     }
 
@@ -28,7 +37,8 @@ public class CategoryService : ICategoryService
         int page,
         int pageSize,
         bool? activeOnly = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         Expression<Func<Category, bool>> filter = activeOnly switch
         {
@@ -41,12 +51,18 @@ public class CategoryService : ICategoryService
             page,
             pageSize,
             filter: filter,
-            orderBy: q => q.OrderBy(c => c.Name));
+            orderBy: q => q.OrderBy(c => c.Name)
+        );
 
         if (result.IsFailure)
             return Result.Failure<PaginatedResult<CategoryDto>>(result.MessageCode);
 
-        var categoryDtos = result.Value!.Items.Select(MapToDto).ToList();
+        var categoryDtos = new List<CategoryDto>();
+        foreach (var category in result.Value!.Items)
+        {
+            var dto = await MapToDtoAsync(category, cancellationToken);
+            categoryDtos.Add(dto);
+        }
         var paginatedResult = new PaginatedResult<CategoryDto>(
             categoryDtos,
             result.Value.TotalCount,
@@ -59,7 +75,8 @@ public class CategoryService : ICategoryService
 
     public async Task<Result<CategoryDto>> CreateAsync(
         CreateCategoryDto createDto,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         if (createDto == null)
             return Result.Failure<CategoryDto>("CreateDto cannot be null");
@@ -70,7 +87,10 @@ public class CategoryService : ICategoryService
         // Check if parent category exists
         if (createDto.ParentId.HasValue)
         {
-            var parentExistsResult = await _categoryRepository.AnyAsync(c => c.Id == createDto.ParentId.Value && !c.IsDeleted, cancellationToken);
+            var parentExistsResult = await _categoryRepository.AnyAsync(
+                c => c.Id == createDto.ParentId.Value && !c.IsDeleted,
+                cancellationToken
+            );
             if (parentExistsResult.IsFailure)
                 return Result.Failure<CategoryDto>(parentExistsResult.MessageCode);
             if (!parentExistsResult.Value)
@@ -82,9 +102,10 @@ public class CategoryService : ICategoryService
             Name = createDto.Name.Trim(),
             Description = createDto.Description.Trim(),
             ParentId = createDto.ParentId,
+            ImageUrl = createDto.ImageUrl,
             IsActive = createDto.IsActive,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
         };
 
         var result = await _categoryRepository.AddAsync(category, cancellationToken);
@@ -95,13 +116,28 @@ public class CategoryService : ICategoryService
         if (saveResult.IsFailure)
             return Result.Failure<CategoryDto>(saveResult.MessageCode);
 
-        return Result.Success(MapToDto(result.Value!));
+        var categoryDto = await MapToDtoAsync(result.Value!, cancellationToken);
+
+        // Handle localizations if provided
+        if (createDto.Localizations?.Count > 0)
+        {
+            await CreateLocalizationsAsync(
+                result.Value!.Id,
+                createDto.Localizations,
+                cancellationToken
+            );
+            // Refresh the DTO with localizations
+            categoryDto = await MapToDtoAsync(result.Value!, cancellationToken);
+        }
+
+        return Result.Success(categoryDto);
     }
 
     public async Task<Result<CategoryDto?>> UpdateAsync(
         int id,
         UpdateCategoryDto updateDto,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         if (updateDto == null)
             return Result.Failure<CategoryDto?>("UpdateDto cannot be null");
@@ -122,7 +158,10 @@ public class CategoryService : ICategoryService
             if (updateDto.ParentId.Value == id)
                 return Result.Failure<CategoryDto?>("Category cannot be its own parent");
 
-            var parentExistsResult = await _categoryRepository.AnyAsync(c => c.Id == updateDto.ParentId.Value && !c.IsDeleted, cancellationToken);
+            var parentExistsResult = await _categoryRepository.AnyAsync(
+                c => c.Id == updateDto.ParentId.Value && !c.IsDeleted,
+                cancellationToken
+            );
             if (parentExistsResult.IsFailure)
                 return Result.Failure<CategoryDto?>(parentExistsResult.MessageCode);
             if (!parentExistsResult.Value)
@@ -132,6 +171,7 @@ public class CategoryService : ICategoryService
         category.Value.Name = updateDto.Name.Trim();
         category.Value.Description = updateDto.Description.Trim();
         category.Value.ParentId = updateDto.ParentId;
+        category.Value.ImageUrl = updateDto.ImageUrl;
         category.Value.IsActive = updateDto.IsActive;
         category.Value.UpdatedAt = DateTime.UtcNow;
 
@@ -141,7 +181,14 @@ public class CategoryService : ICategoryService
         if (saveResult.IsFailure)
             return Result.Failure<CategoryDto?>(saveResult.MessageCode);
 
-        return Result.Success<CategoryDto?>(MapToDto(category.Value));
+        // Handle localizations if provided
+        if (updateDto.Localizations?.Count > 0)
+        {
+            await UpdateLocalizationsAsync(id, updateDto.Localizations, cancellationToken);
+        }
+
+        var categoryDto = await MapToDtoAsync(category.Value, cancellationToken);
+        return Result.Success<CategoryDto?>(categoryDto);
     }
 
     public async Task<Result> SoftDeleteAsync(int id, CancellationToken cancellationToken = default)
@@ -161,7 +208,10 @@ public class CategoryService : ICategoryService
         return await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<Result> ToggleActivationAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Result> ToggleActivationAsync(
+        int id,
+        CancellationToken cancellationToken = default
+    )
     {
         var category = await _categoryRepository.GetByIdAsync(id, cancellationToken);
         if (category.IsFailure)
@@ -179,21 +229,26 @@ public class CategoryService : ICategoryService
     }
 
     public async Task<Result<IEnumerable<CategoryDropdownDto>>> GetDropdownAsync(
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var categories = await _categoryRepository.GetAsync(
             filter: c => c.IsActive,
-            orderBy: q => q.OrderBy(c => c.Name));
+            orderBy: q => q.OrderBy(c => c.Name)
+        );
 
         if (categories.IsFailure)
             return Result.Failure<IEnumerable<CategoryDropdownDto>>(categories.MessageCode);
 
-        var dropdownDtos = categories.Value!.Select(c => new CategoryDropdownDto
-        {
-            Id = c.Id,
-            Name = c.Name,
-            ParentId = c.ParentId
-        }).ToList();
+        var dropdownDtos = categories
+            .Value!.Select(c => new CategoryDropdownDto
+            {
+                Id = c.Id,
+                Name = c.Name,
+                ParentId = c.ParentId,
+                ImageUrl = c.ImageUrl,
+            })
+            .ToList();
 
         return Result.Success<IEnumerable<CategoryDropdownDto>>(dropdownDtos);
     }
@@ -201,11 +256,13 @@ public class CategoryService : ICategoryService
     public async Task<Result<IEnumerable<CategoryDto>>> GetSubcategoriesAsync(
         int parentId,
         string? languageCode = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var subcategories = await _categoryRepository.GetAsync(
             filter: c => c.ParentId == parentId && c.IsActive && !c.IsDeleted,
-            orderBy: q => q.OrderBy(c => c.Name));
+            orderBy: q => q.OrderBy(c => c.Name)
+        );
 
         if (subcategories.IsFailure)
             return Result.Failure<IEnumerable<CategoryDto>>(subcategories.MessageCode);
@@ -213,7 +270,7 @@ public class CategoryService : ICategoryService
         var subcategoryDtos = new List<CategoryDto>();
         foreach (var category in subcategories.Value!)
         {
-            var dto = await MapToDtoWithLocalizationAsync(category, languageCode, cancellationToken);
+            var dto = await MapToDtoAsync(category, cancellationToken);
             subcategoryDtos.Add(dto);
         }
 
@@ -223,38 +280,19 @@ public class CategoryService : ICategoryService
     public async Task<Result<IEnumerable<CategoryTreeDto>>> GetCategoryTreeAsync(
         int? rootId = null,
         string? languageCode = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         // Get all active categories
         var allCategories = await _categoryRepository.GetAsync(
-            filter: c => c.IsActive && !c.IsDeleted,
-            orderBy: q => q.OrderBy(c => c.Name));
+            filter: c => !c.IsDeleted,
+            orderBy: q => q.OrderBy(c => c.Name)
+        );
 
         if (allCategories.IsFailure)
             return Result.Failure<IEnumerable<CategoryTreeDto>>(allCategories.MessageCode);
 
         var categories = allCategories.Value!.ToList();
-
-        // Get all localizations for the specified language if provided
-        Dictionary<int, CategoryLocalized> localizations = new();
-        if (!string.IsNullOrWhiteSpace(languageCode))
-        {
-            // First, get the language ID from the language code
-            var languageResult = await _languageRepository.GetFirstOrDefaultAsync(
-                filter: l => l.Code == languageCode && l.IsActive && !l.IsDeleted);
-
-            if (languageResult.IsSuccess && languageResult.Value != null)
-            {
-                var languageId = languageResult.Value.Id;
-                var localizationsResult = await _categoryLocalizedRepository.GetAsync(
-                    filter: cl => cl.LanguageId == languageId);
-                
-                if (localizationsResult.IsSuccess && localizationsResult.Value != null)
-                {
-                    localizations = localizationsResult.Value.ToDictionary(cl => cl.CategoryId, cl => cl);
-                }
-            }
-        }
 
         // If rootId is specified, start from that category
         if (rootId.HasValue)
@@ -263,83 +301,212 @@ public class CategoryService : ICategoryService
             if (rootCategory == null)
                 return Result.Failure<IEnumerable<CategoryTreeDto>>("Root category not found");
 
-            var tree = BuildCategoryTree(rootCategory, categories, localizations);
+            var tree = await BuildCategoryTreeAsync(rootCategory, categories, cancellationToken);
             return Result.Success<IEnumerable<CategoryTreeDto>>(new List<CategoryTreeDto> { tree });
         }
 
         // Otherwise, get all root categories (categories with no parent)
         var rootCategories = categories.Where(c => c.ParentId == null).ToList();
-        var trees = rootCategories.Select(root => BuildCategoryTree(root, categories, localizations)).ToList();
+        var trees = new List<CategoryTreeDto>();
+        foreach (var rootCategory in rootCategories)
+        {
+            var tree = await BuildCategoryTreeAsync(rootCategory, categories, cancellationToken);
+            trees.Add(tree);
+        }
 
         return Result.Success<IEnumerable<CategoryTreeDto>>(trees);
     }
 
-    private static CategoryTreeDto BuildCategoryTree(Category category, List<Category> allCategories, Dictionary<int, CategoryLocalized> localizations)
+    public async Task<Result<IEnumerable<int>>> GetCategoriesMissingTranslationsAsync(
+        CancellationToken cancellationToken = default
+    )
     {
-        var localization = localizations.GetValueOrDefault(category.Id);
-        
+        // Delegate to the optimized repository method that uses efficient SQL joins
+        return await _categoryRepository.GetCategoriesMissingTranslationsAsync(cancellationToken);
+    }
+
+    public async Task<Result<CategoryDto?>> GetByIdAsync(
+        int id,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var categoryResult = await _categoryRepository.GetByIdAsync(id, cancellationToken);
+        if (categoryResult.IsFailure)
+            return Result.Failure<CategoryDto?>(categoryResult.MessageCode);
+
+        if (categoryResult.Value == null || categoryResult.Value.IsDeleted)
+            return Result.Failure<CategoryDto?>("Category not found");
+
+        var categoryDto = await MapToDtoAsync(categoryResult.Value, cancellationToken);
+        return Result.Success<CategoryDto?>(categoryDto);
+    }
+
+    private async Task<CategoryTreeDto> BuildCategoryTreeAsync(
+        Category category,
+        List<Category> allCategories,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var localizations = await GetCategoryLocalizationsAsync(category.Id, cancellationToken);
+
         var treeDto = new CategoryTreeDto
         {
             Id = category.Id,
             Name = category.Name,
             Description = category.Description,
-            LocalizedName = localization?.NameLocalized,
-            LocalizedDescription = localization?.DescriptionLocalized,
             ParentId = category.ParentId,
+            ImageUrl = category.ImageUrl,
             IsActive = category.IsActive,
-            Children = new List<CategoryTreeDto>()
+            Localizations = localizations,
+            Children = new List<CategoryTreeDto>(),
         };
 
         // Find all direct children of this category
         var children = allCategories.Where(c => c.ParentId == category.Id).ToList();
-        
+
         // Recursively build the tree for each child
         foreach (var child in children)
         {
-            treeDto.Children.Add(BuildCategoryTree(child, allCategories, localizations));
+            var childTree = await BuildCategoryTreeAsync(child, allCategories, cancellationToken);
+            treeDto.Children.Add(childTree);
         }
 
         return treeDto;
     }
 
-    private async Task<CategoryDto> MapToDtoWithLocalizationAsync(Category category, string? languageCode, CancellationToken cancellationToken)
+    private async Task CreateLocalizationsAsync(
+        int categoryId,
+        List<CreateCategoryLocalizedDto> localizations,
+        CancellationToken cancellationToken = default
+    )
     {
-        var dto = MapToDto(category);
-
-        if (!string.IsNullOrWhiteSpace(languageCode))
+        foreach (var localizationDto in localizations)
         {
-            // First, get the language ID from the language code
-            var languageResult = await _languageRepository.GetFirstOrDefaultAsync(
-                filter: l => l.Code == languageCode && l.IsActive && !l.IsDeleted);
-
-            if (languageResult.IsSuccess && languageResult.Value != null)
+            var localization = new CategoryLocalized
             {
-                var languageId = languageResult.Value.Id;
-                var localizationResult = await _categoryLocalizedRepository.GetFirstOrDefaultAsync(
-                    filter: cl => cl.CategoryId == category.Id && cl.LanguageId == languageId);
+                CategoryId = categoryId,
+                NameLocalized = localizationDto.NameLocalized,
+                DescriptionLocalized = localizationDto.DescriptionLocalized,
+                LanguageId = localizationDto.LanguageId,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+            };
 
-                if (localizationResult.IsSuccess && localizationResult.Value != null)
+            await _categoryLocalizedRepository.AddAsync(localization, cancellationToken);
+        }
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task UpdateLocalizationsAsync(
+        int categoryId,
+        List<UpdateCategoryLocalizedDto> localizations,
+        CancellationToken cancellationToken = default
+    )
+    {
+        foreach (var localizationDto in localizations)
+        {
+            if (localizationDto.Id.HasValue)
+            {
+                // Update existing localization
+                var existingResult = await _categoryLocalizedRepository.GetByIdAsync(
+                    localizationDto.Id.Value,
+                    cancellationToken
+                );
+                if (existingResult.IsSuccess && existingResult.Value != null)
                 {
-                    dto.LocalizedName = localizationResult.Value.NameLocalized;
-                    dto.LocalizedDescription = localizationResult.Value.DescriptionLocalized;
+                    existingResult.Value.NameLocalized = localizationDto.NameLocalized;
+                    existingResult.Value.DescriptionLocalized =
+                        localizationDto.DescriptionLocalized;
+                    existingResult.Value.LanguageId = localizationDto.LanguageId;
+                    existingResult.Value.IsActive = localizationDto.IsActive;
+                    existingResult.Value.UpdatedAt = DateTime.UtcNow;
+
+                    _categoryLocalizedRepository.Update(existingResult.Value);
                 }
+            }
+            else
+            {
+                // Create new localization
+                var localization = new CategoryLocalized
+                {
+                    CategoryId = categoryId,
+                    NameLocalized = localizationDto.NameLocalized,
+                    DescriptionLocalized = localizationDto.DescriptionLocalized,
+                    LanguageId = localizationDto.LanguageId,
+                    IsActive = localizationDto.IsActive,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                };
+
+                await _categoryLocalizedRepository.AddAsync(localization, cancellationToken);
             }
         }
 
-        return dto;
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
-    private static CategoryDto MapToDto(Category category)
+    private async Task<CategoryDto> MapToDtoAsync(
+        Category category,
+        CancellationToken cancellationToken = default
+    )
     {
+        var localizations = await GetCategoryLocalizationsAsync(category.Id, cancellationToken);
+
         return new CategoryDto
         {
             Id = category.Id,
             Name = category.Name,
             Description = category.Description,
             ParentId = category.ParentId,
+            ImageUrl = category.ImageUrl,
             IsActive = category.IsActive,
             CreatedAt = category.CreatedAt,
-            UpdatedAt = category.UpdatedAt
+            UpdatedAt = category.UpdatedAt,
+            Localizations = localizations,
         };
+    }
+
+    private async Task<List<CategoryLocalizedDto>> GetCategoryLocalizationsAsync(
+        int categoryId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var localizationsResult = await _categoryLocalizedRepository.GetAsync(filter: cl =>
+            cl.CategoryId == categoryId
+        );
+
+        if (localizationsResult.IsFailure || localizationsResult.Value == null)
+            return [];
+
+        var localizations = new List<CategoryLocalizedDto>();
+        foreach (var localization in localizationsResult.Value)
+        {
+            var languageResult = await _languageRepository.GetByIdAsync(
+                localization.LanguageId,
+                cancellationToken
+            );
+            if (languageResult.IsSuccess && languageResult.Value != null)
+            {
+                localizations.Add(
+                    new CategoryLocalizedDto
+                    {
+                        Id = localization.Id,
+                        CategoryId = localization.CategoryId,
+                        NameLocalized = localization.NameLocalized,
+                        DescriptionLocalized = localization.DescriptionLocalized,
+                        LanguageId = localization.LanguageId,
+                        LanguageName = languageResult.Value.Name,
+                        LanguageCode = languageResult.Value.Code,
+                        IsActive = localization.IsActive,
+                        CreatedAt = localization.CreatedAt,
+                        UpdatedAt = localization.UpdatedAt,
+                    }
+                );
+            }
+        }
+
+        return localizations;
     }
 }

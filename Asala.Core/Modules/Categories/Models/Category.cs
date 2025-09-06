@@ -7,5 +7,5 @@ public class Category : BaseEntity<int>
     public string Name { get; set; } = null!;
     public string Description { get; set; } = null!;
     public int? ParentId { get; set; }
-    
+    public string? ImageUrl { get; set; }
 }

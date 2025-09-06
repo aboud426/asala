@@ -73,6 +73,8 @@ import messageService, {
   PaginatedResult 
 } from '@/services/messageService';
 import languageService, { LanguageDropdownDto } from '@/services/languageService';
+import MissingMessageTranslationsWarning from '@/components/ui/missing-message-translations-warning';
+import MissingMessageTranslationsModal from '@/components/ui/missing-message-translations-modal';
 
 const Messages: React.FC = () => {
   const { isRTL } = useDirection();
@@ -86,6 +88,8 @@ const Messages: React.FC = () => {
   const [selectedMessageForDetails, setSelectedMessageForDetails] = useState<Message | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(5);
+  const [isMissingTranslationsModalOpen, setIsMissingTranslationsModalOpen] = useState(false);
+  const [dismissedWarning, setDismissedWarning] = useState(false);
 
   // Form setup
   const createForm = useForm<CreateMessageDto>({
@@ -157,6 +161,13 @@ const Messages: React.FC = () => {
   const { data: languagesData } = useQuery({
     queryKey: ['languages-dropdown'],
     queryFn: () => languageService.getLanguagesDropdown(),
+  });
+
+  // Query for messages missing translations
+  const { data: missingTranslationsIds } = useQuery({
+    queryKey: ['messages-missing-translations'],
+    queryFn: () => messageService.getMessagesMissingTranslations(),
+    refetchInterval: 30000, // Refetch every 30 seconds
   });
 
   // Mutations
@@ -325,6 +336,16 @@ const Messages: React.FC = () => {
             {isRTL ? 'إضافة رسالة جديدة' : 'Add New Message'}
           </Button>
         </div>
+
+        {/* Missing Translations Warning */}
+        {missingTranslationsIds && missingTranslationsIds.length > 0 && !dismissedWarning && (
+          <MissingMessageTranslationsWarning
+            missingCount={missingTranslationsIds.length}
+            onApplyTranslations={() => setIsMissingTranslationsModalOpen(true)}
+            onDismiss={() => setDismissedWarning(true)}
+            className="mb-6"
+          />
+        )}
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-3">
@@ -1143,6 +1164,15 @@ const Messages: React.FC = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Missing Translations Modal */}
+        {missingTranslationsIds && missingTranslationsIds.length > 0 && (
+          <MissingMessageTranslationsModal
+            isOpen={isMissingTranslationsModalOpen}
+            onOpenChange={setIsMissingTranslationsModalOpen}
+            missingMessageIds={missingTranslationsIds}
+          />
+        )}
       </div>
     </DashboardLayout>
   );

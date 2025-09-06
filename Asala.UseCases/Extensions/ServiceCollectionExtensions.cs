@@ -12,6 +12,11 @@ using Asala.UseCases.Messages;
 using Asala.UseCases.Categories;
 using Asala.UseCases.Posts;
 using Asala.UseCases.Products;
+using Asala.Core.Modules.Categories.Db;
+using Asala.Core.Modules.Languages;
+using Asala.Core.Modules.Users.Db;
+using Asala.UseCases.Categories;
+using Asala.UseCases.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,18 +36,23 @@ public static class ServiceCollectionExtensions
         // Language services
         services.AddScoped<ILanguageService, LanguageService>();
         services.AddScoped<IMessageService, MessageService>();
-        
+        services.AddScoped<MessageCodesSeederService>();
+
         // Category repositories
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ICategoryLocalizedRepository, CategoryLocalizedRepository>();
         services.AddScoped<IProductCategoryRepository, ProductCategoryRepository>();
-        services.AddScoped<IProductCategoryLocalizedRepository, ProductCategoryLocalizedRepository>();
+        services.AddScoped<
+            IProductCategoryLocalizedRepository,
+            ProductCategoryLocalizedRepository
+        >();
         services.AddScoped<IProviderCategoryRepository, ProviderCategoryRepository>();
-        
+
         // Category services
         services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<IProductCategoryService, ProductCategoryService>();
         services.AddScoped<IProviderCategoryService, ProviderCategoryService>();
+
         
         // Posts repositories
         services.AddScoped<IPostRepository, PostRepository>();
@@ -60,7 +70,33 @@ public static class ServiceCollectionExtensions
         
         // Products services
         services.AddScoped<IProductService, ProductService>();
-        
+      
+
+        // User repositories
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ICustomerRepository, CustomerRepository>();
+        services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+        services.AddScoped<IProviderRepository, ProviderRepository>();
+        services.AddScoped<IProviderLocalizedRepository, ProviderLocalizedRepository>();
+        services.AddScoped<IProviderMediaRepository, ProviderMediaRepository>();
+        services.AddScoped<IOtpRepository, OtpRepository>();
+        services.AddScoped<IRoleRepository, RoleRepository>();
+        services.AddScoped<IPermissionRepository, PermissionRepository>();
+        services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+        services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
+
+        // User services
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IRoleService, RoleService>();
+        services.AddScoped<IPermissionService, PermissionService>();
+        services.AddScoped<IRolePermissionService, RolePermissionService>();
+        services.AddScoped<ICustomerService, CustomerService>();
+        services.AddScoped<IProviderService, ProviderService>();
+        services.AddScoped<IEmployeeService, EmployeeService>();
+        services.AddScoped<IOtpService, OtpService>();
+        services.AddScoped<IAuthenticationService, AuthenticationService>();
+        services.AddScoped<IAdminService, AdminService>();
+
         return services;
     }
 }

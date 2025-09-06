@@ -9,10 +9,22 @@ import Index from "./pages/Index";
 import Orders from "./pages/Orders";
 import Products from "./pages/Products";
 import Customers from "./pages/Customers";
+import Providers from "./pages/Providers";
+import CreateProvider from "./pages/CreateProvider";
+import ProviderDetails from "./pages/ProviderDetails";
+import EditProvider from "./pages/EditProvider";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import Languages from "./pages/Languages";
+import Categories from "./pages/Categories";
+import CategoriesTree from "./pages/CategoriesTree";
+import ProductCategories from "./pages/ProductCategories";
+import ProductCategoriesTree from "./pages/ProductCategoriesTree";
 import Messages from "./pages/Messages";
+import Employees from "./pages/Employees";
+import Roles from "./pages/Roles";
+import RolePermissions from "./pages/RolePermissions";
+import Permissions from "./pages/Permissions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,9 +42,21 @@ const App = () => (
               <Route path="/orders" element={<Orders />} />
               <Route path="/products" element={<Products />} />
               <Route path="/customers" element={<Customers />} />
+              <Route path="/providers" element={<Providers />} />
+              <Route path="/providers/create" element={<CreateProvider />} />
+              <Route path="/providers/:id/edit" element={<EditProvider />} />
+              <Route path="/providers/:id" element={<ProviderDetails />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/languages" element={<Languages />} />
+              <Route path="/categories" element={<Categories />} />
+              <Route path="/categories/tree" element={<CategoriesTree />} />
+              <Route path="/product-categories" element={<ProductCategories />} />
+              <Route path="/product-categories/tree" element={<ProductCategoriesTree />} />
               <Route path="/messages" element={<Messages />} />
+              <Route path="/employees" element={<Employees />} />
+              <Route path="/roles" element={<Roles />} />
+              <Route path="/roles/:roleId/permissions" element={<RolePermissions />} />
+              <Route path="/permissions" element={<Permissions />} />
               <Route path="/settings" element={<Settings />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

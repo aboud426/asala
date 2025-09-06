@@ -35,4 +35,8 @@ public interface ICategoryService
         string? languageCode = null,
         CancellationToken cancellationToken = default
     );
+    Task<Result<IEnumerable<int>>> GetCategoriesMissingTranslationsAsync(
+        CancellationToken cancellationToken = default
+    );
+    Task<Result<CategoryDto?>> GetByIdAsync(int id, CancellationToken cancellationToken = default);
 }

@@ -198,6 +198,24 @@ class MessageService {
             throw new Error(response.message || 'Failed to delete message');
         }
     };
+
+    /**
+     * Get messages missing translations (returns message IDs)
+     * GET /api/messages/missing-translations
+     */
+    getMessagesMissingTranslations = async (): Promise<number[]> => {
+        const response = await this.request<number[]>('/missing-translations');
+
+        if (!response.success) {
+            throw new Error(response.message || 'Failed to fetch messages missing translations');
+        }
+
+        if (!response.data) {
+            throw new Error('No data returned from server');
+        }
+
+        return response.data;
+    };
 }
 
 // Export singleton instance

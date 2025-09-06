@@ -40,4 +40,11 @@ public interface IMessageRepository : IRepository<Message, int>
         int? excludeId = null,
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// Gets message IDs that are missing translations
+    /// </summary>
+    Task<Result<IEnumerable<int>>> GetMessagesMissingTranslationsAsync(
+        CancellationToken cancellationToken = default
+    );
 }

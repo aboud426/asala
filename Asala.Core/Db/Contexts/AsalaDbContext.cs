@@ -1,10 +1,11 @@
 using Asala.Core.Db.Configurations;
+using Asala.Core.Modules.Categories.Models;
 using Asala.Core.Modules.Languages;
 using Asala.Core.Modules.Messages.Models;
-using Asala.Core.Modules.Categories.Models;
 using Asala.Core.Modules.Posts.Models;
 using Asala.Core.Modules.Products.Models;
 using Asala.Core.Modules.Media.Models;
+using Asala.Core.Modules.Users.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Asala.Core.Db;
@@ -37,6 +38,21 @@ public class AsalaDbContext : DbContext
     // Media module
     public DbSet<Media> Medias => Set<Media>();
     public DbSet<MediaType> MediaTypes => Set<MediaType>();
+
+    // Users module
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Role> Roles => Set<Role>();
+    public DbSet<RoleLocalized> RoleLocalizations => Set<RoleLocalized>();
+    public DbSet<Permission> Permissions => Set<Permission>();
+    public DbSet<PermissionLocalized> PermissionLocalizations => Set<PermissionLocalized>();
+    public DbSet<UserRole> UserRoles => Set<UserRole>();
+    public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+    public DbSet<Customer> Customers => Set<Customer>();
+    public DbSet<Employee> Employees => Set<Employee>();
+    public DbSet<Provider> Providers => Set<Provider>();
+    public DbSet<ProviderLocalized> ProviderLocalizeds => Set<ProviderLocalized>();
+    public DbSet<ProviderMedia> ProviderMedias => Set<ProviderMedia>();
+    public DbSet<Otp> Otps => Set<Otp>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

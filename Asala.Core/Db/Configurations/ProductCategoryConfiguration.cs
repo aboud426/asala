@@ -22,6 +22,10 @@ public class ProductCategoryConfiguration : IEntityTypeConfiguration<ProductCate
             
         builder.Property(x => x.ParentId)
             .IsRequired(false);
+
+        builder.Property(x => x.ImageUrl)
+            .IsRequired(false)
+            .HasMaxLength(1024);
             
         // Foreign key relationship without navigation properties
         builder.HasIndex(x => x.ParentId);

@@ -1,3 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Dosis:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+/* Arabic Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Markazi+Text:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Changa:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -143,11 +165,13 @@ All colors MUST be HSL for proper theming.
 @layer base {
   * {
     @apply border-border;
+    font-family: inherit;
   }
 
   body {
     @apply bg-background text-foreground transition-colors;
     font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: inherit;
   }
 
   /* RTL Support */
@@ -224,5 +248,386 @@ All colors MUST be HSL for proper theming.
 
   .hover-lift:hover {
     @apply -translate-y-1 shadow-elegant;
+  }
+}
+
+/* Font Themes */
+@layer base {
+  .font-inter {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  .font-roboto {
+    font-family: 'Roboto', system-ui, -apple-system, sans-serif;
+  }
+
+  .font-poppins {
+    font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+  }
+
+  .font-nunito {
+    font-family: 'Nunito', system-ui, -apple-system, sans-serif;
+  }
+
+  .font-source-sans {
+    font-family: 'Source Sans 3', system-ui, -apple-system, sans-serif;
+  }
+
+  .font-work-sans {
+    font-family: 'Work Sans', system-ui, -apple-system, sans-serif;
+  }
+
+  .font-dosis {
+    font-family: 'Dosis', system-ui, -apple-system, sans-serif;
+  }
+
+  .font-outfit {
+    font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+  }
+
+  .font-space-grotesk {
+    font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  }
+
+  .font-system {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  /* Arabic Font Themes */
+  .font-amiri {
+    font-family: 'Amiri', serif;
+  }
+
+  .font-cairo {
+    font-family: 'Cairo', sans-serif;
+  }
+
+  .font-tajawal {
+    font-family: 'Tajawal', sans-serif;
+  }
+
+  .font-almarai {
+    font-family: 'Almarai', sans-serif;
+  }
+
+  .font-noto-sans-arabic {
+    font-family: 'Noto Sans Arabic', sans-serif;
+  }
+
+  .font-scheherazade {
+    font-family: 'Scheherazade New', serif;
+  }
+
+  .font-markazi-text {
+    font-family: 'Markazi Text', serif;
+  }
+
+  .font-reem-kufi {
+    font-family: 'Reem Kufi', sans-serif;
+  }
+
+  .font-changa {
+    font-family: 'Changa', sans-serif;
+  }
+
+  .font-ibm-plex-sans-arabic {
+    font-family: 'IBM Plex Sans Arabic', sans-serif;
+  }
+}
+
+/* Color Themes */
+@layer base {
+  /* Blue Theme (Default) */
+  .theme-blue:root {
+    --primary: 262 83% 58%;
+    --primary-light: 262 90% 65%;
+    --primary-dark: 262 75% 45%;
+    --ring: 262 83% 58%;
+    --sidebar-primary: 262 83% 58%;
+    --sidebar-ring: 262 83% 58%;
+    --gradient-primary: linear-gradient(135deg, hsl(262, 83%, 58%), hsl(262, 90%, 65%));
+  }
+
+  .theme-blue.dark {
+    --primary: 262 90% 65%;
+    --primary-light: 262 95% 72%;
+    --primary-dark: 262 83% 58%;
+    --ring: 262 90% 65%;
+    --sidebar-primary: 262 90% 65%;
+    --sidebar-ring: 262 90% 65%;
+    --gradient-primary: linear-gradient(135deg, hsl(262, 90%, 65%), hsl(262, 95%, 72%));
+  }
+
+  /* Purple Theme */
+  .theme-purple:root {
+    --primary: 280 89% 60%;
+    --primary-light: 280 95% 67%;
+    --primary-dark: 280 83% 53%;
+    --ring: 280 89% 60%;
+    --sidebar-primary: 280 89% 60%;
+    --sidebar-ring: 280 89% 60%;
+    --gradient-primary: linear-gradient(135deg, hsl(280, 89%, 60%), hsl(280, 95%, 67%));
+  }
+
+  .theme-purple.dark {
+    --primary: 280 95% 67%;
+    --primary-light: 280 100% 74%;
+    --primary-dark: 280 89% 60%;
+    --ring: 280 95% 67%;
+    --sidebar-primary: 280 95% 67%;
+    --sidebar-ring: 280 95% 67%;
+    --gradient-primary: linear-gradient(135deg, hsl(280, 95%, 67%), hsl(280, 100%, 74%));
+  }
+
+  /* Green Theme */
+  .theme-green:root {
+    --primary: 142 76% 36%;
+    --primary-light: 142 83% 43%;
+    --primary-dark: 142 69% 29%;
+    --ring: 142 76% 36%;
+    --sidebar-primary: 142 76% 36%;
+    --sidebar-ring: 142 76% 36%;
+    --gradient-primary: linear-gradient(135deg, hsl(142, 76%, 36%), hsl(142, 83%, 43%));
+  }
+
+  .theme-green.dark {
+    --primary: 142 83% 43%;
+    --primary-light: 142 90% 50%;
+    --primary-dark: 142 76% 36%;
+    --ring: 142 83% 43%;
+    --sidebar-primary: 142 83% 43%;
+    --sidebar-ring: 142 83% 43%;
+    --gradient-primary: linear-gradient(135deg, hsl(142, 83%, 43%), hsl(142, 90%, 50%));
+  }
+
+  /* Orange Theme */
+  .theme-orange:root {
+    --primary: 25 95% 53%;
+    --primary-light: 25 100% 60%;
+    --primary-dark: 25 89% 46%;
+    --ring: 25 95% 53%;
+    --sidebar-primary: 25 95% 53%;
+    --sidebar-ring: 25 95% 53%;
+    --gradient-primary: linear-gradient(135deg, hsl(25, 95%, 53%), hsl(25, 100%, 60%));
+  }
+
+  .theme-orange.dark {
+    --primary: 25 100% 60%;
+    --primary-light: 25 100% 67%;
+    --primary-dark: 25 95% 53%;
+    --ring: 25 100% 60%;
+    --sidebar-primary: 25 100% 60%;
+    --sidebar-ring: 25 100% 60%;
+    --gradient-primary: linear-gradient(135deg, hsl(25, 100%, 60%), hsl(25, 100%, 67%));
+  }
+
+  /* Red Theme */
+  .theme-red:root {
+    --primary: 0 84% 60%;
+    --primary-light: 0 90% 67%;
+    --primary-dark: 0 78% 53%;
+    --ring: 0 84% 60%;
+    --sidebar-primary: 0 84% 60%;
+    --sidebar-ring: 0 84% 60%;
+    --gradient-primary: linear-gradient(135deg, hsl(0, 84%, 60%), hsl(0, 90%, 67%));
+  }
+
+  .theme-red.dark {
+    --primary: 0 90% 67%;
+    --primary-light: 0 95% 74%;
+    --primary-dark: 0 84% 60%;
+    --ring: 0 90% 67%;
+    --sidebar-primary: 0 90% 67%;
+    --sidebar-ring: 0 90% 67%;
+    --gradient-primary: linear-gradient(135deg, hsl(0, 90%, 67%), hsl(0, 95%, 74%));
+  }
+
+  /* Pink Theme */
+  .theme-pink:root {
+    --primary: 330 81% 60%;
+    --primary-light: 330 87% 67%;
+    --primary-dark: 330 75% 53%;
+    --ring: 330 81% 60%;
+    --sidebar-primary: 330 81% 60%;
+    --sidebar-ring: 330 81% 60%;
+    --gradient-primary: linear-gradient(135deg, hsl(330, 81%, 60%), hsl(330, 87%, 67%));
+  }
+
+  .theme-pink.dark {
+    --primary: 330 87% 67%;
+    --primary-light: 330 93% 74%;
+    --primary-dark: 330 81% 60%;
+    --ring: 330 87% 67%;
+    --sidebar-primary: 330 87% 67%;
+    --sidebar-ring: 330 87% 67%;
+    --gradient-primary: linear-gradient(135deg, hsl(330, 87%, 67%), hsl(330, 93%, 74%));
+  }
+
+  /* Cyan Theme */
+  .theme-cyan:root {
+    --primary: 188 94% 43%;
+    --primary-light: 188 94% 50%;
+    --primary-dark: 188 94% 36%;
+    --ring: 188 94% 43%;
+    --sidebar-primary: 188 94% 43%;
+    --sidebar-ring: 188 94% 43%;
+    --gradient-primary: linear-gradient(135deg, hsl(188, 94%, 43%), hsl(188, 94%, 50%));
+  }
+
+  .theme-cyan.dark {
+    --primary: 188 94% 50%;
+    --primary-light: 188 94% 57%;
+    --primary-dark: 188 94% 43%;
+    --ring: 188 94% 50%;
+    --sidebar-primary: 188 94% 50%;
+    --sidebar-ring: 188 94% 50%;
+    --gradient-primary: linear-gradient(135deg, hsl(188, 94%, 50%), hsl(188, 94%, 57%));
+  }
+
+  /* Indigo Theme */
+  .theme-indigo:root {
+    --primary: 239 84% 67%;
+    --primary-light: 239 84% 74%;
+    --primary-dark: 239 84% 60%;
+    --ring: 239 84% 67%;
+    --sidebar-primary: 239 84% 67%;
+    --sidebar-ring: 239 84% 67%;
+    --gradient-primary: linear-gradient(135deg, hsl(239, 84%, 67%), hsl(239, 84%, 74%));
+  }
+
+  .theme-indigo.dark {
+    --primary: 239 84% 74%;
+    --primary-light: 239 84% 81%;
+    --primary-dark: 239 84% 67%;
+    --ring: 239 84% 74%;
+    --sidebar-primary: 239 84% 74%;
+    --sidebar-ring: 239 84% 74%;
+    --gradient-primary: linear-gradient(135deg, hsl(239, 84%, 74%), hsl(239, 84%, 81%));
+  }
+
+  /* Emerald Theme */
+  .theme-emerald:root {
+    --primary: 160 84% 39%;
+    --primary-light: 160 84% 46%;
+    --primary-dark: 160 84% 32%;
+    --ring: 160 84% 39%;
+    --sidebar-primary: 160 84% 39%;
+    --sidebar-ring: 160 84% 39%;
+    --gradient-primary: linear-gradient(135deg, hsl(160, 84%, 39%), hsl(160, 84%, 46%));
+  }
+
+  .theme-emerald.dark {
+    --primary: 160 84% 46%;
+    --primary-light: 160 84% 53%;
+    --primary-dark: 160 84% 39%;
+    --ring: 160 84% 46%;
+    --sidebar-primary: 160 84% 46%;
+    --sidebar-ring: 160 84% 46%;
+    --gradient-primary: linear-gradient(135deg, hsl(160, 84%, 46%), hsl(160, 84%, 53%));
+  }
+
+  /* Amber Theme */
+  .theme-amber:root {
+    --primary: 43 96% 56%;
+    --primary-light: 43 96% 63%;
+    --primary-dark: 43 96% 49%;
+    --ring: 43 96% 56%;
+    --sidebar-primary: 43 96% 56%;
+    --sidebar-ring: 43 96% 56%;
+    --gradient-primary: linear-gradient(135deg, hsl(43, 96%, 56%), hsl(43, 96%, 63%));
+  }
+
+  .theme-amber.dark {
+    --primary: 43 96% 63%;
+    --primary-light: 43 96% 70%;
+    --primary-dark: 43 96% 56%;
+    --ring: 43 96% 63%;
+    --sidebar-primary: 43 96% 63%;
+    --sidebar-ring: 43 96% 63%;
+    --gradient-primary: linear-gradient(135deg, hsl(43, 96%, 63%), hsl(43, 96%, 70%));
+  }
+
+  /* Rose Theme */
+  .theme-rose:root {
+    --primary: 351 83% 61%;
+    --primary-light: 351 83% 68%;
+    --primary-dark: 351 83% 54%;
+    --ring: 351 83% 61%;
+    --sidebar-primary: 351 83% 61%;
+    --sidebar-ring: 351 83% 61%;
+    --gradient-primary: linear-gradient(135deg, hsl(351, 83%, 61%), hsl(351, 83%, 68%));
+  }
+
+  .theme-rose.dark {
+    --primary: 351 83% 68%;
+    --primary-light: 351 83% 75%;
+    --primary-dark: 351 83% 61%;
+    --ring: 351 83% 68%;
+    --sidebar-primary: 351 83% 68%;
+    --sidebar-ring: 351 83% 68%;
+    --gradient-primary: linear-gradient(135deg, hsl(351, 83%, 68%), hsl(351, 83%, 75%));
+  }
+
+  /* Slate Theme */
+  .theme-slate:root {
+    --primary: 215 28% 17%;
+    --primary-light: 215 28% 24%;
+    --primary-dark: 215 28% 10%;
+    --ring: 215 28% 17%;
+    --sidebar-primary: 215 28% 17%;
+    --sidebar-ring: 215 28% 17%;
+    --gradient-primary: linear-gradient(135deg, hsl(215, 28%, 17%), hsl(215, 28%, 24%));
+  }
+
+  .theme-slate.dark {
+    --primary: 215 28% 24%;
+    --primary-light: 215 28% 31%;
+    --primary-dark: 215 28% 17%;
+    --ring: 215 28% 24%;
+    --sidebar-primary: 215 28% 24%;
+    --sidebar-ring: 215 28% 24%;
+    --gradient-primary: linear-gradient(135deg, hsl(215, 28%, 24%), hsl(215, 28%, 31%));
+  }
+
+  /* Neutral Theme */
+  .theme-neutral:root {
+    --primary: 0 0% 23%;
+    --primary-light: 0 0% 30%;
+    --primary-dark: 0 0% 16%;
+    --ring: 0 0% 23%;
+    --sidebar-primary: 0 0% 23%;
+    --sidebar-ring: 0 0% 23%;
+    --gradient-primary: linear-gradient(135deg, hsl(0, 0%, 23%), hsl(0, 0%, 30%));
+  }
+
+  .theme-neutral.dark {
+    --primary: 0 0% 30%;
+    --primary-light: 0 0% 37%;
+    --primary-dark: 0 0% 23%;
+    --ring: 0 0% 30%;
+    --sidebar-primary: 0 0% 30%;
+    --sidebar-ring: 0 0% 30%;
+    --gradient-primary: linear-gradient(135deg, hsl(0, 0%, 30%), hsl(0, 0%, 37%));
+  }
+
+  /* Stone Theme */
+  .theme-stone:root {
+    --primary: 25 5% 25%;
+    --primary-light: 25 5% 32%;
+    --primary-dark: 25 5% 18%;
+    --ring: 25 5% 25%;
+    --sidebar-primary: 25 5% 25%;
+    --sidebar-ring: 25 5% 25%;
+    --gradient-primary: linear-gradient(135deg, hsl(25, 5%, 25%), hsl(25, 5%, 32%));
+  }
+
+  .theme-stone.dark {
+    --primary: 25 5% 32%;
+    --primary-light: 25 5% 39%;
+    --primary-dark: 25 5% 25%;
+    --ring: 25 5% 32%;
+    --sidebar-primary: 25 5% 32%;
+    --sidebar-ring: 25 5% 32%;
+    --gradient-primary: linear-gradient(135deg, hsl(25, 5%, 32%), hsl(25, 5%, 39%));
   }
 }

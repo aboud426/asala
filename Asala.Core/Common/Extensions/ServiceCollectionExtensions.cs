@@ -4,6 +4,7 @@ using Asala.Core.Db.Repositories;
 using Asala.Core.Db.UnitOfWork;
 using Asala.Core.Modules.Languages;
 using Asala.Core.Modules.Messages.Db;
+using Asala.Core.Modules.Users.Db;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,8 +19,10 @@ public static class ServiceCollectionExtensions
     )
     {
         services.AddDbContext<AsalaDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"), 
-                b => b.MigrationsAssembly("Asala.Api"))
+            options.UseSqlServer(
+                configuration.GetConnectionString("DefaultConnection"),
+                b => b.MigrationsAssembly("Asala.Api")
+            )
         );
         services.AddRepository();
         services.AddUnitOfWork();
@@ -43,6 +46,18 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<ILanguageRepository, LanguageRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
+
+        // Users module repositories
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IRoleRepository, RoleRepository>();
+        services.AddScoped<IPermissionRepository, PermissionRepository>();
+        services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+        services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
+        services.AddScoped<ICustomerRepository, CustomerRepository>();
+        services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+        services.AddScoped<IProviderRepository, ProviderRepository>();
+        services.AddScoped<IProviderMediaRepository, ProviderMediaRepository>();
+
         return services;
     }
 }
