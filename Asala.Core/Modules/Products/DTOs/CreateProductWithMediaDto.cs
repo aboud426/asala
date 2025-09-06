@@ -1,0 +1,13 @@
+namespace Asala.Core.Modules.Products.DTOs;
+
+public class CreateProductWithMediaDto
+{
+    public string Name { get; set; } = null!;
+    public int CategoryId { get; set; }
+    public int ProviderId { get; set; }
+    public decimal Price { get; set; }
+    public int Quantity { get; set; }
+    public string? Description { get; set; }
+    public List<string> MediaUrls { get; set; } = new List<string>();
+    public bool IsActive { get; set; } = true;
+}

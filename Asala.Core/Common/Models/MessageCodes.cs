@@ -54,6 +54,31 @@ public static class MessageCodes
     public const string MESSAGE_LOCALIZED_TEXT_TOO_LONG = "MESSAGE_LOCALIZED_TEXT_TOO_LONG";
     public const string MESSAGE_LOCALIZED_LANGUAGE_ID_INVALID = "MESSAGE_LOCALIZED_LANGUAGE_ID_INVALID";
 
+    // General validation errors
+    public const string INVALID_ID = "INVALID_ID";
+    public const string INVALID_USER_ID = "INVALID_USER_ID";
+
+    // Post-specific errors
+    public const string POST_NOT_FOUND = "POST_NOT_FOUND";
+    public const string POST_ID_INVALID = "POST_ID_INVALID";
+    public const string POST_USER_ID_REQUIRED = "POST_USER_ID_REQUIRED";
+    public const string POST_DESCRIPTION_TOO_LONG = "POST_DESCRIPTION_TOO_LONG";
+
+    // Product-specific errors
+    public const string PRODUCT_NOT_FOUND = "PRODUCT_NOT_FOUND";
+    public const string PRODUCT_ID_INVALID = "PRODUCT_ID_INVALID";
+    public const string PRODUCT_NAME_REQUIRED = "PRODUCT_NAME_REQUIRED";
+    public const string PRODUCT_NAME_TOO_LONG = "PRODUCT_NAME_TOO_LONG";
+    public const string PRODUCT_PRICE_INVALID = "PRODUCT_PRICE_INVALID";
+    public const string PRODUCT_QUANTITY_INVALID = "PRODUCT_QUANTITY_INVALID";
+    public const string PRODUCT_CATEGORY_ID_REQUIRED = "PRODUCT_CATEGORY_ID_REQUIRED";
+    public const string PRODUCT_PROVIDER_ID_REQUIRED = "PRODUCT_PROVIDER_ID_REQUIRED";
+
+    // Media-specific errors
+    public const string MEDIA_NOT_FOUND = "MEDIA_NOT_FOUND";
+    public const string MEDIA_URL_REQUIRED = "MEDIA_URL_REQUIRED";
+    public const string MEDIA_URL_INVALID = "MEDIA_URL_INVALID";
+
     // System errors
     public const string INTERNAL_ERROR = "INTERNAL_ERROR";
 
