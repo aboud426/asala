@@ -19,7 +19,7 @@ public class ProviderMediaConfiguration : IEntityTypeConfiguration<ProviderMedia
 
         builder.Property(e => e.Url).IsRequired().HasMaxLength(500);
 
-        builder.Property(e => e.MediaType).IsRequired().HasDefaultValue(MediaType.Image);
+        builder.Property(e => e.MediaType).IsRequired().HasDefaultValue(MediaTypeEnum.Image);
 
         // Foreign Key Relationships
         builder

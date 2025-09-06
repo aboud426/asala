@@ -144,7 +144,6 @@ public static class MessageCodes
     // RolePermission-specific errors
     public const string ROLE_PERMISSION_NOT_FOUND = "ROLE_PERMISSION_NOT_FOUND";
     public const string ROLE_PERMISSION_ALREADY_EXISTS = "ROLE_PERMISSION_ALREADY_EXISTS";
-    public const string INVALID_ID = "INVALID_ID";
 
     // General validation errors
     public const string FIELD_REQUIRED = "FIELD_REQUIRED";

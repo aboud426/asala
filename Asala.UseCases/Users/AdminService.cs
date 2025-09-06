@@ -297,7 +297,7 @@ public class AdminService : IAdminService
                 .Images.Select(image => new ProviderMedia
                 {
                     Url = image.Url,
-                    MediaType = MediaType.Image,
+                    MediaType = MediaTypeEnum.Image,
                     IsActive = true,
                     IsDeleted = false,
                     CreatedAt = DateTime.UtcNow,
@@ -640,7 +640,7 @@ public class AdminService : IAdminService
                 {
                     ProviderId = provider.UserId,
                     Url = imageDto.Url,
-                    MediaType = MediaType.Image,
+                    MediaType = MediaTypeEnum.Image,
                     IsActive = true,
                     IsDeleted = false,
                     CreatedAt = DateTime.UtcNow,
