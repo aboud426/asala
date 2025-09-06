@@ -3,7 +3,7 @@ namespace Asala.Core.Modules.Users.DTOs;
 public enum ProviderSortBy
 {
     Name,
-    Rating
+    Rating,
 }
 
 public class ProviderDto
@@ -11,6 +11,7 @@ public class ProviderDto
     public int UserId { get; set; } // Primary Key
     public string? PhoneNumber { get; set; } // From User table
     public string BusinessName { get; set; } = null!;
+    public string Email { get; set; } = null!;
     public string Description { get; set; } = null!;
     public int Rating { get; set; }
     public int? ParentId { get; set; }
@@ -19,6 +20,7 @@ public class ProviderDto
     public DateTime CreatedAt { get; set; } // From User table
     public DateTime UpdatedAt { get; set; } // From User table
     public List<ProviderLocalizedDto> Localizations { get; set; } = [];
+    public List<ImageUrlDto> Images { get; set; } = [];
 }
 
 public class CreateProviderDto
@@ -63,4 +65,47 @@ public class ProviderTreeDto
     public bool IsActive { get; set; } // From User table
     public List<ProviderLocalizedDto> Localizations { get; set; } = [];
     public List<ProviderTreeDto> Children { get; set; } = new List<ProviderTreeDto>();
+}
+
+public class CreateProviderByAdminDto
+{
+    // User information
+    public string Email { get; set; } = null!;
+    public string? PhoneNumber { get; set; }
+    public int? LocationId { get; set; }
+    public bool IsActive { get; set; } = true;
+
+    // Provider information
+    public string BusinessName { get; set; } = null!;
+    public string Description { get; set; } = null!;
+    public int Rating { get; set; } = 3;
+    public int? ParentId { get; set; }
+
+    // Localizations
+    public List<CreateProviderLocalizedDto> Localizations { get; set; } = [];
+    public List<ImageUrlDto> Images { get; set; } = [];
+}
+
+public class UpdateProviderByAdminDto
+{
+    // User information
+    public string Email { get; set; } = null!;
+    public string? PhoneNumber { get; set; }
+    public int? LocationId { get; set; }
+    public bool IsActive { get; set; } = true;
+
+    // Provider information
+    public string BusinessName { get; set; } = null!;
+    public string Description { get; set; } = null!;
+    public int Rating { get; set; } = 3;
+    public int? ParentId { get; set; }
+
+    // Localizations
+    public List<UpdateProviderLocalizedDto> Localizations { get; set; } = [];
+    public List<ImageUrlDto> Images { get; set; } = [];
+}
+
+public class ImageUrlDto
+{
+    public string Url { get; set; } = null!;
 }

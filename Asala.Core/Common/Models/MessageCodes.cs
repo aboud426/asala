@@ -57,6 +57,7 @@ public static class MessageCodes
 
     // System errors
     public const string INTERNAL_ERROR = "INTERNAL_ERROR";
+    public const string NOT_IMPLEMENTED = "NOT_IMPLEMENTED";
 
     // User-specific errors
     public const string USER_NOT_FOUND = "USER_NOT_FOUND";
@@ -69,6 +70,7 @@ public static class MessageCodes
     public const string USER_PASSWORD_TOO_SHORT = "USER_PASSWORD_TOO_SHORT";
     public const string USER_PASSWORD_TOO_LONG = "USER_PASSWORD_TOO_LONG";
     public const string USER_CURRENT_PASSWORD_INVALID = "USER_CURRENT_PASSWORD_INVALID";
+    public const string USER_PHONE_NUMBER_ALREADY_EXISTS = "USER_PHONE_NUMBER_ALREADY_EXISTS";
 
     // Role-specific errors
     public const string ROLE_NOT_FOUND = "ROLE_NOT_FOUND";
@@ -118,6 +120,10 @@ public static class MessageCodes
     public const string ROLE_PERMISSION_NOT_FOUND = "ROLE_PERMISSION_NOT_FOUND";
     public const string ROLE_PERMISSION_ALREADY_EXISTS = "ROLE_PERMISSION_ALREADY_EXISTS";
     public const string INVALID_ID = "INVALID_ID";
+
+    // General validation errors
+    public const string FIELD_REQUIRED = "FIELD_REQUIRED";
+    public const string INVALID_INPUT = "INVALID_INPUT";
 
     // Success messages
     public const string WELCOME_MESSAGE = "WELCOME_MESSAGE";

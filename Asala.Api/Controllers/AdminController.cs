@@ -213,16 +213,16 @@ public class AdminController : BaseController
         return CreateResponse(result);
     }
 
-    [HttpGet("providers")]
-    public async Task<IActionResult> GetAllProviders(
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 10,
-        [FromQuery] bool activeOnly = false,
-        CancellationToken cancellationToken = default)
-    {
-        var result = await _providerService.GetPaginatedAsync(page, pageSize, activeOnly, cancellationToken);
-        return CreateResponse(result);
-    }
+    // [HttpGet("providers")]
+    // public async Task<IActionResult> GetAllProviders(
+    //     [FromQuery] int page = 1,
+    //     [FromQuery] int pageSize = 10,
+    //     [FromQuery] bool activeOnly = false,
+    //     CancellationToken cancellationToken = default)
+    // {
+    //     var result = await _providerService.GetPaginatedAsync(page, pageSize, activeOnly, cancellationToken);
+    //     return CreateResponse(result);
+    // }
 
     [HttpGet("employees")]
     public async Task<IActionResult> GetAllEmployees(

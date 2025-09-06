@@ -56,6 +56,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<IEmployeeRepository, EmployeeRepository>();
         services.AddScoped<IProviderRepository, ProviderRepository>();
+        services.AddScoped<IProviderMediaRepository, ProviderMediaRepository>();
 
         return services;
     }

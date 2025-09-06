@@ -12,7 +12,12 @@ public class ProviderController : BaseController
     private readonly IAuthenticationService _authenticationService;
     private readonly IOtpService _otpService;
 
-    public ProviderController(IProviderService providerService, IAuthenticationService authenticationService, IOtpService otpService) : base()
+    public ProviderController(
+        IProviderService providerService,
+        IAuthenticationService authenticationService,
+        IOtpService otpService
+    )
+        : base()
     {
         _providerService = providerService;
         _authenticationService = authenticationService;
@@ -31,7 +36,8 @@ public class ProviderController : BaseController
     [HttpPost("request-otp")]
     public async Task<IActionResult> RequestOtp(
         [FromBody] RequestOtpDto requestDto,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var result = await _otpService.RequestOtpAsync(requestDto, cancellationToken);
         return CreateResponse(result);
@@ -49,7 +55,8 @@ public class ProviderController : BaseController
     [HttpPost("verify-otp")]
     public async Task<IActionResult> VerifyOtp(
         [FromBody] VerifyOtpDto verifyDto,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var result = await _otpService.VerifyOtpAsync(verifyDto, cancellationToken);
         return CreateResponse(result);
@@ -67,7 +74,8 @@ public class ProviderController : BaseController
     [HttpPost("register")]
     public async Task<IActionResult> Register(
         [FromBody] CreateProviderDto createDto,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var result = await _providerService.CreateAsync(createDto, cancellationToken);
         if (result.IsFailure)
@@ -77,7 +85,7 @@ public class ProviderController : BaseController
 
         // For now, return null token as requested
         var taken = null as string;
-        
+
         var authResponse = new AuthResponseDto
         {
             Token = taken!,
@@ -89,9 +97,9 @@ public class ProviderController : BaseController
                 LocationId = null, // Provider doesn't store LocationId directly in DTO
                 IsActive = result.Value.IsActive,
                 CreatedAt = result.Value.CreatedAt,
-                UpdatedAt = result.Value.UpdatedAt
+                UpdatedAt = result.Value.UpdatedAt,
             },
-            ExpiresAt = DateTime.UtcNow.AddHours(24)
+            ExpiresAt = DateTime.UtcNow.AddHours(24),
         };
 
         return CreateResponse(Core.Common.Models.Result.Success(authResponse));
@@ -110,7 +118,8 @@ public class ProviderController : BaseController
     [HttpPost("login")]
     public async Task<IActionResult> Login(
         [FromBody] ProviderLoginDto loginDto,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var result = await _authenticationService.LoginProviderAsync(loginDto, cancellationToken);
         return CreateResponse(result);
@@ -145,9 +154,15 @@ public class ProviderController : BaseController
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] bool activeOnly = true,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        var result = await _providerService.GetPaginatedAsync(page, pageSize, activeOnly, cancellationToken);
+        var result = await _providerService.GetPaginatedAsync(
+            page,
+            pageSize,
+            activeOnly,
+            cancellationToken
+        );
         return CreateResponse(result);
     }
 
@@ -182,7 +197,8 @@ public class ProviderController : BaseController
     public async Task<IActionResult> Modify(
         int id,
         [FromBody] UpdateProviderDto updateDto,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var result = await _providerService.UpdateAsync(id, updateDto, cancellationToken);
         return CreateResponse(result);
@@ -224,9 +240,17 @@ public class ProviderController : BaseController
         [FromQuery] int pageSize = 10,
         [FromQuery] bool activeOnly = true,
         [FromQuery] ProviderSortBy sortBy = ProviderSortBy.Name,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        var result = await _providerService.SearchByBusinessNameAsync(searchTerm, page, pageSize, activeOnly, sortBy, cancellationToken);
+        var result = await _providerService.SearchByBusinessNameAsync(
+            searchTerm,
+            page,
+            pageSize,
+            activeOnly,
+            sortBy,
+            cancellationToken
+        );
         return CreateResponse(result);
     }
 
@@ -244,9 +268,14 @@ public class ProviderController : BaseController
     public async Task<IActionResult> GetProviderTree(
         [FromQuery] int? rootId = null,
         [FromQuery] string? languageCode = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        var result = await _providerService.GetProviderTreeAsync(rootId, languageCode, cancellationToken);
+        var result = await _providerService.GetProviderTreeAsync(
+            rootId,
+            languageCode,
+            cancellationToken
+        );
         return CreateResponse(result);
     }
 
@@ -260,7 +289,10 @@ public class ProviderController : BaseController
     /// <response code="404">Parent provider not found</response>
     /// <response code="500">Internal server error</response>
     [HttpGet("{id}/children")]
-    public async Task<IActionResult> GetChildren(int id, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetChildren(
+        int id,
+        CancellationToken cancellationToken = default
+    )
     {
         var result = await _providerService.GetChildrenAsync(id, cancellationToken);
         return CreateResponse(result);
@@ -276,7 +308,10 @@ public class ProviderController : BaseController
     /// <response code="404">Provider not found</response>
     /// <response code="500">Internal server error</response>
     [HttpGet("{id}/localizations")]
-    public async Task<IActionResult> GetLocalizations(int id, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetLocalizations(
+        int id,
+        CancellationToken cancellationToken = default
+    )
     {
         var result = await _providerService.GetLocalizationsAsync(id, cancellationToken);
         return CreateResponse(result);

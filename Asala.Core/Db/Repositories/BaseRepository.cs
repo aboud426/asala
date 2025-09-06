@@ -12,7 +12,10 @@ public class BaseRepository<TEntity, TPrimaryKey> : IBaseRepository<TEntity, TPr
     protected readonly DbSet<TEntity> _dbSet;
     protected readonly Expression<Func<TEntity, TPrimaryKey>> _keySelector;
 
-    public BaseRepository(AsalaDbContext context, Expression<Func<TEntity, TPrimaryKey>> keySelector)
+    public BaseRepository(
+        AsalaDbContext context,
+        Expression<Func<TEntity, TPrimaryKey>> keySelector
+    )
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _dbSet = context.Set<TEntity>();
@@ -357,5 +360,10 @@ public class BaseRepository<TEntity, TPrimaryKey> : IBaseRepository<TEntity, TPr
         {
             return Result.Failure(MessageCodes.DB_ERROR, ex);
         }
+    }
+
+    public IQueryable<TEntity> GetQueryable()
+    {
+        return _dbSet;
     }
 }

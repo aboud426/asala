@@ -9,6 +9,10 @@ import Index from "./pages/Index";
 import Orders from "./pages/Orders";
 import Products from "./pages/Products";
 import Customers from "./pages/Customers";
+import Providers from "./pages/Providers";
+import CreateProvider from "./pages/CreateProvider";
+import ProviderDetails from "./pages/ProviderDetails";
+import EditProvider from "./pages/EditProvider";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import Languages from "./pages/Languages";
@@ -37,6 +41,10 @@ const App = () => (
               <Route path="/orders" element={<Orders />} />
               <Route path="/products" element={<Products />} />
               <Route path="/customers" element={<Customers />} />
+              <Route path="/providers" element={<Providers />} />
+              <Route path="/providers/create" element={<CreateProvider />} />
+              <Route path="/providers/:id/edit" element={<EditProvider />} />
+              <Route path="/providers/:id" element={<ProviderDetails />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/languages" element={<Languages />} />
               <Route path="/categories" element={<Categories />} />

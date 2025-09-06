@@ -11,9 +11,7 @@ public interface IBaseRepository<TEntity, TPrimaryKey>
         CancellationToken cancellationToken = default
     );
 
-    Task<Result<IEnumerable<TEntity>>> GetAllAsync(
-        CancellationToken cancellationToken = default
-    );
+    Task<Result<IEnumerable<TEntity>>> GetAllAsync(CancellationToken cancellationToken = default);
 
     Task<Result<IEnumerable<TEntity>>> GetAsync(
         Expression<Func<TEntity, bool>>? filter = null,
@@ -44,10 +42,7 @@ public interface IBaseRepository<TEntity, TPrimaryKey>
         CancellationToken cancellationToken = default
     );
 
-    Task<Result<TEntity>> AddAsync(
-        TEntity entity,
-        CancellationToken cancellationToken = default
-    );
+    Task<Result<TEntity>> AddAsync(TEntity entity, CancellationToken cancellationToken = default);
 
     Task<Result> AddRangeAsync(
         IEnumerable<TEntity> entities,
@@ -60,10 +55,8 @@ public interface IBaseRepository<TEntity, TPrimaryKey>
 
     Result Remove(TEntity entity);
 
-    Task<Result> RemoveByIdAsync(
-        TPrimaryKey id,
-        CancellationToken cancellationToken = default
-    );
+    Task<Result> RemoveByIdAsync(TPrimaryKey id, CancellationToken cancellationToken = default);
+    IQueryable<TEntity> GetQueryable();
 
     Result RemoveRange(IEnumerable<TEntity> entities);
 }

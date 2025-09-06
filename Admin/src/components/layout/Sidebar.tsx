@@ -51,6 +51,12 @@ const navigationItems = [
     icon: Users,
   },
   {
+    title: 'Providers',
+    titleAr: 'مقدمو الخدمات',
+    href: '/providers',
+    icon: Store,
+  },
+  {
     title: 'Analytics',
     titleAr: 'التحليلات',
     href: '/analytics',

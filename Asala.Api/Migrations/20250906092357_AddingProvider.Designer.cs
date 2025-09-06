@@ -4,6 +4,7 @@ using Asala.Core.Db;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Asala.Api.Migrations
 {
     [DbContext(typeof(AsalaDbContext))]
-    partial class AsalaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250906092357_AddingProvider")]
+    partial class AddingProvider
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -711,59 +714,6 @@ namespace Asala.Api.Migrations
                     b.ToTable("Provider_Localized", (string)null);
                 });
 
-            modelBuilder.Entity("Asala.Core.Modules.Users.Models.ProviderMedia", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<int>("MediaType")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(1);
-
-                    b.Property<int>("ProviderId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MediaType");
-
-                    b.HasIndex("ProviderId");
-
-                    b.HasIndex("ProviderId", "MediaType");
-
-                    b.ToTable("ProviderMedia", (string)null);
-                });
-
             modelBuilder.Entity("Asala.Core.Modules.Users.Models.Role", b =>
                 {
                     b.Property<int>("Id")
@@ -1127,17 +1077,6 @@ namespace Asala.Api.Migrations
                     b.Navigation("Provider");
                 });
 
-            modelBuilder.Entity("Asala.Core.Modules.Users.Models.ProviderMedia", b =>
-                {
-                    b.HasOne("Asala.Core.Modules.Users.Models.Provider", "Provider")
-                        .WithMany("ProviderMedias")
-                        .HasForeignKey("ProviderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Provider");
-                });
-
             modelBuilder.Entity("Asala.Core.Modules.Users.Models.RoleLocalized", b =>
                 {
                     b.HasOne("Asala.Core.Modules.Languages.Language", "Language")
@@ -1204,8 +1143,6 @@ namespace Asala.Api.Migrations
                     b.Navigation("ChildrenProviders");
 
                     b.Navigation("ProviderLocalizeds");
-
-                    b.Navigation("ProviderMedias");
                 });
 
             modelBuilder.Entity("Asala.Core.Modules.Users.Models.Role", b =>

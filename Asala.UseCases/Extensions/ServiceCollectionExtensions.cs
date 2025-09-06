@@ -4,15 +4,14 @@ using Asala.Core.Db.Repositories;
 using Asala.Core.Db.UnitOfWork;
 using Asala.Core.Modules.Categories.Db;
 using Asala.Core.Modules.Languages;
+using Asala.Core.Modules.Users.Db;
 using Asala.UseCases.Categories;
 using Asala.UseCases.Languages;
 using Asala.UseCases.Messages;
-using Asala.UseCases.Categories;
 using Asala.UseCases.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Asala.Core.Modules.Users.Db;
 
 namespace Asala.UseCases.Extensions;
 
@@ -42,19 +41,20 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<IProductCategoryService, ProductCategoryService>();
         services.AddScoped<IProviderCategoryService, ProviderCategoryService>();
-        
+
         // User repositories
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<IEmployeeRepository, EmployeeRepository>();
         services.AddScoped<IProviderRepository, ProviderRepository>();
         services.AddScoped<IProviderLocalizedRepository, ProviderLocalizedRepository>();
+        services.AddScoped<IProviderMediaRepository, ProviderMediaRepository>();
         services.AddScoped<IOtpRepository, OtpRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IPermissionRepository, PermissionRepository>();
         services.AddScoped<IUserRoleRepository, UserRoleRepository>();
         services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
-        
+
         // User services
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IRoleService, RoleService>();
@@ -65,7 +65,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEmployeeService, EmployeeService>();
         services.AddScoped<IOtpService, OtpService>();
         services.AddScoped<IAuthenticationService, AuthenticationService>();
-        
+        services.AddScoped<IAdminService, AdminService>();
 
         return services;
     }
