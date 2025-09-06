@@ -20,6 +20,7 @@ export interface Permission {
     id: number;
     name: string;
     description: string;
+    page: string;
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
@@ -35,6 +36,7 @@ export interface CreatePermissionLocalizedDto {
 export interface CreatePermissionDto {
     name: string;
     description: string;
+    page: string;
     localizations: CreatePermissionLocalizedDto[];
 }
 
@@ -48,6 +50,7 @@ export interface UpdatePermissionLocalizedDto {
 export interface UpdatePermissionDto {
     name: string;
     description: string;
+    page: string;
     isActive: boolean;
     localizations: UpdatePermissionLocalizedDto[];
 }
@@ -55,6 +58,7 @@ export interface UpdatePermissionDto {
 export interface PermissionDropdownDto {
     id: number;
     name: string;
+    page: string;
 }
 
 export interface PaginatedResult<T> {
@@ -176,9 +180,13 @@ class PermissionService {
      * Get permissions formatted for dropdown selection
      * GET /api/permissions/dropdown
      */
-    getPermissionsDropdown = async (activeOnly: boolean = true): Promise<PermissionDropdownDto[]> => {
+    getPermissionsDropdown = async (
+        activeOnly: boolean = true,
+        languageCode?: string
+    ): Promise<PermissionDropdownDto[]> => {
         const searchParams = new URLSearchParams();
         if (activeOnly !== undefined) searchParams.append('activeOnly', activeOnly.toString());
+        if (languageCode) searchParams.append('languageCode', languageCode);
 
         const endpoint = searchParams.toString() ? `/dropdown?${searchParams.toString()}` : '/dropdown';
         const response = await this.request<PermissionDropdownDto[]>(endpoint);

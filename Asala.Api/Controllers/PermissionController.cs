@@ -83,20 +83,26 @@ public class PermissionController : BaseController
     }
 
     /// <summary>
-    /// Get permissions formatted for dropdown selection
+    /// Get permissions formatted for dropdown selection with optional localization
     /// </summary>
     /// <param name="activeOnly">Filter by active permissions only (default: true)</param>
+    /// <param name="languageCode">Language code for localized content (optional)</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>List of permissions suitable for dropdown/select controls</returns>
+    /// <returns>List of permissions suitable for dropdown/select controls with localized names</returns>
     /// <response code="200">Dropdown data retrieved successfully</response>
     /// <response code="500">Internal server error</response>
     [HttpGet("dropdown")]
     public async Task<IActionResult> GetDropdown(
         [FromQuery] bool activeOnly = true,
+        [FromQuery] string? languageCode = null,
         CancellationToken cancellationToken = default
     )
     {
-        var result = await _permissionService.GetDropdownAsync(activeOnly, cancellationToken);
+        var result = await _permissionService.GetDropdownAsync(
+            activeOnly,
+            languageCode,
+            cancellationToken
+        );
         return CreateResponse(result);
     }
 

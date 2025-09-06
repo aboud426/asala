@@ -96,6 +96,7 @@ const Permissions: React.FC = () => {
     defaultValues: {
       name: '',
       description: '',
+      page: '',
       localizations: [],
     },
   });
@@ -104,6 +105,7 @@ const Permissions: React.FC = () => {
     defaultValues: {
       name: '',
       description: '',
+      page: '',
       isActive: true,
       localizations: [],
     },
@@ -224,6 +226,7 @@ const Permissions: React.FC = () => {
   const filteredPermissions = permissionsData?.items.filter(permission => {
     const matchesSearch = permission.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          permission.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         permission.page.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          permission.localizations.some(loc => 
                            loc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            loc.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -265,6 +268,7 @@ const Permissions: React.FC = () => {
     editForm.reset({
       name: permission.name,
       description: permission.description,
+      page: permission.page,
       isActive: permission.isActive,
       localizations: permission.localizations.map(loc => ({
         id: loc.id,
@@ -464,6 +468,7 @@ const Permissions: React.FC = () => {
                 <TableRow className={isRTL ? 'text-right' : 'text-left'}>
                   <TableHead className={isRTL ? 'text-right' : 'text-left'}>{isRTL ? 'اسم الصلاحية' : 'Permission Name'}</TableHead>
                   <TableHead className={isRTL ? 'text-right' : 'text-left'}>{isRTL ? 'الوصف' : 'Description'}</TableHead>
+                  <TableHead className={isRTL ? 'text-right' : 'text-left'}>{isRTL ? 'الصفحة' : 'Page'}</TableHead>
                   <TableHead className={isRTL ? 'text-right' : 'text-left'}>{isRTL ? 'الترجمات' : 'Localizations'}</TableHead>
                   <TableHead className={isRTL ? 'text-right' : 'text-left'}>{isRTL ? 'الحالة' : 'Status'}</TableHead>
                   <TableHead className={isRTL ? 'text-right' : 'text-left'}>{isRTL ? 'تاريخ الإنشاء' : 'Created Date'}</TableHead>
@@ -473,7 +478,7 @@ const Permissions: React.FC = () => {
               <TableBody>
                 {isLoading ? (
                   <TableRow className={isRTL ? 'text-right' : 'text-left'}>
-                    <TableCell colSpan={6} className="text-center py-8">
+                    <TableCell colSpan={7} className="text-center py-8">
                       <div className="flex items-center justify-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                         <span className={isRTL ? 'mr-2' : 'ml-2'}>{isRTL ? 'جاري التحميل...' : 'Loading...'}</span>
@@ -482,13 +487,13 @@ const Permissions: React.FC = () => {
                   </TableRow>
                 ) : error ? (
                   <TableRow className={isRTL ? 'text-right' : 'text-left'}>
-                    <TableCell colSpan={6} className="text-center py-8 text-destructive">
+                    <TableCell colSpan={7} className="text-center py-8 text-destructive">
                       {isRTL ? 'خطأ في تحميل البيانات' : 'Error loading data'}
                     </TableCell>
                   </TableRow>
                 ) : filteredPermissions.length === 0 ? (
                   <TableRow className={isRTL ? 'text-right' : 'text-left'}>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                       {isRTL ? 'لا توجد صلاحيات متاحة' : 'No permissions available'}
                     </TableCell>
                   </TableRow>
@@ -509,6 +514,13 @@ const Permissions: React.FC = () => {
                         <div className="max-w-xs">
                           <p className="text-sm truncate" title={permission.description}>
                             {permission.description || (isRTL ? 'لا يوجد وصف' : 'No description')}
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell className={isRTL ? 'text-right' : 'text-left'}>
+                        <div className="max-w-xs">
+                          <p className="text-sm truncate" title={permission.page}>
+                            {permission.page || (isRTL ? 'لا توجد صفحة' : 'No page')}
                           </p>
                         </div>
                       </TableCell>
@@ -650,6 +662,23 @@ const Permissions: React.FC = () => {
                       <FormControl>
                         <Textarea 
                           placeholder={isRTL ? 'وصف الصلاحية ووظائفها' : 'Permission description and functions'} 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={createForm.control}
+                  name="page"
+                  rules={{ required: isRTL ? 'صفحة الصلاحية مطلوبة' : 'Permission page is required' }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{isRTL ? 'صفحة الصلاحية' : 'Permission Page'}</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder={isRTL ? 'مثال: Dashboard' : 'e.g., Dashboard'} 
                           {...field} 
                         />
                       </FormControl>
@@ -807,6 +836,20 @@ const Permissions: React.FC = () => {
                       <FormLabel>{isRTL ? 'وصف الصلاحية' : 'Permission Description'}</FormLabel>
                       <FormControl>
                         <Textarea {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="page"
+                  rules={{ required: isRTL ? 'صفحة الصلاحية مطلوبة' : 'Permission page is required' }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{isRTL ? 'صفحة الصلاحية' : 'Permission Page'}</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -976,6 +1019,14 @@ const Permissions: React.FC = () => {
                         </label>
                         <div className="p-3 bg-muted/50 rounded-lg">
                           <span className="text-sm font-medium">{selectedPermissionForDetails.name}</span>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-muted-foreground">
+                          {isRTL ? 'صفحة الصلاحية' : 'Permission Page'}
+                        </label>
+                        <div className="p-3 bg-muted/50 rounded-lg">
+                          <span className="text-sm font-medium">{selectedPermissionForDetails.page}</span>
                         </div>
                       </div>
                       <div className="space-y-2">

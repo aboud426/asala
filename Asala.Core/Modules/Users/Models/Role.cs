@@ -18,4 +18,5 @@ public class Role : BaseEntity<int>
     public string Name { get; set; } = null!;
     public string Description { get; set; } = string.Empty;
     public List<RoleLocalized> Localizations { get; set; } = [];
+    public List<RolePermission> RolePermissions { get; set; } = [];
 }

@@ -104,6 +104,7 @@ public class PermissionService : IPermissionService
         {
             Name = createDto.Name.Trim(),
             Description = createDto.Description.Trim(),
+            Page = createDto.Page.Trim(),
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             Localizations = CreateLocalizations(createDto.Localizations),
@@ -159,6 +160,7 @@ public class PermissionService : IPermissionService
 
         permission.Name = updateDto.Name.Trim();
         permission.Description = updateDto.Description.Trim();
+        permission.Page = updateDto.Page.Trim();
         permission.IsActive = updateDto.IsActive;
         permission.UpdatedAt = DateTime.UtcNow;
 
@@ -241,20 +243,18 @@ public class PermissionService : IPermissionService
 
     public async Task<Result<IEnumerable<PermissionDropdownDto>>> GetDropdownAsync(
         bool activeOnly = true,
+        string? languageCode = null,
         CancellationToken cancellationToken = default
     )
     {
         Expression<Func<Permission, bool>> filter = BuildFilter(activeOnly);
 
-        var result = await _permissionRepository.GetAsync(
-            filter: filter,
-            orderBy: q => q.OrderBy(p => p.Name)
-        );
+        var result = await _permissionRepository.GetWithLocalizationsAsync(filter: filter);
 
         if (result.IsFailure)
             return Result.Failure<IEnumerable<PermissionDropdownDto>>(result.MessageCode);
 
-        var dtos = result.Value.Select(MapToDropdownDto);
+        var dtos = result.Value.Select(permission => MapToDropdownDto(permission, languageCode));
         return Result.Success<IEnumerable<PermissionDropdownDto>>(dtos);
     }
 
@@ -262,7 +262,9 @@ public class PermissionService : IPermissionService
         CancellationToken cancellationToken = default
     )
     {
-        return await _permissionRepository.GetPermissionsMissingTranslationsAsync(cancellationToken);
+        return await _permissionRepository.GetPermissionsMissingTranslationsAsync(
+            cancellationToken
+        );
     }
 
     #region Private Helper Methods
@@ -282,6 +284,7 @@ public class PermissionService : IPermissionService
                 Name = dto.Name.Trim(),
                 Description = dto.Description.Trim(),
                 LanguageId = dto.LanguageId,
+                Page = dto.Page,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
             })
@@ -306,6 +309,7 @@ public class PermissionService : IPermissionService
                 // Update existing localization
                 existingLocalization.Name = updatedDto.Name.Trim();
                 existingLocalization.Description = updatedDto.Description.Trim();
+                existingLocalization.Page = updatedDto.Page.Trim();
                 existingLocalization.LanguageId = updatedDto.LanguageId;
                 existingLocalization.UpdatedAt = now;
             }
@@ -325,6 +329,7 @@ public class PermissionService : IPermissionService
             {
                 Name = dto.Name.Trim(),
                 Description = dto.Description.Trim(),
+                Page = dto.Page.Trim(),
                 LanguageId = dto.LanguageId,
                 CreatedAt = now,
                 UpdatedAt = now,
@@ -362,6 +367,12 @@ public class PermissionService : IPermissionService
         if (createDto.Description.Length > 500)
             return Result.Failure(MessageCodes.PERMISSION_DESCRIPTION_TOO_LONG);
 
+        if (string.IsNullOrWhiteSpace(createDto.Page))
+            return Result.Failure(MessageCodes.PERMISSION_PAGE_REQUIRED);
+
+        if (createDto.Page.Length > 100)
+            return Result.Failure(MessageCodes.PERMISSION_PAGE_TOO_LONG);
+
         var localizationValidation = ValidateCreateLocalizations(createDto.Localizations);
         if (localizationValidation.IsFailure)
             return localizationValidation;
@@ -390,7 +401,9 @@ public class PermissionService : IPermissionService
         return Result.Success();
     }
 
-    private static Result ValidateCreateLocalizations(List<CreatePermissionLocalizedDto> localizations)
+    private static Result ValidateCreateLocalizations(
+        List<CreatePermissionLocalizedDto> localizations
+    )
     {
         if (localizations == null)
             return Result.Success(); // Optional localizations
@@ -413,7 +426,9 @@ public class PermissionService : IPermissionService
         return Result.Success();
     }
 
-    private static Result ValidateUpdateLocalizations(List<UpdatePermissionLocalizedDto> localizations)
+    private static Result ValidateUpdateLocalizations(
+        List<UpdatePermissionLocalizedDto> localizations
+    )
     {
         if (localizations == null)
             return Result.Success(); // Optional localizations
@@ -448,6 +463,7 @@ public class PermissionService : IPermissionService
             Name = permission.Name,
             Description = permission.Description,
             IsActive = permission.IsActive,
+            Page = permission.Page,
             CreatedAt = permission.CreatedAt,
             UpdatedAt = permission.UpdatedAt,
             Localizations =
@@ -465,6 +481,7 @@ public class PermissionService : IPermissionService
             PermissionId = localization.PermissionId,
             Name = localization.Name,
             Description = localization.Description,
+            Page = localization.Page,
             LanguageId = localization.LanguageId,
             CreatedAt = localization.CreatedAt,
             UpdatedAt = localization.UpdatedAt,
@@ -480,9 +497,37 @@ public class PermissionService : IPermissionService
         };
     }
 
-    private static PermissionDropdownDto MapToDropdownDto(Permission permission)
+    private static PermissionDropdownDto MapToDropdownDto(
+        Permission permission,
+        string? languageCode = null
+    )
     {
-        return new PermissionDropdownDto { Id = permission.Id, Name = permission.Name };
+        var name = permission.Name;
+        var description = permission.Description;
+        var page = permission.Page;
+
+        // If language code is provided, try to get localized name
+        if (!string.IsNullOrWhiteSpace(languageCode) && permission.Localizations?.Any() == true)
+        {
+            var localization = permission
+                .Localizations.Where(l => !l.IsDeleted)
+                .FirstOrDefault(l => l.Language?.Code?.ToLower() == languageCode.ToLower());
+
+            if (localization != null && !string.IsNullOrWhiteSpace(localization.Name))
+            {
+                description = localization.Description;
+                name = localization.Name;
+                page = localization.Page;
+            }
+        }
+
+        return new PermissionDropdownDto
+        {
+            Id = permission.Id,
+            Name = name,
+            Description = description,
+            Page = page,
+        };
     }
 
     #endregion

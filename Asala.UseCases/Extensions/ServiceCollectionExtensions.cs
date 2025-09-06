@@ -59,6 +59,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IPermissionService, PermissionService>();
+        services.AddScoped<IRolePermissionService, RolePermissionService>();
         services.AddScoped<ICustomerService, CustomerService>();
         services.AddScoped<IProviderService, ProviderService>();
         services.AddScoped<IEmployeeService, EmployeeService>();

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -58,6 +59,7 @@ import {
   Globe,
   Languages as LanguagesIcon,
   Eye,
+  Settings,
 } from 'lucide-react';
 import { useDirection } from '@/contexts/DirectionContext';
 import { Switch } from '@/components/ui/switch';
@@ -78,6 +80,7 @@ import MissingRoleTranslationsModal from '@/components/ui/missing-role-translati
 
 const Roles: React.FC = () => {
   const { isRTL } = useDirection();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
@@ -279,6 +282,10 @@ const Roles: React.FC = () => {
   const handleShowDetails = (role: Role) => {
     setSelectedRoleForDetails(role);
     setIsDetailsDialogOpen(true);
+  };
+
+  const handleManagePermissions = (role: Role) => {
+    navigate(`/roles/${role.id}/permissions`);
   };
 
   const addNewLocalization = (isEdit: boolean = false) => {
@@ -552,6 +559,13 @@ const Roles: React.FC = () => {
                             >
                               <Edit className="h-4 w-4" />
                               {isRTL ? 'تحرير' : 'Edit'}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}
+                              onClick={() => handleManagePermissions(role)}
+                            >
+                              <Settings className="h-4 w-4" />
+                              {isRTL ? 'إدارة الصلاحيات' : 'Manage Permissions'}
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}

@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Asala.Core.Common.Models;
 using Asala.Core.Db;
 using Asala.Core.Db.Repositories;
@@ -9,9 +10,7 @@ namespace Asala.Core.Modules.Users.Db;
 public class PermissionRepository : Repository<Permission, int>, IPermissionRepository
 {
     public PermissionRepository(AsalaDbContext context)
-        : base(context)
-    {
-    }
+        : base(context) { }
 
     public async Task<Result<Permission?>> GetByNameAsync(
         string name,
@@ -138,6 +137,25 @@ public class PermissionRepository : Repository<Permission, int>, IPermissionRepo
         catch (Exception ex)
         {
             return Result.Failure<IEnumerable<int>>(MessageCodes.DB_ERROR, ex);
+        }
+    }
+
+    public async Task<Result<IEnumerable<Permission>>> GetWithLocalizationsAsync(
+        Expression<Func<Permission, bool>> filter
+    )
+    {
+        try
+        {
+            var permissions = await _dbSet
+                .Where(filter)
+                .Include(p => p.Localizations)
+                .ThenInclude(l => l.Language)
+                .ToListAsync();
+            return Result.Success<IEnumerable<Permission>>(permissions);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<IEnumerable<Permission>>(MessageCodes.DB_ERROR, ex);
         }
     }
 }

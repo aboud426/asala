@@ -7,6 +7,7 @@ public class PermissionLocalized : BaseEntity<int>
 {
     public string Name { get; set; } = null!;
     public string Description { get; set; } = string.Empty;
+    public string Page { get; set; } = string.Empty;
     public int LanguageId { get; set; }
     public Language Language { get; set; } = null!;
     public int PermissionId { get; set; }
@@ -17,5 +18,7 @@ public class Permission : BaseEntity<int>
 {
     public string Name { get; set; } = null!;
     public string Description { get; set; } = string.Empty;
+    public string Page { get; set; } = string.Empty;
     public List<PermissionLocalized> Localizations { get; set; } = [];
+    public List<RolePermission> RolePermissions { get; set; } = [];
 }

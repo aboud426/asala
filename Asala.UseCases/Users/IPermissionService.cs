@@ -11,34 +11,35 @@ public interface IPermissionService
         bool? activeOnly = null,
         CancellationToken cancellationToken = default
     );
-    
+
     Task<Result<PermissionDto?>> GetByIdAsync(
         int id,
         CancellationToken cancellationToken = default
     );
-    
+
     Task<Result<PermissionDto?>> GetByNameAsync(
         string name,
         CancellationToken cancellationToken = default
     );
-    
+
     Task<Result<PermissionDto>> CreateAsync(
         CreatePermissionDto createDto,
         CancellationToken cancellationToken = default
     );
-    
+
     Task<Result<PermissionDto?>> UpdateAsync(
         int id,
         UpdatePermissionDto updateDto,
         CancellationToken cancellationToken = default
     );
-    
+
     Task<Result> SoftDeleteAsync(int id, CancellationToken cancellationToken = default);
-    
+
     Task<Result> ToggleActivationAsync(int id, CancellationToken cancellationToken = default);
-    
+
     Task<Result<IEnumerable<PermissionDropdownDto>>> GetDropdownAsync(
         bool activeOnly = true,
+        string? languageCode = null,
         CancellationToken cancellationToken = default
     );
 

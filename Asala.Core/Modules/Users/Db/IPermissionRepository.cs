@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Asala.Core.Common.Abstractions;
 using Asala.Core.Common.Models;
 using Asala.Core.Modules.Users.Models;
@@ -33,4 +34,5 @@ public interface IPermissionRepository : IRepository<Permission, int>
     Task<Result<IEnumerable<int>>> GetPermissionsMissingTranslationsAsync(
         CancellationToken cancellationToken = default
     );
+    Task<Result<IEnumerable<Permission>>> GetWithLocalizationsAsync(Expression<Func<Permission, bool>> filter);
 }
