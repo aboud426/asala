@@ -5,25 +5,25 @@
 namespace Asala.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class AddingCategoryImage : Migration
+    public partial class AddingIsDeletedEmployee : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "ImageUrl",
-                table: "Category",
-                type: "nvarchar(1024)",
-                maxLength: 1024,
-                nullable: true);
+            migrationBuilder.AddColumn<bool>(
+                name: "IsDeleted",
+                table: "Employee",
+                type: "bit",
+                nullable: false,
+                defaultValue: false);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "ImageUrl",
-                table: "Category");
+                name: "IsDeleted",
+                table: "Employee");
         }
     }
 }

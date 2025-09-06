@@ -11,37 +11,45 @@ public interface IEmployeeService
         bool activeOnly = true,
         CancellationToken cancellationToken = default
     );
-    
-    Task<Result<EmployeeDto?>> GetByIdAsync(
-        int id,
-        CancellationToken cancellationToken = default
-    );
-    
+
+    Task<Result<EmployeeDto?>> GetByIdAsync(int id, CancellationToken cancellationToken = default);
+
     Task<Result<EmployeeDto?>> GetByEmailAsync(
         string email,
         CancellationToken cancellationToken = default
     );
-    
+
     Task<Result<EmployeeDto>> CreateAsync(
         CreateEmployeeDto createDto,
         CancellationToken cancellationToken = default
     );
-    
+
+    Task<Result<EmployeeDto>> CreateWithoutLocationAsync(
+        CreateEmployeeWithoutLocationDto createDto,
+        CancellationToken cancellationToken = default
+    );
+
     Task<Result<EmployeeDto?>> UpdateAsync(
         int id,
         UpdateEmployeeDto updateDto,
         CancellationToken cancellationToken = default
     );
-    
+
+    Task<Result<EmployeeDto?>> UpdateWithoutLocationAsync(
+        int id,
+        UpdateEmployeeWithoutLocationDto updateDto,
+        CancellationToken cancellationToken = default
+    );
+
     Task<Result> SoftDeleteAsync(int id, CancellationToken cancellationToken = default);
-    
+
     Task<Result> ToggleActivationAsync(int id, CancellationToken cancellationToken = default);
-    
+
     Task<Result<IEnumerable<EmployeeDropdownDto>>> GetDropdownAsync(
         bool activeOnly = true,
         CancellationToken cancellationToken = default
     );
-    
+
     Task<Result<PaginatedResult<EmployeeDto>>> SearchByNameAsync(
         string searchTerm,
         int page = 1,

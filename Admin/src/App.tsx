@@ -21,6 +21,7 @@ import CategoriesTree from "./pages/CategoriesTree";
 import ProductCategories from "./pages/ProductCategories";
 import ProductCategoriesTree from "./pages/ProductCategoriesTree";
 import Messages from "./pages/Messages";
+import Employees from "./pages/Employees";
 import Roles from "./pages/Roles";
 import RolePermissions from "./pages/RolePermissions";
 import Permissions from "./pages/Permissions";
@@ -52,6 +53,7 @@ const App = () => (
               <Route path="/product-categories" element={<ProductCategories />} />
               <Route path="/product-categories/tree" element={<ProductCategoriesTree />} />
               <Route path="/messages" element={<Messages />} />
+              <Route path="/employees" element={<Employees />} />
               <Route path="/roles" element={<Roles />} />
               <Route path="/roles/:roleId/permissions" element={<RolePermissions />} />
               <Route path="/permissions" element={<Permissions />} />

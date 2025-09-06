@@ -1,3 +1,4 @@
+using Asala.Core.Common.Models;
 using Asala.Core.Modules.Users.DTOs;
 using Asala.UseCases.Users;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +12,11 @@ public class EmployeeController : BaseController
     private readonly IEmployeeService _employeeService;
     private readonly IAuthenticationService _authenticationService;
 
-    public EmployeeController(IEmployeeService employeeService, IAuthenticationService authenticationService) : base()
+    public EmployeeController(
+        IEmployeeService employeeService,
+        IAuthenticationService authenticationService
+    )
+        : base()
     {
         _employeeService = employeeService;
         _authenticationService = authenticationService;
@@ -29,7 +34,8 @@ public class EmployeeController : BaseController
     [HttpPost("register")]
     public async Task<IActionResult> Register(
         [FromBody] CreateEmployeeDto createDto,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var result = await _employeeService.CreateAsync(createDto, cancellationToken);
         if (result.IsFailure)
@@ -39,7 +45,7 @@ public class EmployeeController : BaseController
 
         // For now, return null token as requested
         var taken = null as string;
-        
+
         var authResponse = new AuthResponseDto
         {
             Token = taken!,
@@ -49,12 +55,39 @@ public class EmployeeController : BaseController
                 Email = result.Value.Email,
                 IsActive = result.Value.IsActive,
                 CreatedAt = result.Value.CreatedAt,
-                UpdatedAt = result.Value.UpdatedAt
+                UpdatedAt = result.Value.UpdatedAt,
             },
-            ExpiresAt = DateTime.UtcNow.AddHours(24)
+            ExpiresAt = DateTime.UtcNow.AddHours(24),
         };
 
         return CreateResponse(Core.Common.Models.Result.Success(authResponse));
+    }
+
+    /// <summary>
+    /// Create a new employee without location information
+    /// </summary>
+    /// <param name="createDto">Employee creation data including name, email, and password (no location)</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Created employee details</returns>
+    /// <response code="200">Employee created successfully</response>
+    /// <response code="400">Invalid data or email already exists</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPost("create")]
+    public async Task<IActionResult> Create(
+        [FromBody] CreateEmployeeWithoutLocationDto createDto,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var result = await _employeeService.CreateWithoutLocationAsync(
+            createDto,
+            cancellationToken
+        );
+        if (result.IsFailure)
+        {
+            return CreateResponse(result);
+        }
+
+        return CreateResponse(Result.Success(result.Value));
     }
 
     /// <summary>
@@ -70,7 +103,8 @@ public class EmployeeController : BaseController
     [HttpPost("login")]
     public async Task<IActionResult> Login(
         [FromBody] LoginDto loginDto,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var result = await _authenticationService.LoginEmployeeAsync(loginDto, cancellationToken);
         return CreateResponse(result);
@@ -105,9 +139,15 @@ public class EmployeeController : BaseController
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] bool activeOnly = true,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        var result = await _employeeService.GetPaginatedAsync(page, pageSize, activeOnly, cancellationToken);
+        var result = await _employeeService.GetPaginatedAsync(
+            page,
+            pageSize,
+            activeOnly,
+            cancellationToken
+        );
         return CreateResponse(result);
     }
 
@@ -142,9 +182,36 @@ public class EmployeeController : BaseController
     public async Task<IActionResult> Modify(
         int id,
         [FromBody] UpdateEmployeeDto updateDto,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var result = await _employeeService.UpdateAsync(id, updateDto, cancellationToken);
+        return CreateResponse(result);
+    }
+
+    /// <summary>
+    /// Update employee information without location
+    /// </summary>
+    /// <param name="id">The user ID of the employee to update</param>
+    /// <param name="updateDto">Updated employee data (no location field)</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Updated employee details</returns>
+    /// <response code="200">Employee updated successfully</response>
+    /// <response code="400">Invalid data or email already exists</response>
+    /// <response code="404">Employee not found</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPut("edit/{id}")]
+    public async Task<IActionResult> Edit(
+        int id,
+        [FromBody] UpdateEmployeeWithoutLocationDto updateDto,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var result = await _employeeService.UpdateWithoutLocationAsync(
+            id,
+            updateDto,
+            cancellationToken
+        );
         return CreateResponse(result);
     }
 
@@ -184,9 +251,17 @@ public class EmployeeController : BaseController
         [FromQuery] int pageSize = 10,
         [FromQuery] bool activeOnly = true,
         [FromQuery] EmployeeSortBy sortBy = EmployeeSortBy.Name,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        var result = await _employeeService.SearchByNameAsync(searchTerm, page, pageSize, activeOnly, sortBy, cancellationToken);
+        var result = await _employeeService.SearchByNameAsync(
+            searchTerm,
+            page,
+            pageSize,
+            activeOnly,
+            sortBy,
+            cancellationToken
+        );
         return CreateResponse(result);
     }
 }

@@ -122,6 +122,16 @@ export const searchablePages: SearchableItem[] = [
     keywordsAr: ['رسائل', 'تواصل', 'إشعارات', 'قوالب', 'محتوى']
   },
   {
+    id: 'employees',
+    title: 'Employees',
+    titleAr: 'الموظفين',
+    description: 'Manage employee data, accounts and user profiles',
+    descriptionAr: 'إدارة بيانات الموظفين والحسابات والملفات الشخصية',
+    href: '/employees',
+    keywords: ['employees', 'staff', 'workers', 'team', 'personnel', 'accounts', 'users', 'profiles'],
+    keywordsAr: ['موظفين', 'موظف', 'طاقم', 'عمال', 'فريق', 'كادر', 'حسابات', 'مستخدمين', 'ملفات شخصية']
+  },
+  {
     id: 'roles',
     title: 'Roles',
     titleAr: 'الأدوار',

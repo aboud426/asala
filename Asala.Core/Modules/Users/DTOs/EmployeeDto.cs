@@ -2,7 +2,7 @@ namespace Asala.Core.Modules.Users.DTOs;
 
 public enum EmployeeSortBy
 {
-    Name
+    Name,
 }
 
 public class EmployeeDto
@@ -30,6 +30,22 @@ public class UpdateEmployeeDto
     public string Email { get; set; } = null!;
     public int? LocationId { get; set; }
     public bool IsActive { get; set; }
+}
+
+public class UpdateEmployeeWithoutLocationDto
+{
+    public string Name { get; set; } = null!;
+    public string Email { get; set; } = null!;
+    public string? Password { get; set; }
+    public bool IsActive { get; set; }
+}
+
+public class CreateEmployeeWithoutLocationDto
+{
+    public string Name { get; set; } = null!;
+    public string Email { get; set; } = null!;
+    public string Password { get; set; } = null!;
+    public bool IsActive { get; set; } = true;
 }
 
 public class EmployeeDropdownDto

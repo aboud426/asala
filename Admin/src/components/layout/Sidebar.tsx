@@ -15,6 +15,7 @@ import {
   ShoppingBag,
   Shield,
   Key,
+  UserCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -85,6 +86,12 @@ const navigationItems = [
     titleAr: 'الرسائل',
     href: '/messages',
     icon: MessageSquare,
+  },
+  {
+    title: 'Employees',
+    titleAr: 'الموظفين',
+    href: '/employees',
+    icon: UserCheck,
   },
   {
     title: 'Roles',

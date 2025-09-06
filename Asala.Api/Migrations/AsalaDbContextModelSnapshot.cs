@@ -429,14 +429,17 @@ namespace Asala.Api.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("EmployeeName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.HasKey("UserId");
 
-                    b.HasIndex("Name");
+                    b.HasIndex("EmployeeName");
 
                     b.ToTable("Employee", (string)null);
                 });
@@ -1072,11 +1075,13 @@ namespace Asala.Api.Migrations
 
             modelBuilder.Entity("Asala.Core.Modules.Users.Models.Employee", b =>
                 {
-                    b.HasOne("Asala.Core.Modules.Users.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
+                    b.HasOne("Asala.Core.Modules.Users.Models.User", "User")
+                        .WithOne("Employee")
+                        .HasForeignKey("Asala.Core.Modules.Users.Models.Employee", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Asala.Core.Modules.Users.Models.PermissionLocalized", b =>
@@ -1118,11 +1123,19 @@ namespace Asala.Api.Migrations
 
             modelBuilder.Entity("Asala.Core.Modules.Users.Models.ProviderLocalized", b =>
                 {
+                    b.HasOne("Asala.Core.Modules.Languages.Language", "Language")
+                        .WithMany()
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Asala.Core.Modules.Users.Models.Provider", "Provider")
                         .WithMany("ProviderLocalizeds")
                         .HasForeignKey("ProviderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Language");
 
                     b.Navigation("Provider");
                 });
@@ -1217,6 +1230,8 @@ namespace Asala.Api.Migrations
 
             modelBuilder.Entity("Asala.Core.Modules.Users.Models.User", b =>
                 {
+                    b.Navigation("Employee");
+
                     b.Navigation("Provider");
                 });
 #pragma warning restore 612, 618
