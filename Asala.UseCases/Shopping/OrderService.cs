@@ -4,6 +4,7 @@ using Asala.Core.Modules.Products.Db;
 using Asala.Core.Modules.Shopping.Db;
 using Asala.Core.Modules.Shopping.DTOs;
 using Asala.Core.Modules.Users.Db;
+using Asala.Core.Modules.Users.Models;
 
 namespace Asala.UseCases.Shopping;
 
@@ -168,7 +169,9 @@ public class OrderService : IOrderService
         if (item.Product != null)
         {
             productName = item.Product.Name;
-            productImageUrl = item.Product.ImageUrl;
+            // Get first image from ProductMedias
+            var firstImage = item.Product.ProductMedias?.FirstOrDefault(m => m.MediaType == MediaTypeEnum.Image);
+            productImageUrl = firstImage?.Url;
         }
         else
         {
@@ -176,7 +179,9 @@ public class OrderService : IOrderService
             if (productResult.IsSuccess && productResult.Value != null)
             {
                 productName = productResult.Value.Name;
-                productImageUrl = productResult.Value.ImageUrl;
+                // Get first image from ProductMedias
+                var firstImage = productResult.Value.ProductMedias?.FirstOrDefault(m => m.MediaType == MediaTypeEnum.Image);
+                productImageUrl = firstImage?.Url;
             }
         }
 
@@ -184,14 +189,14 @@ public class OrderService : IOrderService
         var providerName = "Unknown Provider";
         if (item.Provider != null)
         {
-            providerName = item.Provider.Name ?? "Unknown Provider";
+            providerName = item.Provider.BusinessName ?? "Unknown Provider";
         }
         else
         {
             var providerResult = await _providerRepository.GetByIdAsync(item.ProviderId, cancellationToken);
             if (providerResult.IsSuccess && providerResult.Value != null)
             {
-                providerName = providerResult.Value.Name ?? "Unknown Provider";
+                providerName = providerResult.Value.BusinessName ?? "Unknown Provider";
             }
         }
 

@@ -4,6 +4,7 @@ using Asala.Core.Modules.Products.Db;
 using Asala.Core.Modules.Shopping.Db;
 using Asala.Core.Modules.Shopping.DTOs;
 using Asala.Core.Modules.Shopping.Models;
+using Asala.Core.Modules.Users.Models;
 
 namespace Asala.UseCases.Shopping;
 
@@ -634,7 +635,7 @@ public class CartService : ICartService
 
             // You can also get product image URL if needed
             var productImageUrl = productResult.IsSuccess && productResult.Value != null 
-                ? productResult.Value.ImageUrl 
+                ? productResult.Value.ProductMedias?.FirstOrDefault(m => m.MediaType == MediaTypeEnum.Image)?.Url
                 : null;
 
             cartItemDtos.Add(new CartItemDto

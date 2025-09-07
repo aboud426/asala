@@ -1,4 +1,3 @@
-using Asala.Api.Controllers;
 using Asala.UseCases.Shopping;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
