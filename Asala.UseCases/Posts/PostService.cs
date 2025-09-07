@@ -147,6 +147,14 @@ public class PostService : IPostService
         post.IsActive = updateDto.IsActive;
         post.UpdatedAt = DateTime.UtcNow;
 
+        // TODO: Handle media URLs - update PostMedia entities if implemented
+        // For now, append media URLs to description as a temporary solution
+        if (updateDto.MediaUrls.Any())
+        {
+            var mediaInfo = $"\n\nMedia URLs: {string.Join(", ", updateDto.MediaUrls)}";
+            post.Description = $"{post.Description}{mediaInfo}".Trim();
+        }
+
         // Handle localizations
         UpdateLocalizations(post, updateDto.Localizations);
 
@@ -187,10 +195,11 @@ public class PostService : IPostService
 
         // TODO: Handle media URLs - for now we store them in description or separate table
         // This would require a PostMedia table implementation
-        var mediaInfo = createDto.MediaUrls.Any()
-            ? $"\n\nMedia URLs: {string.Join(", ", createDto.MediaUrls)}"
-            : "";
-        post.Description = $"{post.Description}{mediaInfo}".Trim();
+        if (createDto.MediaUrls.Any())
+        {
+            var mediaInfo = $"\n\nMedia URLs: {string.Join(", ", createDto.MediaUrls)}";
+            post.Description = $"{post.Description}{mediaInfo}".Trim();
+        }
 
         var addResult = await _postRepository.AddAsync(post, cancellationToken);
         if (addResult.IsFailure)
@@ -464,17 +473,33 @@ public class PostService : IPostService
 
     private static PostDto MapToDto(Post post)
     {
+        // Extract media URLs from description (temporary solution)
+        var mediaUrls = new List<string>();
+        var description = post.Description;
+        
+        if (description.Contains("Media URLs:"))
+        {
+            var parts = description.Split(new[] { "\n\nMedia URLs: " }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length > 1)
+            {
+                description = parts[0].Trim();
+                var mediaUrlsString = parts[1].Trim();
+                mediaUrls = mediaUrlsString.Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            }
+        }
+
         return new PostDto
         {
             Id = post.Id,
             UserId = post.UserId,
-            Description = post.Description,
+            Description = description,
             NumberOfReactions = post.NumberOfReactions,
             PostTypeId = post.PostTypeId,
             PostTypeName = post.PostType?.Name ?? string.Empty,
             IsActive = post.IsActive,
             CreatedAt = post.CreatedAt,
             UpdatedAt = post.UpdatedAt,
+            MediaUrls = mediaUrls,
             Localizations = post
                 .PostLocalizeds.Where(l => !l.IsDeleted)
                 .Select(MapLocalizationToDto)
@@ -508,8 +533,23 @@ public class PostService : IPostService
         var preferredLocalization = activeLocalizations
             .FirstOrDefault(l => l.Language?.Code?.Equals(preferredLanguageCode, StringComparison.OrdinalIgnoreCase) == true);
 
+        // Extract media URLs from description (temporary solution)
+        var mediaUrls = new List<string>();
+        var description = post.Description;
+        
+        if (description.Contains("Media URLs:"))
+        {
+            var parts = description.Split(new[] { "\n\nMedia URLs: " }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length > 1)
+            {
+                description = parts[0].Trim();
+                var mediaUrlsString = parts[1].Trim();
+                mediaUrls = mediaUrlsString.Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            }
+        }
+
         // If we have a preferred localization, use its description as the main description
-        var displayDescription = preferredLocalization?.DescriptionLocalized ?? post.Description;
+        var displayDescription = preferredLocalization?.DescriptionLocalized ?? description;
 
         return new PostDto
         {
@@ -522,6 +562,7 @@ public class PostService : IPostService
             IsActive = post.IsActive,
             CreatedAt = post.CreatedAt,
             UpdatedAt = post.UpdatedAt,
+            MediaUrls = mediaUrls,
             Localizations = activeLocalizations
                 .Select(MapLocalizationToDto)
                 .ToList(),

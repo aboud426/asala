@@ -11,6 +11,7 @@ public class PostDto
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    public List<string> MediaUrls { get; set; } = [];
     public List<PostLocalizedDto> Localizations { get; set; } = [];
 }
 
@@ -21,6 +22,7 @@ public class CreatePostDto
     public int NumberOfReactions { get; set; } = 0;
     public int PostTypeId { get; set; }
     public bool IsActive { get; set; } = true;
+    public List<string> MediaUrls { get; set; } = [];
     public List<CreatePostLocalizedDto> Localizations { get; set; } = [];
 }
 
@@ -30,6 +32,7 @@ public class UpdatePostDto
     public int NumberOfReactions { get; set; }
     public int PostTypeId { get; set; }
     public bool IsActive { get; set; }
+    public List<string> MediaUrls { get; set; } = [];
     public List<UpdatePostLocalizedDto> Localizations { get; set; } = [];
 }
 

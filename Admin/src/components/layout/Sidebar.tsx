@@ -174,33 +174,35 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2">
-        {navigationItems.map((item) => {
-          const isActive = location.pathname === item.href;
-          const Icon = item.icon;
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden">
+        <div className="p-4 space-y-2">
+          {navigationItems.map((item) => {
+            const isActive = location.pathname === item.href;
+            const Icon = item.icon;
 
-          return (
-            <NavLink
-              key={item.href}
-              to={item.href}
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-smooth hover-lift',
-                  'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-                  isActive
-                    ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-md'
-                    : 'text-sidebar-foreground',
-                  isCollapsed && 'justify-center px-2'
-                )
-              }
-            >
-              <Icon className="h-5 w-5 flex-shrink-0" />
-              {!isCollapsed && (
-                <span>{isRTL ? item.titleAr : item.title}</span>
-              )}
-            </NavLink>
-          );
-        })}
+            return (
+              <NavLink
+                key={item.href}
+                to={item.href}
+                className={({ isActive }) =>
+                  cn(
+                    'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-smooth hover-lift',
+                    'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+                    isActive
+                      ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-md'
+                      : 'text-sidebar-foreground',
+                    isCollapsed && 'justify-center px-2'
+                  )
+                }
+              >
+                <Icon className="h-5 w-5 flex-shrink-0" />
+                {!isCollapsed && (
+                  <span>{isRTL ? item.titleAr : item.title}</span>
+                )}
+              </NavLink>
+            );
+          })}
+        </div>
       </nav>
 
       {/* Footer */}

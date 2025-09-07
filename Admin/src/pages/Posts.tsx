@@ -43,6 +43,34 @@ import { useDirection } from '@/contexts/DirectionContext';
 import { PostDto, PaginatedResult, postService } from '@/services/postService';
 import { PostTypeDropdownDto, postTypeService } from '@/services/postTypeService';
 
+// Default placeholder image as data URI
+const DEFAULT_POST_IMAGE = "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48IS0tIFVwbG9hZGVkIHRvOiBTVkcgUmVwbywgd3d3LnN2Z3JlcG8uY29tLCBHZW5lcmF0b3I6IFNWRyBSZXBvIE1peGVyIFRvb2xzIC0tPgo8c3ZnIHdpZHRoPSI4MDBweCIgaGVpZ2h0PSI4MDBweCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJNMTQgMkM0IDMgMyA0IDIgMTRDMiAxNyAzIDIwIDcgMjBIMTdDMjEgMjAgMjIgMTcgMjIgMTRWMTBDMjIgNiAxOSA1IDE1IDVIMTRWMloiIHN0cm9rZT0iIzY4Nzc4NyIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTExIDEySDEzTTEwIDE1SDEwLjAxTTE0IDE1SDE0LjAxIiBzdHJva2U9IiM2ODc3ODciIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=";
+
+// Post Image Component with error handling
+const PostImage: React.FC<{ post: PostDto | null; size?: 'sm' | 'md' | 'lg' }> = ({ post, size = 'sm' }) => {
+  const [imageError, setImageError] = useState(false);
+
+  const sizeClasses = {
+    sm: 'w-12 h-12',
+    md: 'w-16 h-16',
+    lg: 'w-24 h-24'
+  };
+
+  // Check if post has media URLs
+  const imageToShow = (post?.mediaUrls && post.mediaUrls.length > 0 && !imageError) ? post.mediaUrls[0] : DEFAULT_POST_IMAGE;
+
+  return (
+    <div className={`${sizeClasses[size]} rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center overflow-hidden border border-border/20`}>
+      <img
+        src={imageToShow}
+        alt={post?.description || 'Post'}
+        className="w-full h-full object-cover"
+        onError={() => setImageError(true)}
+      />
+    </div>
+  );
+};
+
 const Posts: React.FC = () => {
   const navigate = useNavigate();
   const { isRTL } = useDirection();
@@ -411,7 +439,6 @@ const Posts: React.FC = () => {
                   <TableHead className={isRTL ? 'text-right' : 'text-left'}>{isRTL ? 'المؤلف' : 'Author'}</TableHead>
                   <TableHead className={isRTL ? 'text-right' : 'text-left'}>{isRTL ? 'النوع' : 'Type'}</TableHead>
                   <TableHead className={isRTL ? 'text-right' : 'text-left'}>{isRTL ? 'التفاعلات' : 'Reactions'}</TableHead>
-                  <TableHead className={isRTL ? 'text-right' : 'text-left'}>{isRTL ? 'تاريخ الإنشاء' : 'Created'}</TableHead>
                   <TableHead className={isRTL ? 'text-right' : 'text-left'}>{isRTL ? 'الحالة' : 'Status'}</TableHead>
                   <TableHead className="text-center">{isRTL ? 'الإجراءات' : 'Actions'}</TableHead>
                 </TableRow>
@@ -425,7 +452,6 @@ const Posts: React.FC = () => {
                       <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                       <TableCell><Skeleton className="h-6 w-16" /></TableCell>
                       <TableCell><Skeleton className="h-8 w-8 rounded" /></TableCell>
                     </TableRow>
@@ -433,7 +459,7 @@ const Posts: React.FC = () => {
                 ) : (
                   filteredPosts.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8">
+                      <TableCell colSpan={6} className="text-center py-8">
                         <div className="flex flex-col items-center gap-2">
                           <FileText className="w-12 h-12 text-muted-foreground" />
                           <p className="text-muted-foreground">
@@ -446,17 +472,23 @@ const Posts: React.FC = () => {
                     filteredPosts.map((post) => (
                       <TableRow key={post.id} className={`hover:bg-muted/50 ${isRTL ? 'text-right' : 'text-left'}`}>
                         <TableCell className={isRTL ? 'text-right' : 'text-left'}>
-                          <div className="space-y-1 max-w-xs">
-                            <p className="text-sm text-muted-foreground">#{post.id}</p>
-                            <p className="font-medium text-sm leading-relaxed">
-                              {truncateText(getLocalizedDescription(post), 80)}
-                            </p>
+                          <div className={`flex items-center gap-3 ${isRTL ? 'text-right' : 'flex-row'}`}>
+                            <PostImage post={post} />
+                            <div>
+                              <p className="font-medium">{truncateText(getLocalizedDescription(post), 60)}</p>
+                              <p className="text-sm text-muted-foreground">#{post.id}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {formatDate(post.createdAt)}
+                              </p>
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell className={isRTL ? 'text-right' : 'text-left'}>
                           <div className="flex items-center gap-2">
                             <User className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-sm">User #{post.userId}</span>
+                            <Badge variant="secondary" className="text-xs">
+                              User #{post.userId}
+                            </Badge>
                           </div>
                         </TableCell>
                         <TableCell className={isRTL ? 'text-right' : 'text-left'}>
@@ -467,13 +499,8 @@ const Posts: React.FC = () => {
                         <TableCell className={isRTL ? 'text-right' : 'text-left'}>
                           <div className="flex items-center gap-1">
                             <Heart className="w-4 h-4 text-pink-500" />
-                            <span className="font-medium">{post.numberOfReactions}</span>
+                            <span className="font-medium text-pink-600">{post.numberOfReactions}</span>
                           </div>
-                        </TableCell>
-                        <TableCell className={isRTL ? 'text-right' : 'text-left'}>
-                          <span className="text-sm text-muted-foreground">
-                            {formatDate(post.createdAt)}
-                          </span>
                         </TableCell>
                         <TableCell className={isRTL ? 'text-right' : 'text-left'}>
                           {getStatusBadge(post.isActive)}

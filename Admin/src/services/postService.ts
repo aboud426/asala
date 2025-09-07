@@ -23,6 +23,7 @@ export interface PostDto {
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
+    mediaUrls: string[];
     localizations: PostLocalizedDto[];
 }
 
@@ -38,6 +39,7 @@ export interface CreatePostDto {
     numberOfReactions?: number;
     postTypeId: number;
     isActive?: boolean;
+    mediaUrls: string[];
     localizations: CreatePostLocalizedDto[];
 }
 
@@ -62,6 +64,7 @@ export interface UpdatePostDto {
     numberOfReactions: number;
     postTypeId: number;
     isActive: boolean;
+    mediaUrls: string[];
     localizations: UpdatePostLocalizedDto[];
 }
 
