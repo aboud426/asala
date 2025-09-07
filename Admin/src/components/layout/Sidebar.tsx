@@ -17,6 +17,7 @@ import {
   Key,
   UserCheck,
   Coins,
+  Tag,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -87,6 +88,12 @@ const navigationItems = [
     titleAr: 'الرسائل',
     href: '/messages',
     icon: MessageSquare,
+  },
+  {
+    title: 'Post Types',
+    titleAr: 'أنواع المنشورات',
+    href: '/post-types',
+    icon: Tag,
   },
   {
     title: 'Employees',

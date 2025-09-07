@@ -122,6 +122,16 @@ export const searchablePages: SearchableItem[] = [
     keywordsAr: ['رسائل', 'تواصل', 'إشعارات', 'قوالب', 'محتوى']
   },
   {
+    id: 'post-types',
+    title: 'Post Types',
+    titleAr: 'أنواع المنشورات',
+    description: 'Manage post types and content classification system',
+    descriptionAr: 'إدارة أنواع المنشورات ونظام تصنيف المحتوى',
+    href: '/post-types',
+    keywords: ['post types', 'posts', 'content', 'types', 'classification', 'categories'],
+    keywordsAr: ['أنواع المنشورات', 'منشورات', 'محتوى', 'أنواع', 'تصنيف', 'فئات']
+  },
+  {
     id: 'employees',
     title: 'Employees',
     titleAr: 'الموظفين',
