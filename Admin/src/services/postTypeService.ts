@@ -260,6 +260,24 @@ class PostTypeService {
 
         return response.data;
     };
+
+    /**
+     * Get post types for dropdown/select components
+     * GET /api/post-types/dropdown
+     */
+    getPostTypesDropdown = async (): Promise<PostTypeDropdownDto[]> => {
+        const response = await this.request<PostTypeDropdownDto[]>('/dropdown');
+
+        if (!response.success) {
+            throw new Error(response.message || 'Failed to fetch post types dropdown');
+        }
+
+        if (!response.data) {
+            throw new Error('No data returned from server');
+        }
+
+        return response.data;
+    };
 }
 
 // Export singleton instance

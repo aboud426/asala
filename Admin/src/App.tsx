@@ -30,6 +30,10 @@ import Currencies from "./pages/Currencies";
 import CreateProduct from "./pages/CreateProduct";
 import ProductDetails from "./pages/ProductDetails";
 import EditProduct from "./pages/EditProduct";
+import Posts from "./pages/Posts";
+import CreatePost from "./pages/CreatePost";
+import PostDetails from "./pages/PostDetails";
+import EditPost from "./pages/EditPost";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -49,6 +53,10 @@ const App = () => (
               <Route path="/products/create" element={<CreateProduct />} />
               <Route path="/products/:id/edit" element={<EditProduct />} />
               <Route path="/products/:id" element={<ProductDetails />} />
+              <Route path="/posts" element={<Posts />} />
+              <Route path="/posts/create" element={<CreatePost />} />
+              <Route path="/posts/:id/edit" element={<EditPost />} />
+              <Route path="/posts/:id" element={<PostDetails />} />
               <Route path="/customers" element={<Customers />} />
               <Route path="/providers" element={<Providers />} />
               <Route path="/providers/create" element={<CreateProvider />} />

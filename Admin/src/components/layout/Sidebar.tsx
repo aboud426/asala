@@ -18,6 +18,7 @@ import {
   UserCheck,
   Coins,
   Tag,
+  MessageCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -46,6 +47,12 @@ const navigationItems = [
     titleAr: 'المنتجات',
     href: '/products',
     icon: Package,
+  },
+  {
+    title: 'Posts',
+    titleAr: 'المنشورات',
+    href: '/posts',
+    icon: MessageCircle,
   },
   {
     title: 'Customers',

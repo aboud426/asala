@@ -60,7 +60,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPostTypeRepository, PostTypeRepository>();
 
         // Posts services
-        // services.AddScoped<IPostService, PostService>();
+        services.AddScoped<IPostService, PostService>();
         services.AddScoped<IPostTypeService, PostTypeService>();
 
         // Products repositories

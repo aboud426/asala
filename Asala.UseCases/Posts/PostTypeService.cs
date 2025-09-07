@@ -277,6 +277,30 @@ public class PostTypeService : IPostTypeService
         return await _postTypeRepository.GetPostTypesMissingTranslationsAsync(cancellationToken);
     }
 
+    public async Task<Result<IEnumerable<PostTypeDropdownDto>>> GetDropdownAsync(
+        CancellationToken cancellationToken = default
+    )
+    {
+        var result = await _postTypeRepository.GetAsync(
+            filter: pt => !pt.IsDeleted && pt.IsActive,
+            orderBy: query => query.OrderBy(pt => pt.Name)
+        );
+
+        if (result.IsFailure)
+            return Result.Failure<IEnumerable<PostTypeDropdownDto>>(result.MessageCode);
+
+        var dropdownItems = result
+            .Value.Select(pt => new PostTypeDropdownDto
+            {
+                Id = pt.Id,
+                Name = pt.Name,
+                Description = pt.Description,
+            })
+            .ToList();
+
+        return Result.Success<IEnumerable<PostTypeDropdownDto>>(dropdownItems);
+    }
+
     #region Private Helper Methods
 
     private static List<PostTypeLocalized> CreateLocalizations(
@@ -437,7 +461,9 @@ public class PostTypeService : IPostTypeService
         return Result.Success();
     }
 
-    private static Result ValidateUpdateLocalizations(List<UpdatePostTypeLocalizedDto> localizations)
+    private static Result ValidateUpdateLocalizations(
+        List<UpdatePostTypeLocalizedDto> localizations
+    )
     {
         if (localizations == null)
             return Result.Success(); // Optional localizations

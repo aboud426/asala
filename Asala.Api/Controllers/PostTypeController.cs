@@ -73,7 +73,10 @@ public class PostTypeController : BaseController
     /// <response code="404">Post type not found</response>
     /// <response code="500">Internal server error</response>
     [HttpGet("by-name/{name}")]
-    public async Task<IActionResult> GetByName(string name, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetByName(
+        string name,
+        CancellationToken cancellationToken = default
+    )
     {
         var result = await _postTypeService.GetByNameAsync(name, cancellationToken);
         return CreateResponse(result);
@@ -171,6 +174,20 @@ public class PostTypeController : BaseController
     )
     {
         var result = await _postTypeService.GetPostTypesMissingTranslationsAsync(cancellationToken);
+        return CreateResponse(result);
+    }
+
+    /// <summary>
+    /// Get post types for dropdown/select components (simplified data)
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of post types with basic information for dropdowns</returns>
+    /// <response code="200">Post type dropdown data retrieved successfully</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("dropdown")]
+    public async Task<IActionResult> GetDropdown(CancellationToken cancellationToken = default)
+    {
+        var result = await _postTypeService.GetDropdownAsync(cancellationToken);
         return CreateResponse(result);
     }
 }

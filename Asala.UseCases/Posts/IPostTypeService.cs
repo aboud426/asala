@@ -37,4 +37,8 @@ public interface IPostTypeService
     Task<Result<IEnumerable<int>>> GetPostTypesMissingTranslationsAsync(
         CancellationToken cancellationToken = default
     );
+
+    Task<Result<IEnumerable<PostTypeDropdownDto>>> GetDropdownAsync(
+        CancellationToken cancellationToken = default
+    );
 }

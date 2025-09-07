@@ -18,6 +18,12 @@ public class PostConfiguration : IEntityTypeConfiguration<Post>
 
         builder.Property(x => x.NumberOfReactions).IsRequired(true).HasDefaultValue(0);
 
+        builder
+            .HasMany(e => e.PostLocalizeds)
+            .WithOne(e => e.Post)
+            .HasForeignKey(e => e.PostId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // Indexes
         builder.HasIndex(x => x.UserId);
     }
