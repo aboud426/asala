@@ -1,9 +1,11 @@
 using Asala.Core.Db.Configurations;
 using Asala.Core.Modules.Categories.Models;
 using Asala.Core.Modules.Languages;
+using Asala.Core.Modules.Locations.Models;
 using Asala.Core.Modules.Messages.Models;
 using Asala.Core.Modules.Posts.Models;
 using Asala.Core.Modules.Products.Models;
+using Asala.Core.Modules.Shopping.Models;
 using Asala.Core.Modules.Users.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -53,6 +55,22 @@ public class AsalaDbContext : DbContext
     public DbSet<Currency> Currencies => Set<Currency>();
     public DbSet<CurrencyLocalized> CurrencyLocalizations => Set<CurrencyLocalized>();
     public DbSet<Otp> Otps => Set<Otp>();
+
+    // Locations module
+    public DbSet<Region> Regions => Set<Region>();
+    public DbSet<Location> Locations => Set<Location>();
+    public DbSet<LocationLocalized> LocationLocalizeds => Set<LocationLocalized>();
+    public DbSet<LocalizedRegion> LocalizedRegions => Set<LocalizedRegion>();
+
+    // Shopping module
+    public DbSet<Cart> Carts => Set<Cart>();
+    public DbSet<CartItem> CartItems => Set<CartItem>();
+    public DbSet<Order> Orders => Set<Order>();
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+    public DbSet<OrderActivity> OrderActivities => Set<OrderActivity>();
+    public DbSet<OrderItemActivity> OrderItemActivities => Set<OrderItemActivity>();
+    public DbSet<OrderStatus> OrderStatuses => Set<OrderStatus>();
+    public DbSet<OrderItemStatus> OrderItemStatuses => Set<OrderItemStatus>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
