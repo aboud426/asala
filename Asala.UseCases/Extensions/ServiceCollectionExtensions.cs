@@ -9,6 +9,7 @@ using Asala.Core.Modules.Languages;
 using Asala.Core.Modules.Languages;
 using Asala.Core.Modules.Posts.Db;
 using Asala.Core.Modules.Products.Db;
+using Asala.Core.Modules.Shopping.Db;
 using Asala.Core.Modules.Users.Db;
 using Asala.UseCases.Categories;
 using Asala.UseCases.Categories;
@@ -16,6 +17,7 @@ using Asala.UseCases.Languages;
 using Asala.UseCases.Messages;
 using Asala.UseCases.Posts;
 using Asala.UseCases.Products;
+using Asala.UseCases.Shopping;
 using Asala.UseCases.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -98,6 +100,16 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IOtpService, OtpService>();
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddScoped<IAdminService, AdminService>();
+
+        // Shopping repositories
+        services.AddScoped<ICartRepository, CartRepository>();
+        services.AddScoped<ICartItemRepository, CartItemRepository>();
+        services.AddScoped<IOrderRepository, OrderRepository>();
+        services.AddScoped<IOrderItemRepository, OrderItemRepository>();
+
+        // Shopping services
+        services.AddScoped<ICartService, CartService>();
+        services.AddScoped<IOrderService, OrderService>();
 
         return services;
     }
