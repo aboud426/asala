@@ -97,6 +97,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICurrencyService, CurrencyService>();
         services.AddScoped<IRolePermissionService, RolePermissionService>();
         services.AddScoped<ICustomerService, CustomerService>();
+        services.AddScoped<ICustomerAdminService, CustomerAdminService>();
         services.AddScoped<IProviderService, ProviderService>();
         services.AddScoped<IEmployeeService, EmployeeService>();
         services.AddScoped<IOtpService, OtpService>();

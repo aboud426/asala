@@ -202,16 +202,16 @@ public class AdminController : BaseController
     }
 
     // Admin-specific user management endpoints
-    [HttpGet("customers")]
-    public async Task<IActionResult> GetAllCustomers(
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 10,
-        [FromQuery] bool activeOnly = false,
-        CancellationToken cancellationToken = default)
-    {
-        var result = await _customerService.GetPaginatedAsync(page, pageSize, activeOnly, cancellationToken);
-        return CreateResponse(result);
-    }
+    // [HttpGet("customers")]
+    // public async Task<IActionResult> GetAllCustomers(
+    //     [FromQuery] int page = 1,
+    //     [FromQuery] int pageSize = 10,
+    //     [FromQuery] bool activeOnly = false,
+    //     CancellationToken cancellationToken = default)
+    // {
+    //     var result = await _customerService.GetPaginatedAsync(page, pageSize, activeOnly, cancellationToken);
+    //     return CreateResponse(result);
+    // }
 
     // [HttpGet("providers")]
     // public async Task<IActionResult> GetAllProviders(
@@ -235,18 +235,18 @@ public class AdminController : BaseController
         return CreateResponse(result);
     }
 
-    [HttpGet("customers/search")]
-    public async Task<IActionResult> SearchCustomers(
-        [FromQuery] string searchTerm,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 10,
-        [FromQuery] bool activeOnly = false,
-        [FromQuery] CustomerSortBy sortBy = CustomerSortBy.Name,
-        CancellationToken cancellationToken = default)
-    {
-        var result = await _customerService.SearchByNameAsync(searchTerm, page, pageSize, activeOnly, sortBy, cancellationToken);
-        return CreateResponse(result);
-    }
+    // [HttpGet("customers/search")]
+    // public async Task<IActionResult> SearchCustomers(
+    //     [FromQuery] string searchTerm,
+    //     [FromQuery] int page = 1,
+    //     [FromQuery] int pageSize = 10,
+    //     [FromQuery] bool activeOnly = false,
+    //     [FromQuery] CustomerSortBy sortBy = CustomerSortBy.Name,
+    //     CancellationToken cancellationToken = default)
+    // {
+    //     var result = await _customerService.SearchByNameAsync(searchTerm, page, pageSize, activeOnly, sortBy, cancellationToken);
+    //     return CreateResponse(result);
+    // }
 
     [HttpGet("providers/search")]
     public async Task<IActionResult> SearchProviders(

@@ -4,9 +4,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Asala.Core.Common.Abstractions;
 using Asala.Core.Common.Models;
-using Asala.Core.Modules.Users.Models;
-using Asala.Core.Modules.Users.DTOs;
 using Asala.Core.Modules.Users.Db;
+using Asala.Core.Modules.Users.DTOs;
+using Asala.Core.Modules.Users.Models;
 
 namespace Asala.UseCases.Users;
 
@@ -21,7 +21,8 @@ public class CustomerService : ICustomerService
         ICustomerRepository customerRepository,
         IUserRepository userRepository,
         IOtpService otpService,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork
+    )
     {
         _customerRepository = customerRepository;
         _userRepository = userRepository;
@@ -78,22 +79,6 @@ public class CustomerService : ICustomerService
         return Result.Success<CustomerDto?>(dto);
     }
 
-    public async Task<Result<CustomerDto?>> GetByEmailAsync(
-        string email,
-        CancellationToken cancellationToken = default
-    )
-    {
-        if (string.IsNullOrWhiteSpace(email))
-            return Result.Failure<CustomerDto?>(MessageCodes.USER_EMAIL_REQUIRED);
-
-        var result = await _customerRepository.GetByEmailAsync(email, cancellationToken);
-        if (result.IsFailure)
-            return Result.Failure<CustomerDto?>(result.MessageCode);
-
-        var dto = result.Value != null ? MapToDto(result.Value) : null;
-        return Result.Success(dto);
-    }
-
     public async Task<Result<CustomerDto>> CreateAsync(
         CreateCustomerDto createDto,
         CancellationToken cancellationToken = default
@@ -109,7 +94,7 @@ public class CustomerService : ICustomerService
         {
             PhoneNumber = createDto.PhoneNumber,
             Code = createDto.OtpCode,
-            Purpose = "Registration"
+            Purpose = "Registration",
         };
 
         var otpResult = await _otpService.VerifyOtpAsync(otpVerifyDto, cancellationToken);
@@ -120,7 +105,10 @@ public class CustomerService : ICustomerService
             return Result.Failure<CustomerDto>("Invalid or expired OTP");
 
         // Check if phone number already exists
-        var phoneExistsResult = await _userRepository.ExistsByPhoneNumberAsync(createDto.PhoneNumber, cancellationToken: cancellationToken);
+        var phoneExistsResult = await _userRepository.ExistsByPhoneNumberAsync(
+            createDto.PhoneNumber,
+            cancellationToken: cancellationToken
+        );
         if (phoneExistsResult.IsFailure)
             return Result.Failure<CustomerDto>(phoneExistsResult.MessageCode);
 
@@ -140,7 +128,6 @@ public class CustomerService : ICustomerService
                 Email = $"customer_{createDto.PhoneNumber}@temp.com", // Temporary email since Customer uses phone
                 PhoneNumber = createDto.PhoneNumber.Trim(),
                 PasswordHash = null, // No password for Customer users - they use OTP
-                LocationId = createDto.LocationId,
                 IsActive = createDto.IsActive,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
@@ -165,7 +152,6 @@ public class CustomerService : ICustomerService
             {
                 UserId = addUserResult.Value.Id,
                 Name = createDto.Name.Trim(),
-                AddressId = null // Address can be set later
             };
 
             var addCustomerResult = await _customerRepository.AddAsync(customer, cancellationToken);
@@ -216,7 +202,10 @@ public class CustomerService : ICustomerService
             return Result.Failure<CustomerDto?>(validationResult.MessageCode);
 
         // Get customer with user
-        var getCustomerResult = await _customerRepository.GetByUserIdAsync(userId, cancellationToken);
+        var getCustomerResult = await _customerRepository.GetByUserIdAsync(
+            userId,
+            cancellationToken
+        );
         if (getCustomerResult.IsFailure)
             return Result.Failure<CustomerDto?>(getCustomerResult.MessageCode);
 
@@ -236,7 +225,11 @@ public class CustomerService : ICustomerService
         // Check if phone number already exists (excluding current user) - only if phone number is being updated
         if (!string.IsNullOrWhiteSpace(updateDto.PhoneNumber))
         {
-            var phoneExistsResult = await _userRepository.ExistsByPhoneNumberAsync(updateDto.PhoneNumber, userId, cancellationToken);
+            var phoneExistsResult = await _userRepository.ExistsByPhoneNumberAsync(
+                updateDto.PhoneNumber,
+                userId,
+                cancellationToken
+            );
             if (phoneExistsResult.IsFailure)
                 return Result.Failure<CustomerDto?>(phoneExistsResult.MessageCode);
 
@@ -251,7 +244,6 @@ public class CustomerService : ICustomerService
 
         // Update Customer
         customer.Name = updateDto.Name.Trim();
-        customer.AddressId = updateDto.AddressId;
 
         var updateUserResult = _userRepository.Update(user);
         if (updateUserResult.IsFailure)
@@ -269,13 +261,19 @@ public class CustomerService : ICustomerService
         return Result.Success<CustomerDto?>(dto);
     }
 
-    public async Task<Result> SoftDeleteAsync(int userId, CancellationToken cancellationToken = default)
+    public async Task<Result> SoftDeleteAsync(
+        int userId,
+        CancellationToken cancellationToken = default
+    )
     {
         var idValidationResult = ValidateId(userId);
         if (idValidationResult.IsFailure)
             return Result.Failure(idValidationResult.MessageCode);
 
-        var getCustomerResult = await _customerRepository.GetByUserIdAsync(userId, cancellationToken);
+        var getCustomerResult = await _customerRepository.GetByUserIdAsync(
+            userId,
+            cancellationToken
+        );
         if (getCustomerResult.IsFailure)
             return getCustomerResult;
 
@@ -313,7 +311,10 @@ public class CustomerService : ICustomerService
         if (idValidationResult.IsFailure)
             return Result.Failure(idValidationResult.MessageCode);
 
-        var getCustomerResult = await _customerRepository.GetByUserIdAsync(userId, cancellationToken);
+        var getCustomerResult = await _customerRepository.GetByUserIdAsync(
+            userId,
+            cancellationToken
+        );
         if (getCustomerResult.IsFailure)
             return getCustomerResult;
 
@@ -357,43 +358,6 @@ public class CustomerService : ICustomerService
 
         var dtos = result.Value.Items.Select(MapToDropdownDto);
         return Result.Success<IEnumerable<CustomerDropdownDto>>(dtos);
-    }
-
-    public async Task<Result<PaginatedResult<CustomerDto>>> SearchByNameAsync(
-        string searchTerm,
-        int page = 1,
-        int pageSize = 10,
-        bool activeOnly = true,
-        CustomerSortBy sortBy = CustomerSortBy.Name,
-        CancellationToken cancellationToken = default)
-    {
-        if (page <= 0)
-            return Result.Failure<PaginatedResult<CustomerDto>>(MessageCodes.PAGINATION_INVALID_PAGE);
-
-        if (pageSize <= 0 || pageSize > 100)
-            return Result.Failure<PaginatedResult<CustomerDto>>(MessageCodes.PAGINATION_INVALID_PAGE_SIZE);
-
-        var result = await _customerRepository.SearchByNameAsync(
-            searchTerm,
-            page,
-            pageSize,
-            activeOnly,
-            sortBy,
-            cancellationToken
-        );
-
-        if (result.IsFailure)
-            return Result.Failure<PaginatedResult<CustomerDto>>(result.MessageCode);
-
-        var dtos = result.Value.Items.Select(MapToDto);
-        var paginatedDto = new PaginatedResult<CustomerDto>(
-            items: dtos.ToList(),
-            totalCount: result.Value.TotalCount,
-            page: result.Value.Page,
-            pageSize: result.Value.PageSize
-        );
-
-        return Result.Success(paginatedDto);
     }
 
     #region Private Helper Methods
@@ -462,10 +426,6 @@ public class CustomerService : ICustomerService
         if (!string.IsNullOrWhiteSpace(updateDto.PhoneNumber) && updateDto.PhoneNumber.Length > 20)
             return Result.Failure("Phone number is too long");
 
-        // Validate Address ID
-        if (updateDto.AddressId <= 0)
-            return Result.Failure(MessageCodes.CUSTOMER_ADDRESS_ID_INVALID);
-
         return Result.Success();
     }
 
@@ -485,11 +445,10 @@ public class CustomerService : ICustomerService
         {
             UserId = customer.UserId,
             Name = customer.Name,
-            AddressId = customer.AddressId,
             PhoneNumber = user?.PhoneNumber,
             IsActive = user?.IsActive ?? false,
             CreatedAt = user?.CreatedAt ?? DateTime.MinValue,
-            UpdatedAt = user?.UpdatedAt ?? DateTime.MinValue
+            UpdatedAt = user?.UpdatedAt ?? DateTime.MinValue,
         };
     }
 
@@ -499,11 +458,10 @@ public class CustomerService : ICustomerService
         {
             UserId = customer.UserId,
             Name = customer.Name,
-            AddressId = customer.AddressId,
             PhoneNumber = null, // Will be populated by service methods when User data is available
             IsActive = true, // Will be populated by service methods when User data is available
             CreatedAt = DateTime.MinValue, // Will be populated by service methods when User data is available
-            UpdatedAt = DateTime.MinValue // Will be populated by service methods when User data is available
+            UpdatedAt = DateTime.MinValue, // Will be populated by service methods when User data is available
         };
     }
 

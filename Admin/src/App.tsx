@@ -34,6 +34,7 @@ import Posts from "./pages/Posts";
 import CreatePost from "./pages/CreatePost";
 import PostDetails from "./pages/PostDetails";
 import EditPost from "./pages/EditPost";
+import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
+              <Route path="/login" element={<Login />} />
               <Route path="/" element={<Index />} />
               <Route path="/orders" element={<Orders />} />
               <Route path="/products" element={<Products />} />

@@ -302,6 +302,190 @@ namespace Asala.Api.Migrations
                     b.ToTable("Language", (string)null);
                 });
 
+            modelBuilder.Entity("Asala.Core.Modules.Locations.Models.LocalizedRegion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("LanguageId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LocalizedName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("RegionId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LanguageId");
+
+                    b.HasIndex("RegionId");
+
+                    b.HasIndex("RegionId", "LanguageId")
+                        .IsUnique();
+
+                    b.ToTable("LocalizedRegion", (string)null);
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Locations.Models.Location", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("Latitude")
+                        .HasColumnType("decimal(9,6)");
+
+                    b.Property<decimal>("Longitude")
+                        .HasColumnType("decimal(9,6)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("RegionId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name");
+
+                    b.HasIndex("RegionId");
+
+                    b.HasIndex("Latitude", "Longitude");
+
+                    b.HasIndex("RegionId", "Name");
+
+                    b.ToTable("Location", (string)null);
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Locations.Models.LocationLocalized", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("LanguageId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LocalizedName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("LocationId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LanguageId");
+
+                    b.HasIndex("LocationId");
+
+                    b.HasIndex("LocationId", "LanguageId")
+                        .IsUnique();
+
+                    b.ToTable("Location_Localized", (string)null);
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Locations.Models.Region", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name");
+
+                    b.HasIndex("ParentId");
+
+                    b.HasIndex("ParentId", "Name");
+
+                    b.ToTable("Region", (string)null);
+                });
+
             modelBuilder.Entity("Asala.Core.Modules.Messages.Models.Message", b =>
                 {
                     b.Property<int>("Id")
@@ -811,6 +995,346 @@ namespace Asala.Api.Migrations
                     b.ToTable("Products_Post", (string)null);
                 });
 
+            modelBuilder.Entity("Asala.Core.Modules.Shopping.Models.Cart", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "IsDeleted");
+
+                    b.ToTable("Cart", (string)null);
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Shopping.Models.CartItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CartId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("PostId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CartId");
+
+                    b.HasIndex("PostId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("CartId", "ProductId", "PostId");
+
+                    b.ToTable("Cart_Item", (string)null);
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Shopping.Models.Order", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ShippingAddressId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShippingAddressId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "CreatedAt");
+
+                    b.ToTable("Order", (string)null);
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Shopping.Models.OrderActivity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OrderStatusId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("OrderStatusId");
+
+                    b.HasIndex("OrderId", "CreatedAt");
+
+                    b.ToTable("OrderActivity", (string)null);
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Shopping.Models.OrderItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PostId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProviderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("PostId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("ProviderId");
+
+                    b.HasIndex("OrderId", "ProductId");
+
+                    b.ToTable("Order_Item", (string)null);
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Shopping.Models.OrderItemActivity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("OrderItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OrderItemStatusId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderItemId");
+
+                    b.HasIndex("OrderItemStatusId");
+
+                    b.HasIndex("OrderItemId", "CreatedAt");
+
+                    b.ToTable("OrderItemActivity", (string)null);
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Shopping.Models.OrderItemStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("OrderItemStatus", (string)null);
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Shopping.Models.OrderStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("OrderStatus", (string)null);
+                });
+
             modelBuilder.Entity("Asala.Core.Modules.Users.Models.Currency", b =>
                 {
                     b.Property<int>("Id")
@@ -931,9 +1455,6 @@ namespace Asala.Api.Migrations
             modelBuilder.Entity("Asala.Core.Modules.Users.Models.Customer", b =>
                 {
                     b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("AddressId")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
@@ -1497,6 +2018,8 @@ namespace Asala.Api.Migrations
                     b.HasIndex("Id")
                         .IsUnique();
 
+                    b.HasIndex("LocationId");
+
                     b.HasIndex("PhoneNumber")
                         .IsUnique()
                         .HasFilter("[PhoneNumber] IS NOT NULL");
@@ -1569,6 +2092,64 @@ namespace Asala.Api.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Asala.Core.Modules.Locations.Models.LocalizedRegion", b =>
+                {
+                    b.HasOne("Asala.Core.Modules.Languages.Language", "Language")
+                        .WithMany()
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Asala.Core.Modules.Locations.Models.Region", "Region")
+                        .WithMany("LocalizedRegions")
+                        .HasForeignKey("RegionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Language");
+
+                    b.Navigation("Region");
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Locations.Models.Location", b =>
+                {
+                    b.HasOne("Asala.Core.Modules.Locations.Models.Region", "Region")
+                        .WithMany("Locations")
+                        .HasForeignKey("RegionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Region");
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Locations.Models.LocationLocalized", b =>
+                {
+                    b.HasOne("Asala.Core.Modules.Languages.Language", "Language")
+                        .WithMany()
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Asala.Core.Modules.Locations.Models.Location", "Location")
+                        .WithMany("LocationLocalizeds")
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Language");
+
+                    b.Navigation("Location");
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Locations.Models.Region", b =>
+                {
+                    b.HasOne("Asala.Core.Modules.Locations.Models.Region", "Parent")
+                        .WithMany("InverseParent")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Parent");
+                });
+
             modelBuilder.Entity("Asala.Core.Modules.Messages.Models.MessageLocalized", b =>
                 {
                     b.HasOne("Asala.Core.Modules.Languages.Language", "Language")
@@ -1609,11 +2190,21 @@ namespace Asala.Api.Migrations
 
             modelBuilder.Entity("Asala.Core.Modules.Posts.Models.PostLocalized", b =>
                 {
-                    b.HasOne("Asala.Core.Modules.Posts.Models.Post", null)
-                        .WithMany("PostLocalizeds")
-                        .HasForeignKey("PostId")
+                    b.HasOne("Asala.Core.Modules.Languages.Language", "Language")
+                        .WithMany()
+                        .HasForeignKey("LanguageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Asala.Core.Modules.Posts.Models.Post", "Post")
+                        .WithMany("PostLocalizeds")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Language");
+
+                    b.Navigation("Post");
                 });
 
             modelBuilder.Entity("Asala.Core.Modules.Posts.Models.PostMedia", b =>
@@ -1701,6 +2292,135 @@ namespace Asala.Api.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("Asala.Core.Modules.Shopping.Models.Cart", b =>
+                {
+                    b.HasOne("Asala.Core.Modules.Users.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Shopping.Models.CartItem", b =>
+                {
+                    b.HasOne("Asala.Core.Modules.Shopping.Models.Cart", "Cart")
+                        .WithMany("CartItems")
+                        .HasForeignKey("CartId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Asala.Core.Modules.Posts.Models.Post", "Post")
+                        .WithMany()
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Asala.Core.Modules.Products.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Cart");
+
+                    b.Navigation("Post");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Shopping.Models.Order", b =>
+                {
+                    b.HasOne("Asala.Core.Modules.Locations.Models.Location", "ShippingAddress")
+                        .WithMany("Orders")
+                        .HasForeignKey("ShippingAddressId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Asala.Core.Modules.Users.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ShippingAddress");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Shopping.Models.OrderActivity", b =>
+                {
+                    b.HasOne("Asala.Core.Modules.Shopping.Models.Order", "Order")
+                        .WithMany("OrderActivities")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Asala.Core.Modules.Shopping.Models.OrderStatus", "OrderStatus")
+                        .WithMany("OrderActivities")
+                        .HasForeignKey("OrderStatusId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("OrderStatus");
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Shopping.Models.OrderItem", b =>
+                {
+                    b.HasOne("Asala.Core.Modules.Shopping.Models.Order", "Order")
+                        .WithMany("OrderItems")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Asala.Core.Modules.Posts.Models.Post", "Post")
+                        .WithMany()
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Asala.Core.Modules.Products.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Asala.Core.Modules.Users.Models.Provider", "Provider")
+                        .WithMany()
+                        .HasForeignKey("ProviderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Post");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Provider");
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Shopping.Models.OrderItemActivity", b =>
+                {
+                    b.HasOne("Asala.Core.Modules.Shopping.Models.OrderItem", "OrderItem")
+                        .WithMany("OrderItemActivities")
+                        .HasForeignKey("OrderItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Asala.Core.Modules.Shopping.Models.OrderItemStatus", "OrderItemStatus")
+                        .WithMany("OrderItemActivities")
+                        .HasForeignKey("OrderItemStatusId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("OrderItem");
+
+                    b.Navigation("OrderItemStatus");
+                });
+
             modelBuilder.Entity("Asala.Core.Modules.Users.Models.CurrencyLocalized", b =>
                 {
                     b.HasOne("Asala.Core.Modules.Users.Models.Currency", "Currency")
@@ -1722,11 +2442,13 @@ namespace Asala.Api.Migrations
 
             modelBuilder.Entity("Asala.Core.Modules.Users.Models.Customer", b =>
                 {
-                    b.HasOne("Asala.Core.Modules.Users.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
+                    b.HasOne("Asala.Core.Modules.Users.Models.User", "User")
+                        .WithOne("Customer")
+                        .HasForeignKey("Asala.Core.Modules.Users.Models.Customer", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Asala.Core.Modules.Users.Models.Employee", b =>
@@ -1841,6 +2563,16 @@ namespace Asala.Api.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Asala.Core.Modules.Users.Models.User", b =>
+                {
+                    b.HasOne("Asala.Core.Modules.Locations.Models.Location", "Location")
+                        .WithMany("Users")
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Location");
+                });
+
             modelBuilder.Entity("Asala.Core.Modules.Users.Models.UserRole", b =>
                 {
                     b.HasOne("Asala.Core.Modules.Users.Models.Role", null)
@@ -1854,6 +2586,24 @@ namespace Asala.Api.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Locations.Models.Location", b =>
+                {
+                    b.Navigation("LocationLocalizeds");
+
+                    b.Navigation("Orders");
+
+                    b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Locations.Models.Region", b =>
+                {
+                    b.Navigation("InverseParent");
+
+                    b.Navigation("LocalizedRegions");
+
+                    b.Navigation("Locations");
                 });
 
             modelBuilder.Entity("Asala.Core.Modules.Messages.Models.Message", b =>
@@ -1878,6 +2628,33 @@ namespace Asala.Api.Migrations
                     b.Navigation("ProductLocalizeds");
 
                     b.Navigation("ProductMedias");
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Shopping.Models.Cart", b =>
+                {
+                    b.Navigation("CartItems");
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Shopping.Models.Order", b =>
+                {
+                    b.Navigation("OrderActivities");
+
+                    b.Navigation("OrderItems");
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Shopping.Models.OrderItem", b =>
+                {
+                    b.Navigation("OrderItemActivities");
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Shopping.Models.OrderItemStatus", b =>
+                {
+                    b.Navigation("OrderItemActivities");
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Shopping.Models.OrderStatus", b =>
+                {
+                    b.Navigation("OrderActivities");
                 });
 
             modelBuilder.Entity("Asala.Core.Modules.Users.Models.Currency", b =>
@@ -1910,6 +2687,8 @@ namespace Asala.Api.Migrations
 
             modelBuilder.Entity("Asala.Core.Modules.Users.Models.User", b =>
                 {
+                    b.Navigation("Customer");
+
                     b.Navigation("Employee");
 
                     b.Navigation("Provider");
