@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HashRouter as BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { DirectionProvider } from "@/contexts/DirectionContext";
+import { LoadingProvider } from "@/contexts/LoadingContext";
+import { RouteChangeLoader } from "@/components/ui/RouteChangeLoader";
 import Index from "./pages/Index";
 import Orders from "./pages/Orders";
 import Products from "./pages/Products";
@@ -43,46 +45,49 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <DirectionProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/" element={<Index />} />
-              <Route path="/orders" element={<Orders />} />
-              <Route path="/products" element={<Products />} />
-              <Route path="/products/create" element={<CreateProduct />} />
-              <Route path="/products/:id/edit" element={<EditProduct />} />
-              <Route path="/products/:id" element={<ProductDetails />} />
-              <Route path="/posts" element={<Posts />} />
-              <Route path="/posts/create" element={<CreatePost />} />
-              <Route path="/posts/:id/edit" element={<EditPost />} />
-              <Route path="/posts/:id" element={<PostDetails />} />
-              <Route path="/customers" element={<Customers />} />
-              <Route path="/providers" element={<Providers />} />
-              <Route path="/providers/create" element={<CreateProvider />} />
-              <Route path="/providers/:id/edit" element={<EditProvider />} />
-              <Route path="/providers/:id" element={<ProviderDetails />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/languages" element={<Languages />} />
-              <Route path="/categories" element={<Categories />} />
-              <Route path="/categories/tree" element={<CategoriesTree />} />
-              <Route path="/product-categories" element={<ProductCategories />} />
-              <Route path="/product-categories/tree" element={<ProductCategoriesTree />} />
-              <Route path="/messages" element={<Messages />} />
-              <Route path="/post-types" element={<PostTypes />} />
-              <Route path="/employees" element={<Employees />} />
-              <Route path="/roles" element={<Roles />} />
-              <Route path="/roles/:roleId/permissions" element={<RolePermissions />} />
-              <Route path="/permissions" element={<Permissions />} />
-              <Route path="/currencies" element={<Currencies />} />
-              <Route path="/settings" element={<Settings />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+        <LoadingProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <RouteChangeLoader />
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/" element={<Index />} />
+                <Route path="/orders" element={<Orders />} />
+                <Route path="/products" element={<Products />} />
+                <Route path="/products/create" element={<CreateProduct />} />
+                <Route path="/products/:id/edit" element={<EditProduct />} />
+                <Route path="/products/:id" element={<ProductDetails />} />
+                <Route path="/posts" element={<Posts />} />
+                <Route path="/posts/create" element={<CreatePost />} />
+                <Route path="/posts/:id/edit" element={<EditPost />} />
+                <Route path="/posts/:id" element={<PostDetails />} />
+                <Route path="/customers" element={<Customers />} />
+                <Route path="/providers" element={<Providers />} />
+                <Route path="/providers/create" element={<CreateProvider />} />
+                <Route path="/providers/:id/edit" element={<EditProvider />} />
+                <Route path="/providers/:id" element={<ProviderDetails />} />
+                <Route path="/analytics" element={<Analytics />} />
+                <Route path="/languages" element={<Languages />} />
+                <Route path="/categories" element={<Categories />} />
+                <Route path="/categories/tree" element={<CategoriesTree />} />
+                <Route path="/product-categories" element={<ProductCategories />} />
+                <Route path="/product-categories/tree" element={<ProductCategoriesTree />} />
+                <Route path="/messages" element={<Messages />} />
+                <Route path="/post-types" element={<PostTypes />} />
+                <Route path="/employees" element={<Employees />} />
+                <Route path="/roles" element={<Roles />} />
+                <Route path="/roles/:roleId/permissions" element={<RolePermissions />} />
+                <Route path="/permissions" element={<Permissions />} />
+                <Route path="/currencies" element={<Currencies />} />
+                <Route path="/settings" element={<Settings />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </LoadingProvider>
       </DirectionProvider>
     </ThemeProvider>
   </QueryClientProvider>

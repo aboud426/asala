@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
+import { TopLoadingBar } from '@/components/ui/TopLoadingBar';
 import { useDirection } from '@/contexts/DirectionContext';
 import { cn } from '@/lib/utils';
 
@@ -18,6 +19,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
   return (
     <div className="min-h-screen bg-background">
+      <TopLoadingBar />
       <Sidebar isCollapsed={sidebarCollapsed} onToggle={toggleSidebar} />
       <Navbar onSidebarToggle={toggleSidebar} sidebarCollapsed={sidebarCollapsed} />
       
@@ -29,7 +31,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
             : isRTL ? 'mr-64' : 'ml-64'
         )}
       >
-        <div className="p-6">
+        <div className="p-6 page-transition-enter-active">
           {children}
         </div>
       </main>

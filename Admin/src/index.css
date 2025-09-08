@@ -631,3 +631,104 @@ All colors MUST be HSL for proper theming.
     --gradient-primary: linear-gradient(135deg, hsl(25, 5%, 32%), hsl(25, 5%, 39%));
   }
 }
+
+/* Loading Bar Animations */
+@layer components {
+  @keyframes loading-shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes loading-pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  @keyframes loading-glow {
+    0% {
+      box-shadow: 0 0 5px hsl(var(--primary), 0.3);
+    }
+    50% {
+      box-shadow: 0 0 20px hsl(var(--primary), 0.6), 0 0 30px hsl(var(--primary), 0.3);
+    }
+    100% {
+      box-shadow: 0 0 5px hsl(var(--primary), 0.3);
+    }
+  }
+
+  @keyframes loading-sweep {
+    0% {
+      transform: translateX(-100%) skewX(-30deg);
+    }
+    100% {
+      transform: translateX(400%) skewX(-30deg);
+    }
+  }
+
+  /* Loading bar specific styles */
+  .loading-bar-shimmer {
+    animation: loading-shimmer 1.5s infinite linear;
+  }
+
+  .loading-bar-pulse {
+    animation: loading-pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+  }
+
+  .loading-bar-glow {
+    animation: loading-glow 2s infinite ease-in-out;
+  }
+
+  .loading-bar-sweep {
+    animation: loading-sweep 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Enhanced loading bar container */
+  .loading-bar-container {
+    @apply relative overflow-hidden;
+  }
+
+  .loading-bar-container::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent;
+    @apply transform -translate-x-full;
+    animation: loading-sweep 1.5s infinite cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Smooth progress animation */
+  .loading-progress {
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Page transition fade */
+  .page-transition-enter {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  .page-transition-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .page-transition-exit {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .page-transition-exit-active {
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
+                transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
