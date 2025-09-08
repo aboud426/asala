@@ -132,6 +132,16 @@ export const searchablePages: SearchableItem[] = [
     keywordsAr: ['أنواع المنشورات', 'منشورات', 'محتوى', 'أنواع', 'تصنيف', 'فئات']
   },
   {
+    id: 'regions',
+    title: 'Regions',
+    titleAr: 'المناطق',
+    description: 'Manage geographical regions and their multilingual translations',
+    descriptionAr: 'إدارة المناطق الجغرافية وترجماتها متعددة اللغات',
+    href: '/regions',
+    keywords: ['regions', 'locations', 'geography', 'areas', 'territories', 'places', 'localization', 'hierarchy'],
+    keywordsAr: ['مناطق', 'منطقة', 'مواقع', 'جغرافيا', 'مناطق', 'أقاليم', 'أماكن', 'توطين', 'هرمية']
+  },
+  {
     id: 'employees',
     title: 'Employees',
     titleAr: 'الموظفين',

@@ -113,6 +113,7 @@ public static class ServiceCollectionExtensions
 
         // Location repositories
         services.AddScoped<IRegionRepository, RegionRepository>();
+        services.AddScoped<ILocalizedRegionRepository, LocalizedRegionRepository>();
         services.AddScoped<ILocationRepository, LocationRepository>();
 
         // Shopping services

@@ -21,7 +21,8 @@ public class OrderService : IOrderService
         IOrderItemRepository orderItemRepository,
         IProductRepository productRepository,
         ILocationRepository locationRepository,
-        IProviderRepository providerRepository)
+        IProviderRepository providerRepository
+    )
     {
         _orderRepository = orderRepository;
         _orderItemRepository = orderItemRepository;
@@ -30,12 +31,19 @@ public class OrderService : IOrderService
         _providerRepository = providerRepository;
     }
 
-    public async Task<Result<OrderDto>> GetOrderByIdAsync(int userId, int orderId, CancellationToken cancellationToken = default)
+    public async Task<Result<OrderDto>> GetOrderByIdAsync(
+        int userId,
+        int orderId,
+        CancellationToken cancellationToken = default
+    )
     {
         try
         {
             // Get order with details
-            var orderResult = await _orderRepository.GetByIdWithDetailsAsync(orderId, cancellationToken);
+            var orderResult = await _orderRepository.GetByIdWithDetailsAsync(
+                orderId,
+                cancellationToken
+            );
             if (!orderResult.IsSuccess)
                 return Result.Failure<OrderDto>(orderResult.MessageCode);
 
@@ -58,19 +66,29 @@ public class OrderService : IOrderService
         }
     }
 
-    public async Task<Result<PaginatedResult<OrderSummaryDto>>> GetUserOrdersAsync(int userId, int page, int pageSize, CancellationToken cancellationToken = default)
+    public async Task<Result<PaginatedResult<OrderSummaryDto>>> GetUserOrdersAsync(
+        int userId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    )
     {
         try
         {
             // Get paginated orders for user
             var ordersResult = await _orderRepository.GetPaginatedWithDetailsAsync(
-                page, pageSize, userId, true, cancellationToken);
-            
+                page,
+                pageSize,
+                userId,
+                true,
+                cancellationToken
+            );
+
             if (!ordersResult.IsSuccess)
                 return Result.Failure<PaginatedResult<OrderSummaryDto>>(ordersResult.MessageCode);
 
             var paginatedOrders = ordersResult.Value;
-            
+
             // Map to summary DTOs
             var orderSummaries = new List<OrderSummaryDto>();
             foreach (var order in paginatedOrders.Items)
@@ -90,11 +108,17 @@ public class OrderService : IOrderService
         }
         catch (Exception ex)
         {
-            return Result.Failure<PaginatedResult<OrderSummaryDto>>(MessageCodes.EXECUTION_ERROR, ex);
+            return Result.Failure<PaginatedResult<OrderSummaryDto>>(
+                MessageCodes.EXECUTION_ERROR,
+                ex
+            );
         }
     }
 
-    private async Task<OrderDto> MapToDetailedOrderDtoAsync(Core.Modules.Shopping.Models.Order order, CancellationToken cancellationToken)
+    private async Task<OrderDto> MapToDetailedOrderDtoAsync(
+        Core.Modules.Shopping.Models.Order order,
+        CancellationToken cancellationToken
+    )
     {
         // Get shipping address details
         var shippingAddress = string.Empty;
@@ -104,7 +128,10 @@ public class OrderService : IOrderService
         }
         else
         {
-            var locationResult = await _locationRepository.GetByIdAsync(order.ShippingAddressId, cancellationToken);
+            var locationResult = await _locationRepository.GetByIdAsync(
+                order.ShippingAddressId,
+                cancellationToken
+            );
             if (locationResult.IsSuccess && locationResult.Value != null)
             {
                 shippingAddress = locationResult.Value.Name;
@@ -115,8 +142,8 @@ public class OrderService : IOrderService
         var currentStatus = "Pending";
         if (order.OrderActivities.Any())
         {
-            var latestActivity = order.OrderActivities
-                .OrderByDescending(a => a.CreatedAt)
+            var latestActivity = order
+                .OrderActivities.OrderByDescending(a => a.CreatedAt)
                 .FirstOrDefault();
             if (latestActivity?.OrderStatus != null)
             {
@@ -133,8 +160,8 @@ public class OrderService : IOrderService
         }
 
         // Map order activities
-        var orderActivityDtos = order.OrderActivities
-            .OrderByDescending(a => a.CreatedAt)
+        var orderActivityDtos = order
+            .OrderActivities.OrderByDescending(a => a.CreatedAt)
             .Select(a => new OrderActivityDto
             {
                 Id = a.Id,
@@ -142,8 +169,9 @@ public class OrderService : IOrderService
                 OrderId = a.OrderId,
                 StatusName = a.OrderStatus?.Name ?? "Unknown",
                 CreatedAt = a.CreatedAt,
-                IsActive = a.IsActive
-            }).ToList();
+                IsActive = a.IsActive,
+            })
+            .ToList();
 
         return new OrderDto
         {
@@ -157,11 +185,14 @@ public class OrderService : IOrderService
             CreatedAt = order.CreatedAt,
             UpdatedAt = order.UpdatedAt,
             OrderItems = orderItemDtos,
-            OrderActivities = orderActivityDtos
+            OrderActivities = orderActivityDtos,
         };
     }
 
-    private async Task<OrderItemDto> MapToDetailedOrderItemDtoAsync(Core.Modules.Shopping.Models.OrderItem item, CancellationToken cancellationToken)
+    private async Task<OrderItemDto> MapToDetailedOrderItemDtoAsync(
+        Core.Modules.Shopping.Models.OrderItem item,
+        CancellationToken cancellationToken
+    )
     {
         // Get product details
         var productName = "Unknown Product";
@@ -170,17 +201,24 @@ public class OrderService : IOrderService
         {
             productName = item.Product.Name;
             // Get first image from ProductMedias
-            var firstImage = item.Product.ProductMedias?.FirstOrDefault(m => m.MediaType == MediaTypeEnum.Image);
+            var firstImage = item.Product.ProductMedias?.FirstOrDefault(m =>
+                m.MediaType == MediaTypeEnum.Image
+            );
             productImageUrl = firstImage?.Url;
         }
         else
         {
-            var productResult = await _productRepository.GetByIdAsync(item.ProductId, cancellationToken);
+            var productResult = await _productRepository.GetByIdAsync(
+                item.ProductId,
+                cancellationToken
+            );
             if (productResult.IsSuccess && productResult.Value != null)
             {
                 productName = productResult.Value.Name;
                 // Get first image from ProductMedias
-                var firstImage = productResult.Value.ProductMedias?.FirstOrDefault(m => m.MediaType == MediaTypeEnum.Image);
+                var firstImage = productResult.Value.ProductMedias?.FirstOrDefault(m =>
+                    m.MediaType == MediaTypeEnum.Image
+                );
                 productImageUrl = firstImage?.Url;
             }
         }
@@ -193,7 +231,10 @@ public class OrderService : IOrderService
         }
         else
         {
-            var providerResult = await _providerRepository.GetByIdAsync(item.ProviderId, cancellationToken);
+            var providerResult = await _providerRepository.GetByIdAsync(
+                item.ProviderId,
+                cancellationToken
+            );
             if (providerResult.IsSuccess && providerResult.Value != null)
             {
                 providerName = providerResult.Value.BusinessName ?? "Unknown Provider";
@@ -204,8 +245,8 @@ public class OrderService : IOrderService
         var currentStatus = "Pending";
         if (item.OrderItemActivities.Any())
         {
-            var latestActivity = item.OrderItemActivities
-                .OrderByDescending(a => a.CreatedAt)
+            var latestActivity = item
+                .OrderItemActivities.OrderByDescending(a => a.CreatedAt)
                 .FirstOrDefault();
             if (latestActivity?.OrderItemStatus != null)
             {
@@ -214,8 +255,8 @@ public class OrderService : IOrderService
         }
 
         // Map item activities
-        var itemActivityDtos = item.OrderItemActivities
-            .OrderByDescending(a => a.CreatedAt)
+        var itemActivityDtos = item
+            .OrderItemActivities.OrderByDescending(a => a.CreatedAt)
             .Select(a => new OrderItemActivityDto
             {
                 Id = a.Id,
@@ -223,8 +264,9 @@ public class OrderService : IOrderService
                 OrderItemId = a.OrderItemId,
                 StatusName = a.OrderItemStatus?.Name ?? "Unknown",
                 CreatedAt = a.CreatedAt,
-                IsActive = a.IsActive
-            }).ToList();
+                IsActive = a.IsActive,
+            })
+            .ToList();
 
         return new OrderItemDto
         {
@@ -241,18 +283,21 @@ public class OrderService : IOrderService
             CurrentStatus = currentStatus,
             IsActive = item.IsActive,
             CreatedAt = item.CreatedAt,
-            Activities = itemActivityDtos
+            Activities = itemActivityDtos,
         };
     }
 
-    private async Task<OrderSummaryDto> MapToOrderSummaryDtoAsync(Core.Modules.Shopping.Models.Order order, CancellationToken cancellationToken)
+    private async Task<OrderSummaryDto> MapToOrderSummaryDtoAsync(
+        Core.Modules.Shopping.Models.Order order,
+        CancellationToken cancellationToken
+    )
     {
         // Get current status
         var currentStatus = "Pending";
         if (order.OrderActivities.Any())
         {
-            var latestActivity = order.OrderActivities
-                .OrderByDescending(a => a.CreatedAt)
+            var latestActivity = order
+                .OrderActivities.OrderByDescending(a => a.CreatedAt)
                 .FirstOrDefault();
             if (latestActivity?.OrderStatus != null)
             {
@@ -270,7 +315,7 @@ public class OrderService : IOrderService
             TotalAmount = order.TotalAmount,
             CurrentStatus = currentStatus,
             CreatedAt = order.CreatedAt,
-            ItemCount = itemCount
+            ItemCount = itemCount,
         };
     }
 }

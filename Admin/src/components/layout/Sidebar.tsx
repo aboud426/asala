@@ -19,6 +19,7 @@ import {
   Coins,
   Tag,
   MessageCircle,
+  MapPin,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -101,6 +102,12 @@ const navigationItems = [
     titleAr: 'أنواع المنشورات',
     href: '/post-types',
     icon: Tag,
+  },
+  {
+    title: 'Regions',
+    titleAr: 'المناطق',
+    href: '/regions',
+    icon: MapPin,
   },
   {
     title: 'Employees',

@@ -8,15 +8,18 @@ namespace Asala.Core.Modules.Locations.Db;
 
 public class RegionRepository : Repository<Region, int>, IRegionRepository
 {
-    public RegionRepository(AsalaDbContext context) : base(context) { }
+    public RegionRepository(AsalaDbContext context)
+        : base(context) { }
 
-    public async Task<Result<IEnumerable<Region>>> GetRootRegionsAsync(CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<Region>>> GetRootRegionsAsync(
+        CancellationToken cancellationToken = default
+    )
     {
         try
         {
-            var regions = await _context.Regions
-                .Include(r => r.LocalizedRegions)
-                    .ThenInclude(lr => lr.Language)
+            var regions = await _context
+                .Regions.Include(r => r.LocalizedRegions)
+                .ThenInclude(lr => lr.Language)
                 .Where(r => r.ParentId == null && !r.IsDeleted)
                 .OrderBy(r => r.Name)
                 .ToListAsync(cancellationToken);
@@ -29,13 +32,16 @@ public class RegionRepository : Repository<Region, int>, IRegionRepository
         }
     }
 
-    public async Task<Result<IEnumerable<Region>>> GetChildrenAsync(int parentId, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<Region>>> GetChildrenAsync(
+        int parentId,
+        CancellationToken cancellationToken = default
+    )
     {
         try
         {
-            var regions = await _context.Regions
-                .Include(r => r.LocalizedRegions)
-                    .ThenInclude(lr => lr.Language)
+            var regions = await _context
+                .Regions.Include(r => r.LocalizedRegions)
+                .ThenInclude(lr => lr.Language)
                 .Where(r => r.ParentId == parentId && !r.IsDeleted)
                 .OrderBy(r => r.Name)
                 .ToListAsync(cancellationToken);
@@ -48,15 +54,18 @@ public class RegionRepository : Repository<Region, int>, IRegionRepository
         }
     }
 
-    public async Task<Result<Region?>> GetByIdWithLocalizationsAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Result<Region?>> GetByIdWithLocalizationsAsync(
+        int id,
+        CancellationToken cancellationToken = default
+    )
     {
         try
         {
-            var region = await _context.Regions
-                .Include(r => r.Parent)
+            var region = await _context
+                .Regions.Include(r => r.Parent)
                 .Include(r => r.InverseParent)
                 .Include(r => r.LocalizedRegions)
-                    .ThenInclude(lr => lr.Language)
+                .ThenInclude(lr => lr.Language)
                 .FirstOrDefaultAsync(r => r.Id == id && !r.IsDeleted, cancellationToken);
 
             return Result.Success(region);
@@ -67,14 +76,17 @@ public class RegionRepository : Repository<Region, int>, IRegionRepository
         }
     }
 
-    public async Task<Result<IEnumerable<Region>>> GetHierarchyAsync(int? rootId = null, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<Region>>> GetHierarchyAsync(
+        int? rootId = null,
+        CancellationToken cancellationToken = default
+    )
     {
         try
         {
-            var query = _context.Regions
-                .Include(r => r.InverseParent)
+            var query = _context
+                .Regions.Include(r => r.InverseParent)
                 .Include(r => r.LocalizedRegions)
-                    .ThenInclude(lr => lr.Language)
+                .ThenInclude(lr => lr.Language)
                 .Where(r => !r.IsDeleted);
 
             if (rootId.HasValue)
@@ -82,9 +94,7 @@ public class RegionRepository : Repository<Region, int>, IRegionRepository
             else
                 query = query.Where(r => r.ParentId == null);
 
-            var regions = await query
-                .OrderBy(r => r.Name)
-                .ToListAsync(cancellationToken);
+            var regions = await query.OrderBy(r => r.Name).ToListAsync(cancellationToken);
 
             return Result.Success<IEnumerable<Region>>(regions);
         }
@@ -94,16 +104,25 @@ public class RegionRepository : Repository<Region, int>, IRegionRepository
         }
     }
 
-    public async Task<Result<IEnumerable<Region>>> SearchByNameAsync(string searchTerm, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<Region>>> SearchByNameAsync(
+        string searchTerm,
+        CancellationToken cancellationToken = default
+    )
     {
         try
         {
-            var regions = await _context.Regions
-                .Include(r => r.Parent)
+            var regions = await _context
+                .Regions.Include(r => r.Parent)
                 .Include(r => r.LocalizedRegions)
-                    .ThenInclude(lr => lr.Language)
-                .Where(r => (r.Name.ToLower().Contains(searchTerm.ToLower()) ||
-                           r.LocalizedRegions.Any(lr => lr.LocalizedName.ToLower().Contains(searchTerm.ToLower()))) && !r.IsDeleted)
+                .ThenInclude(lr => lr.Language)
+                .Where(r =>
+                    (
+                        r.Name.ToLower().Contains(searchTerm.ToLower())
+                        || r.LocalizedRegions.Any(lr =>
+                            lr.LocalizedName.ToLower().Contains(searchTerm.ToLower())
+                        )
+                    ) && !r.IsDeleted
+                )
                 .OrderBy(r => r.Name)
                 .ToListAsync(cancellationToken);
 
@@ -120,14 +139,15 @@ public class RegionRepository : Repository<Region, int>, IRegionRepository
         int pageSize,
         int? parentId = null,
         bool? activeOnly = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         try
         {
-            var query = _context.Regions
-                .Include(r => r.Parent)
+            var query = _context
+                .Regions.Include(r => r.Parent)
                 .Include(r => r.LocalizedRegions)
-                    .ThenInclude(lr => lr.Language)
+                .ThenInclude(lr => lr.Language)
                 .Where(r => !r.IsDeleted);
 
             if (parentId.HasValue)
@@ -156,6 +176,37 @@ public class RegionRepository : Repository<Region, int>, IRegionRepository
         catch (Exception ex)
         {
             return Result.Failure<PaginatedResult<Region>>(MessageCodes.DB_ERROR, ex);
+        }
+    }
+
+    public async Task<Result<IEnumerable<int>>> GetRegionsMissingTranslationsAsync(
+        CancellationToken cancellationToken = default
+    )
+    {
+        try
+        {
+            // Get all languages count
+            var languagesCount = await _context
+                .Languages.Where(l => l.IsActive && !l.IsDeleted)
+                .CountAsync(cancellationToken);
+
+            if (languagesCount == 0)
+                return Result.Success(Enumerable.Empty<int>());
+
+            // Get Regions that don't have translations for all languages
+            var regionsMissingTranslations = await _context
+                .Regions.Where(r => !r.IsDeleted && r.IsActive)
+                .Where(r =>
+                    r.LocalizedRegions.Count(lr => !lr.IsDeleted && lr.IsActive) < languagesCount
+                )
+                .Select(r => r.Id)
+                .ToListAsync(cancellationToken);
+
+            return Result.Success(regionsMissingTranslations.AsEnumerable());
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<IEnumerable<int>>(MessageCodes.DB_ERROR, ex);
         }
     }
 }

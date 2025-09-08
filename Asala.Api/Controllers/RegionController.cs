@@ -7,7 +7,7 @@ namespace Asala.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+// [Authorize]
 public class RegionController : BaseController
 {
     private readonly IRegionService _regionService;
@@ -39,7 +39,12 @@ public class RegionController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Paginated list of regions</returns>
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] bool? isActive = null, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] bool? isActive = null,
+        CancellationToken cancellationToken = default
+    )
     {
         var result = await _regionService.GetAllAsync(page, pageSize, isActive, cancellationToken);
         return CreateResponse(result);
@@ -52,7 +57,10 @@ public class RegionController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>List of regions for dropdown</returns>
     [HttpGet("dropdown")]
-    public async Task<IActionResult> GetDropdown([FromQuery] bool? isActive = true, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetDropdown(
+        [FromQuery] bool? isActive = true,
+        CancellationToken cancellationToken = default
+    )
     {
         var result = await _regionService.GetDropdownAsync(isActive, cancellationToken);
         return CreateResponse(result);
@@ -65,7 +73,10 @@ public class RegionController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Hierarchical tree of regions and subregions</returns>
     [HttpGet("tree")]
-    public async Task<IActionResult> GetRegionTree([FromQuery] bool? isActive = true, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetRegionTree(
+        [FromQuery] bool? isActive = true,
+        CancellationToken cancellationToken = default
+    )
     {
         var result = await _regionService.GetRegionTreeAsync(isActive, cancellationToken);
         return CreateResponse(result);
@@ -79,7 +90,11 @@ public class RegionController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>List of subregions</returns>
     [HttpGet("{parentId}/subregions")]
-    public async Task<IActionResult> GetSubRegions(int parentId, [FromQuery] bool? isActive = true, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetSubRegions(
+        int parentId,
+        [FromQuery] bool? isActive = true,
+        CancellationToken cancellationToken = default
+    )
     {
         var result = await _regionService.GetSubRegionsAsync(parentId, isActive, cancellationToken);
         return CreateResponse(result);
@@ -92,7 +107,10 @@ public class RegionController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Created region</returns>
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateRegionDto createDto, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Create(
+        [FromBody] CreateRegionDto createDto,
+        CancellationToken cancellationToken = default
+    )
     {
         var result = await _regionService.CreateAsync(createDto, cancellationToken);
         return CreateResponse(result);
@@ -106,48 +124,68 @@ public class RegionController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Updated region</returns>
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdateRegionDto updateDto, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Update(
+        int id,
+        [FromBody] UpdateRegionDto updateDto,
+        CancellationToken cancellationToken = default
+    )
     {
         var result = await _regionService.UpdateAsync(id, updateDto, cancellationToken);
         return CreateResponse(result);
     }
 
     /// <summary>
-    /// Delete a region (soft delete)
+    /// Soft delete a region (marks as deleted without removing from database)
     /// </summary>
     /// <param name="id">Region ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Success or failure result</returns>
+    /// <response code="200">Region deleted successfully</response>
+    /// <response code="404">Region not found</response>
+    /// <response code="400">Region has children and cannot be deleted</response>
+    /// <response code="500">Internal server error</response>
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> SoftDelete(
+        int id,
+        CancellationToken cancellationToken = default
+    )
     {
-        var result = await _regionService.DeleteAsync(id, cancellationToken);
+        var result = await _regionService.SoftDeleteAsync(id, cancellationToken);
         return CreateResponse(result);
     }
 
     /// <summary>
-    /// Activate a region
+    /// Toggle region activation status (active/inactive)
     /// </summary>
     /// <param name="id">Region ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Success or failure result</returns>
-    [HttpPatch("{id}/activate")]
-    public async Task<IActionResult> Activate(int id, CancellationToken cancellationToken = default)
+    /// <response code="200">Region activation toggled successfully</response>
+    /// <response code="404">Region not found</response>
+    /// /// <response code="500">Internal server error</response>
+    [HttpPut("{id}/toggle-activation")]
+    public async Task<IActionResult> ToggleActivation(
+        int id,
+        CancellationToken cancellationToken = default
+    )
     {
-        var result = await _regionService.ActivateAsync(id, cancellationToken);
+        var result = await _regionService.ToggleActivationAsync(id, cancellationToken);
         return CreateResponse(result);
     }
 
     /// <summary>
-    /// Deactivate a region
+    /// Get regions that are missing translations
     /// </summary>
-    /// <param name="id">Region ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Success or failure result</returns>
-    [HttpPatch("{id}/deactivate")]
-    public async Task<IActionResult> Deactivate(int id, CancellationToken cancellationToken = default)
+    /// <returns>List of region IDs that are missing translations</returns>
+    /// <response code="200">Regions missing translations retrieved successfully</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("missing-translations")]
+    public async Task<IActionResult> GetRegionsMissingTranslations(
+        CancellationToken cancellationToken = default
+    )
     {
-        var result = await _regionService.DeactivateAsync(id, cancellationToken);
+        var result = await _regionService.GetRegionsMissingTranslationsAsync(cancellationToken);
         return CreateResponse(result);
     }
 }
