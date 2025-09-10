@@ -7,7 +7,7 @@ namespace Asala.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+// [Authorize]
 public class LocationController : BaseController
 {
     private readonly ILocationService _locationService;
@@ -39,9 +39,21 @@ public class LocationController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Paginated list of locations</returns>
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] bool? isActive = null, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] int? userId = null,
+        [FromQuery] bool? isActive = null,
+        CancellationToken cancellationToken = default
+    )
     {
-        var result = await _locationService.GetAllAsync(page, pageSize, isActive, cancellationToken);
+        var result = await _locationService.GetAllAsync(
+            page,
+            pageSize,
+            userId,
+            isActive,
+            cancellationToken
+        );
         return CreateResponse(result);
     }
 
@@ -55,9 +67,21 @@ public class LocationController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Paginated list of locations in the specified region</returns>
     [HttpGet("region/{regionId}")]
-    public async Task<IActionResult> GetByRegion(int regionId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] bool? isActive = true, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetByRegion(
+        int regionId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] bool? isActive = true,
+        CancellationToken cancellationToken = default
+    )
     {
-        var result = await _locationService.GetByRegionAsync(regionId, page, pageSize, isActive, cancellationToken);
+        var result = await _locationService.GetByRegionAsync(
+            regionId,
+            page,
+            pageSize,
+            isActive,
+            cancellationToken
+        );
         return CreateResponse(result);
     }
 
@@ -68,7 +92,10 @@ public class LocationController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>List of locations for dropdown</returns>
     [HttpGet("dropdown")]
-    public async Task<IActionResult> GetDropdown([FromQuery] bool? isActive = true, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetDropdown(
+        [FromQuery] bool? isActive = true,
+        CancellationToken cancellationToken = default
+    )
     {
         var result = await _locationService.GetDropdownAsync(isActive, cancellationToken);
         return CreateResponse(result);
@@ -82,9 +109,33 @@ public class LocationController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>List of locations in the specified region for dropdown</returns>
     [HttpGet("dropdown/region/{regionId}")]
-    public async Task<IActionResult> GetDropdownByRegion(int regionId, [FromQuery] bool? isActive = true, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetDropdownByRegion(
+        int regionId,
+        [FromQuery] bool? isActive = true,
+        CancellationToken cancellationToken = default
+    )
     {
-        var result = await _locationService.GetDropdownByRegionAsync(regionId, isActive, cancellationToken);
+        var result = await _locationService.GetDropdownByRegionAsync(
+            regionId,
+            isActive,
+            cancellationToken
+        );
+        return CreateResponse(result);
+    }
+
+    /// <summary>
+    /// Get locations owned by a specific user
+    /// </summary>
+    /// <param name="userId">User ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of locations owned by the user</returns>
+    [HttpGet("user/{userId}")]
+    public async Task<IActionResult> GetByUserId(
+        int userId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var result = await _locationService.GetByUserIdAsync(userId, cancellationToken);
         return CreateResponse(result);
     }
 
@@ -95,7 +146,10 @@ public class LocationController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Created location</returns>
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateLocationDto createDto, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Create(
+        [FromBody] CreateLocationDto createDto,
+        CancellationToken cancellationToken = default
+    )
     {
         var result = await _locationService.CreateAsync(createDto, cancellationToken);
         return CreateResponse(result);
@@ -109,48 +163,68 @@ public class LocationController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Updated location</returns>
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdateLocationDto updateDto, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Update(
+        int id,
+        [FromBody] UpdateLocationDto updateDto,
+        CancellationToken cancellationToken = default
+    )
     {
         var result = await _locationService.UpdateAsync(id, updateDto, cancellationToken);
         return CreateResponse(result);
     }
 
     /// <summary>
-    /// Delete a location (soft delete)
+    /// Soft delete a location (marks as deleted without removing from database)
     /// </summary>
     /// <param name="id">Location ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Success or failure result</returns>
+    /// <response code="200">Location deleted successfully</response>
+    /// <response code="404">Location not found</response>
+    /// <response code="400">Location is in use and cannot be deleted</response>
+    /// <response code="500">Internal server error</response>
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> SoftDelete(
+        int id,
+        CancellationToken cancellationToken = default
+    )
     {
-        var result = await _locationService.DeleteAsync(id, cancellationToken);
+        var result = await _locationService.SoftDeleteAsync(id, cancellationToken);
         return CreateResponse(result);
     }
 
     /// <summary>
-    /// Activate a location
+    /// Toggle location activation status (active/inactive)
     /// </summary>
     /// <param name="id">Location ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Success or failure result</returns>
-    [HttpPatch("{id}/activate")]
-    public async Task<IActionResult> Activate(int id, CancellationToken cancellationToken = default)
+    /// <response code="200">Location activation toggled successfully</response>
+    /// <response code="404">Location not found</response>
+    /// <response code="500">Internal server error</response>
+    [HttpPut("{id}/toggle-activation")]
+    public async Task<IActionResult> ToggleActivation(
+        int id,
+        CancellationToken cancellationToken = default
+    )
     {
-        var result = await _locationService.ActivateAsync(id, cancellationToken);
+        var result = await _locationService.ToggleActivationAsync(id, cancellationToken);
         return CreateResponse(result);
     }
 
     /// <summary>
-    /// Deactivate a location
+    /// Get locations that are missing translations
     /// </summary>
-    /// <param name="id">Location ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Success or failure result</returns>
-    [HttpPatch("{id}/deactivate")]
-    public async Task<IActionResult> Deactivate(int id, CancellationToken cancellationToken = default)
+    /// <returns>List of location IDs that are missing translations</returns>
+    /// <response code="200">Locations missing translations retrieved successfully</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("missing-translations")]
+    public async Task<IActionResult> GetLocationsMissingTranslations(
+        CancellationToken cancellationToken = default
+    )
     {
-        var result = await _locationService.DeactivateAsync(id, cancellationToken);
+        var result = await _locationService.GetLocationsMissingTranslationsAsync(cancellationToken);
         return CreateResponse(result);
     }
 }

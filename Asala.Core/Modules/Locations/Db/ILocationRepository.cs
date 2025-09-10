@@ -19,7 +19,9 @@ public interface ILocationRepository : IRepository<Location, int>
         int page,
         int pageSize,
         int? regionId = null,
+        int? userId = null,
         bool? activeOnly = null,
         CancellationToken cancellationToken = default
     );
+    Task<Result<IEnumerable<Location>>> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default);
 }

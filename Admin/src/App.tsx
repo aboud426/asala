@@ -25,6 +25,7 @@ import ProductCategoriesTree from "./pages/ProductCategoriesTree";
 import Messages from "./pages/Messages";
 import PostTypes from "./pages/PostTypes";
 import Regions from "./pages/Regions";
+import Locations from "./pages/Locations";
 import Employees from "./pages/Employees";
 import Roles from "./pages/Roles";
 import RolePermissions from "./pages/RolePermissions";
@@ -78,6 +79,7 @@ const App = () => (
                 <Route path="/messages" element={<Messages />} />
                 <Route path="/post-types" element={<PostTypes />} />
                 <Route path="/regions" element={<Regions />} />
+                <Route path="/locations" element={<Locations />} />
                 <Route path="/employees" element={<Employees />} />
                 <Route path="/roles" element={<Roles />} />
                 <Route path="/roles/:roleId/permissions" element={<RolePermissions />} />

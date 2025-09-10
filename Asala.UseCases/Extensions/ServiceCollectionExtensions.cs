@@ -7,19 +7,19 @@ using Asala.Core.Modules.Categories.Db;
 using Asala.Core.Modules.Categories.Db;
 using Asala.Core.Modules.Languages;
 using Asala.Core.Modules.Languages;
+using Asala.Core.Modules.Locations.Db;
 using Asala.Core.Modules.Posts.Db;
 using Asala.Core.Modules.Products.Db;
 using Asala.Core.Modules.Shopping.Db;
-using Asala.Core.Modules.Locations.Db;
 using Asala.Core.Modules.Users.Db;
 using Asala.UseCases.Categories;
 using Asala.UseCases.Categories;
 using Asala.UseCases.Languages;
+using Asala.UseCases.Locations;
 using Asala.UseCases.Messages;
 using Asala.UseCases.Posts;
 using Asala.UseCases.Products;
 using Asala.UseCases.Shopping;
-using Asala.UseCases.Locations;
 using Asala.UseCases.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -124,6 +124,8 @@ public static class ServiceCollectionExtensions
         // Location services
         services.AddScoped<IRegionService, RegionService>();
         services.AddScoped<ILocationService, LocationService>();
+        services.AddScoped<ILocalizedRegionRepository, LocalizedRegionRepository>();
+        services.AddScoped<ILocationLocalizedRepository, LocationLocalizedRepository>();
 
         return services;
     }

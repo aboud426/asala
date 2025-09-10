@@ -206,7 +206,7 @@ public class ProviderService : IProviderService
                 Email = $"provider_{createDto.PhoneNumber}@temp.com", // Temporary email since Provider uses phone
                 PhoneNumber = createDto.PhoneNumber.Trim(),
                 PasswordHash = null, // No password for Provider users - they use OTP
-                LocationId = createDto.LocationId,
+                // LocationId = createDto.LocationId,
                 IsActive = createDto.IsActive,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
@@ -309,7 +309,7 @@ public class ProviderService : IProviderService
             // Update phone number only if provided
             if (!string.IsNullOrWhiteSpace(updateDto.PhoneNumber))
                 userResult.Value.PhoneNumber = updateDto.PhoneNumber.Trim();
-            userResult.Value.LocationId = updateDto.LocationId;
+            // userResult.Value.LocationId = updateDto.LocationId;
             userResult.Value.IsActive = updateDto.IsActive;
             userResult.Value.UpdatedAt = DateTime.UtcNow;
             _userRepository.Update(userResult.Value);

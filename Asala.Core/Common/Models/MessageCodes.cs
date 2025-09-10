@@ -275,6 +275,7 @@ public static class MessageCodes
     public const string LOCATION_LOCALIZED_NAME_TOO_LONG = "LOCATION_LOCALIZED_NAME_TOO_LONG";
     public const string LOCATION_NAME_ALREADY_EXISTS = "LOCATION_NAME_ALREADY_EXISTS";
     public const string LOCATION_REGION_ID_REQUIRED = "LOCATION_REGION_ID_REQUIRED";
+    public const string LOCATION_USER_ID_REQUIRED = "LOCATION_USER_ID_REQUIRED";
     public const string LOCATION_IN_USE_CANNOT_DELETE = "LOCATION_IN_USE_CANNOT_DELETE";
 
     // Shopping workflow errors

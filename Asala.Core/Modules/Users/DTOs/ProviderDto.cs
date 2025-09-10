@@ -31,7 +31,7 @@ public class CreateProviderDto
     public string Description { get; set; } = null!;
     public int Rating { get; set; }
     public int? ParentId { get; set; }
-    public int? LocationId { get; set; }
+    // public int? LocationId { get; set; }
     public bool IsActive { get; set; } = true;
     public List<CreateProviderLocalizedDto> Localizations { get; set; } = [];
 }
@@ -43,7 +43,7 @@ public class UpdateProviderDto
     public string Description { get; set; } = null!;
     public int Rating { get; set; }
     public int? ParentId { get; set; }
-    public int? LocationId { get; set; }
+    // public int? LocationId { get; set; }
     public bool IsActive { get; set; }
     public List<UpdateProviderLocalizedDto> Localizations { get; set; } = [];
 }
@@ -79,7 +79,7 @@ public class CreateProviderByAdminDto
     // User information
     public string Email { get; set; } = null!;
     public string? PhoneNumber { get; set; }
-    public int? LocationId { get; set; }
+    // public int? LocationId { get; set; }
     public bool IsActive { get; set; } = true;
 
     // Provider information
@@ -98,7 +98,7 @@ public class UpdateProviderByAdminDto
     // User information
     public string Email { get; set; } = null!;
     public string? PhoneNumber { get; set; }
-    public int? LocationId { get; set; }
+    // public int? LocationId { get; set; }
     public bool IsActive { get; set; } = true;
 
     // Provider information

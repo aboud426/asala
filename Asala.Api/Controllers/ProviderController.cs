@@ -94,7 +94,7 @@ public class ProviderController : BaseController
                 Id = result.Value!.UserId,
                 Email = $"provider_{result.Value.PhoneNumber}@temp.com", // Temporary email
                 PhoneNumber = result.Value.PhoneNumber,
-                LocationId = null, // Provider doesn't store LocationId directly in DTO
+                // LocationId = null, // Provider doesn't store LocationId directly in DTO
                 IsActive = result.Value.IsActive,
                 CreatedAt = result.Value.CreatedAt,
                 UpdatedAt = result.Value.UpdatedAt,

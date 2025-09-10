@@ -9,6 +9,8 @@ public class LocationDto
     public int? RegionId { get; set; }
     public string? RegionName { get; set; }
     public string? RegionFullPath { get; set; }
+    public int UserId { get; set; }
+    public string? UserEmail { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
@@ -21,6 +23,7 @@ public class CreateLocationDto
     public decimal Latitude { get; set; }
     public decimal Longitude { get; set; }
     public int? RegionId { get; set; }
+    public int UserId { get; set; }
     public bool IsActive { get; set; } = true;
     public List<CreateLocationLocalizedDto> Localizations { get; set; } = [];
 }
@@ -31,6 +34,7 @@ public class UpdateLocationDto
     public decimal Latitude { get; set; }
     public decimal Longitude { get; set; }
     public int? RegionId { get; set; }
+    public int UserId { get; set; }
     public bool IsActive { get; set; }
     public List<UpdateLocationLocalizedDto> Localizations { get; set; } = [];
 }

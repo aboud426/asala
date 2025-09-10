@@ -28,14 +28,14 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasMaxLength(200)
             .IsUnicode(false);
             
-        builder.Property(e => e.LocationId)
-            .IsRequired(false);
+        // builder.Property(e => e.LocationId)
+        //     .IsRequired(false);
 
-        // Relationships
-        builder.HasOne(e => e.Location)
-            .WithMany(l => l.Users)
-            .HasForeignKey(e => e.LocationId)
-            .OnDelete(DeleteBehavior.Restrict);
+        // // Relationships
+        // builder.HasOne(e => e.Location)
+        //     .WithMany(l => l.Users)
+        //     .HasForeignKey(e => e.LocationId)
+        //     .OnDelete(DeleteBehavior.Restrict);
             
         // Base entity properties
         builder.Property(e => e.IsActive)
@@ -59,7 +59,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         // Indexes
         builder.HasIndex(e => e.Email).IsUnique();
         builder.HasIndex(e => e.PhoneNumber).IsUnique();
-        builder.HasIndex(e => e.LocationId);
         builder.HasIndex(e => new { e.IsActive, e.IsDeleted });
         builder.HasIndex(e => e.Id).IsUnique();
     }

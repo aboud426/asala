@@ -20,6 +20,7 @@ import {
   Tag,
   MessageCircle,
   MapPin,
+  Navigation,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -108,6 +109,12 @@ const navigationItems = [
     titleAr: 'المناطق',
     href: '/regions',
     icon: MapPin,
+  },
+  {
+    title: 'Locations',
+    titleAr: 'المواقع',
+    href: '/locations',
+    icon: Navigation,
   },
   {
     title: 'Employees',

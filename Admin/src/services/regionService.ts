@@ -1,53 +1,52 @@
 // Region API Service
-// Based on the RegionController endpoints
+// Based on the RegionController.cs endpoints
 
 export interface LocalizedRegionDto {
     id: number;
-    regionId: number;
+    name: string;
     languageId: number;
-    localizedName: string;
     languageName: string;
     languageCode: string;
     isActive: boolean;
     createdAt: string;
+    updatedAt: string;
 }
 
-export interface Region {
+export interface RegionDto {
     id: number;
     name: string;
-    parentId?: number;
-    parentName?: string;
+    parentId: number | null;
+    parentName: string | null;
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
-    children: Region[];
+    children: RegionDto[];
     localizations: LocalizedRegionDto[];
 }
 
 export interface CreateLocalizedRegionDto {
-    regionId: number;
+    name: string;
     languageId: number;
-    localizedName: string;
     isActive?: boolean;
 }
 
 export interface CreateRegionDto {
     name: string;
-    parentId?: number;
+    parentId: number | null;
     isActive?: boolean;
     localizations: CreateLocalizedRegionDto[];
 }
 
 export interface UpdateLocalizedRegionDto {
     id?: number; // Optional (null for new translations)
+    name: string;
     languageId: number;
-    localizedName: string;
     isActive: boolean;
 }
 
 export interface UpdateRegionDto {
     name: string;
-    parentId?: number;
+    parentId: number | null;
     isActive: boolean;
     localizations: UpdateLocalizedRegionDto[];
 }
@@ -55,7 +54,7 @@ export interface UpdateRegionDto {
 export interface RegionDropdownDto {
     id: number;
     name: string;
-    parentId?: number;
+    parentId: number | null;
     fullPath: string;
 }
 
@@ -111,47 +110,17 @@ class RegionService {
             const data: ApiResponse<T> = await response.json();
             return data;
         } catch (error) {
-            console.error('API Request Error:', error);
+            console.error('Region API Request Error:', error);
             throw error;
         }
-    };
-
-    /**
-     * Get paginated list of regions
-     * GET /api/region
-     */
-    getRegions = async (params: {
-        page?: number;
-        pageSize?: number;
-        isActive?: boolean;
-    } = {}): Promise<PaginatedResult<Region>> => {
-        const searchParams = new URLSearchParams();
-
-        if (params.page) searchParams.append('page', params.page.toString());
-        if (params.pageSize) searchParams.append('pageSize', params.pageSize.toString());
-        if (params.isActive !== undefined) searchParams.append('isActive', params.isActive.toString());
-
-        const endpoint = searchParams.toString() ? `?${searchParams.toString()}` : '';
-        const response = await this.request<PaginatedResult<Region>>(endpoint);
-
-        if (!response.success) {
-            throw new Error(response.message || 'Failed to fetch regions');
-        }
-
-        if (!response.data) {
-            throw new Error('No data returned from server');
-        }
-        console.log(response.data);
-
-        return response.data;
     };
 
     /**
      * Get region by ID
      * GET /api/region/{id}
      */
-    getRegionById = async (id: number): Promise<Region> => {
-        const response = await this.request<Region>(`/${id}`);
+    getRegionById = async (id: number): Promise<RegionDto> => {
+        const response = await this.request<RegionDto>(`/${id}`);
 
         if (!response.success) {
             throw new Error(response.message || 'Failed to fetch region');
@@ -165,13 +134,43 @@ class RegionService {
     };
 
     /**
-     * Get regions for dropdown/select components
+     * Get paginated list of regions
+     * GET /api/region
+     */
+    getRegions = async (params: {
+        page?: number;
+        pageSize?: number;
+        isActive?: boolean;
+    } = {}): Promise<PaginatedResult<RegionDto>> => {
+        const searchParams = new URLSearchParams();
+
+        if (params.page) searchParams.append('page', params.page.toString());
+        if (params.pageSize) searchParams.append('pageSize', params.pageSize.toString());
+        if (params.isActive !== undefined) searchParams.append('isActive', params.isActive.toString());
+
+        const endpoint = searchParams.toString() ? `?${searchParams.toString()}` : '';
+        const response = await this.request<PaginatedResult<RegionDto>>(endpoint);
+
+        if (!response.success) {
+            throw new Error(response.message || 'Failed to fetch regions');
+        }
+
+        if (!response.data) {
+            throw new Error('No data returned from server');
+        }
+
+        return response.data;
+    };
+
+    /**
+     * Get regions dropdown
      * GET /api/region/dropdown
      */
     getRegionsDropdown = async (params: {
         isActive?: boolean;
     } = {}): Promise<RegionDropdownDto[]> => {
         const searchParams = new URLSearchParams();
+
         if (params.isActive !== undefined) searchParams.append('isActive', params.isActive.toString());
 
         const endpoint = `/dropdown${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
@@ -189,13 +188,14 @@ class RegionService {
     };
 
     /**
-     * Get region tree structure with all subregions
+     * Get region tree structure
      * GET /api/region/tree
      */
     getRegionTree = async (params: {
         isActive?: boolean;
     } = {}): Promise<RegionHierarchyDto[]> => {
         const searchParams = new URLSearchParams();
+
         if (params.isActive !== undefined) searchParams.append('isActive', params.isActive.toString());
 
         const endpoint = `/tree${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
@@ -213,17 +213,21 @@ class RegionService {
     };
 
     /**
-     * Get subregions of a specific parent region
+     * Get subregions of a parent region
      * GET /api/region/{parentId}/subregions
      */
-    getSubRegions = async (parentId: number, params: {
-        isActive?: boolean;
-    } = {}): Promise<Region[]> => {
+    getSubRegions = async (
+        parentId: number,
+        params: {
+            isActive?: boolean;
+        } = {}
+    ): Promise<RegionDto[]> => {
         const searchParams = new URLSearchParams();
+
         if (params.isActive !== undefined) searchParams.append('isActive', params.isActive.toString());
 
         const endpoint = `/${parentId}/subregions${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
-        const response = await this.request<Region[]>(endpoint);
+        const response = await this.request<RegionDto[]>(endpoint);
 
         if (!response.success) {
             throw new Error(response.message || 'Failed to fetch subregions');
@@ -240,12 +244,11 @@ class RegionService {
      * Create a new region
      * POST /api/region
      */
-    createRegion = async (data: CreateRegionDto): Promise<Region> => {
-        const response = await this.request<Region>('', {
+    createRegion = async (data: CreateRegionDto): Promise<RegionDto> => {
+        const response = await this.request<RegionDto>('', {
             method: 'POST',
             body: JSON.stringify(data),
         });
-        console.log(response);
 
         if (!response.success) {
             throw new Error(response.message || 'Failed to create region');
@@ -262,8 +265,8 @@ class RegionService {
      * Update an existing region
      * PUT /api/region/{id}
      */
-    updateRegion = async (id: number, data: UpdateRegionDto): Promise<Region> => {
-        const response = await this.request<Region>(`/${id}`, {
+    updateRegion = async (id: number, data: UpdateRegionDto): Promise<RegionDto> => {
+        const response = await this.request<RegionDto>(`/${id}`, {
             method: 'PUT',
             body: JSON.stringify(data),
         });
@@ -278,12 +281,11 @@ class RegionService {
 
         return response.data;
     };
-
-    /**
+     /**
      * Toggle region activation status
      * PUT /api/region/{id}/toggle-activation
      */
-    toggleRegionActivation = async (id: number): Promise<void> => {
+     toggleRegionActivation = async (id: number): Promise<void> => {
         const response = await this.request<void>(`/${id}/toggle-activation`, {
             method: 'PUT',
         });

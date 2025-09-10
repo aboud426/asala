@@ -11,9 +11,11 @@ public class Location : BaseEntity<int>
     public decimal Longitude { get; set; }
     public int? RegionId { get; set; }
 
+    public int UserId { get; set; }
+    public User User { get; set; } = null!;
+
     // Navigation properties
     public Region? Region { get; set; }
     public List<LocationLocalized> LocationLocalizeds { get; set; } = [];
     public List<Order> Orders { get; set; } = [];
-    public List<User> Users { get; set; } = [];
 }

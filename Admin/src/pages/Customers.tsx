@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -50,6 +51,7 @@ import {
   ChevronDown,
   Eye,
   Phone,
+  MapPin,
 } from 'lucide-react';
 import { useDirection } from '@/contexts/DirectionContext';
 import { Switch } from '@/components/ui/switch';
@@ -66,6 +68,7 @@ import customerAdminService, {
 
 const Customers: React.FC = () => {
   const { isRTL } = useDirection();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
@@ -222,6 +225,10 @@ const Customers: React.FC = () => {
   const handleShowDetails = (customer: CustomerDto) => {
     setSelectedCustomerForDetails(customer);
     setIsDetailsDialogOpen(true);
+  };
+
+  const handleViewLocations = (customer: CustomerDto) => {
+    navigate(`/locations?userId=${customer.userId}`);
   };
 
   const getStatusBadge = (isActive: boolean) => {
@@ -487,6 +494,13 @@ const Customers: React.FC = () => {
                               >
                                 <Eye className="h-4 w-4" />
                                 {isRTL ? 'عرض التفاصيل' : 'View Details'}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}
+                                onClick={() => handleViewLocations(customer)}
+                              >
+                                <MapPin className="h-4 w-4" />
+                                {isRTL ? 'عرض المواقع' : 'View Locations'}
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}

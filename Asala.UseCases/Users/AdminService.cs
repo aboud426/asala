@@ -105,7 +105,7 @@ public class AdminService : IAdminService
             Id = result.Value.Id,
             Email = result.Value.Email,
             PhoneNumber = result.Value.PhoneNumber,
-            LocationId = result.Value.LocationId,
+            // LocationId = result.Value.LocationId,
             IsActive = result.Value.IsActive,
             CreatedAt = result.Value.CreatedAt,
             UpdatedAt = result.Value.UpdatedAt,
@@ -271,7 +271,7 @@ public class AdminService : IAdminService
         {
             Email = createDto.Email,
             PhoneNumber = createDto.PhoneNumber,
-            LocationId = createDto.LocationId,
+            // LocationId = createDto.LocationId,
             IsActive = createDto.IsActive,
         };
 
@@ -597,7 +597,7 @@ public class AdminService : IAdminService
         // Update user entity
         user.Email = updateDto.Email;
         user.PhoneNumber = updateDto.PhoneNumber;
-        user.LocationId = updateDto.LocationId;
+        // user.LocationId = updateDto.LocationId;
         user.IsActive = updateDto.IsActive;
         user.UpdatedAt = DateTime.UtcNow;
 

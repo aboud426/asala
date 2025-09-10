@@ -27,10 +27,18 @@ public class NewLocationConfiguration : IEntityTypeConfiguration<Location>
         builder.Property(x => x.RegionId)
             .IsRequired(false);
 
+        builder.Property(x => x.UserId)
+            .IsRequired();
+
         // Relationships
         builder.HasOne(x => x.Region)
             .WithMany(x => x.Locations)
             .HasForeignKey(x => x.RegionId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(x => x.User)
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasMany(x => x.LocationLocalizeds)
@@ -43,14 +51,10 @@ public class NewLocationConfiguration : IEntityTypeConfiguration<Location>
             .HasForeignKey(x => x.ShippingAddressId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasMany(x => x.Users)
-            .WithOne(x => x.Location)
-            .HasForeignKey(x => x.LocationId)
-            .OnDelete(DeleteBehavior.Restrict);
-
         // Indexes
         builder.HasIndex(x => x.Name);
         builder.HasIndex(x => x.RegionId);
+        builder.HasIndex(x => x.UserId);
         builder.HasIndex(x => new { x.Latitude, x.Longitude });
         builder.HasIndex(x => new { x.RegionId, x.Name });
     }

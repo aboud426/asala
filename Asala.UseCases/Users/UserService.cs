@@ -106,7 +106,7 @@ public class UserService : IUserService
         {
             Email = createDto.Email.Trim().ToLowerInvariant(),
             PasswordHash = HashPassword(createDto.Password),
-            LocationId = createDto.LocationId,
+            // LocationId = createDto.LocationId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
         };
@@ -156,7 +156,7 @@ public class UserService : IUserService
             return Result.Success<UserDto?>(null);
 
         user.Email = updateDto.Email.Trim().ToLowerInvariant();
-        user.LocationId = updateDto.LocationId;
+        // user.LocationId = updateDto.LocationId;
         user.IsActive = updateDto.IsActive;
         user.UpdatedAt = DateTime.UtcNow;
 
@@ -399,7 +399,7 @@ public class UserService : IUserService
         {
             Id = user.Id,
             Email = user.Email,
-            LocationId = user.LocationId,
+            // LocationId = user.LocationId,
             IsActive = user.IsActive,
             CreatedAt = user.CreatedAt,
             UpdatedAt = user.UpdatedAt,

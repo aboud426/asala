@@ -346,7 +346,7 @@ public class AuthenticationService : IAuthenticationService
         {
             Id = user.Id,
             Email = user.Email,
-            LocationId = user.LocationId,
+            // LocationId = user.LocationId,
             IsActive = user.IsActive,
             CreatedAt = user.CreatedAt,
             UpdatedAt = user.UpdatedAt

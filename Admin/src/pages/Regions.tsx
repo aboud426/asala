@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -65,7 +66,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import regionService, {
-  Region,
+  RegionDto,
   CreateRegionDto,
   UpdateRegionDto,
   CreateLocalizedRegionDto,
@@ -78,14 +79,15 @@ import MissingRegionTranslationsModal from '@/components/ui/missing-region-trans
 
 const Regions: React.FC = () => {
   const { isRTL } = useDirection();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
-  const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
-  const [selectedRegionForDetails, setSelectedRegionForDetails] = useState<Region | null>(null);
+  const [selectedRegion, setSelectedRegion] = useState<RegionDto | null>(null);
+  const [selectedRegionForDetails, setSelectedRegionForDetails] = useState<RegionDto | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(5);
   const [isMissingTranslationsModalOpen, setIsMissingTranslationsModalOpen] = useState(false);
@@ -235,7 +237,7 @@ const Regions: React.FC = () => {
     const matchesSearch = region.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (region.parentName && region.parentName.toLowerCase().includes(searchTerm.toLowerCase())) ||
       region.localizations.some(loc =>
-        loc.localizedName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        loc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         loc.languageName.toLowerCase().includes(searchTerm.toLowerCase())
       );
     return matchesSearch;
@@ -254,9 +256,8 @@ const Regions: React.FC = () => {
     const formattedData = {
       ...data,
       localizations: data.localizations.map(loc => ({
-        regionId: 0, // Will be set by backend
+        name: loc.name,
         languageId: loc.languageId,
-        localizedName: loc.localizedName,
         isActive: loc.isActive ?? true,
       })),
     };
@@ -280,7 +281,7 @@ const Regions: React.FC = () => {
     });
   };
 
-  const handleEdit = (region: Region) => {
+  const handleEdit = (region: RegionDto) => {
     setSelectedRegion(region);
     editForm.reset({
       name: region.name,
@@ -288,7 +289,7 @@ const Regions: React.FC = () => {
       isActive: region.isActive,
       localizations: region.localizations.map(loc => ({
         id: loc.id,
-        localizedName: loc.localizedName,
+        name: loc.name,
         languageId: loc.languageId,
         isActive: loc.isActive,
       })),
@@ -296,17 +297,21 @@ const Regions: React.FC = () => {
     setIsEditDialogOpen(true);
   };
 
-  const handleShowDetails = (region: Region) => {
+  const handleShowDetails = (region: RegionDto) => {
     setSelectedRegionForDetails(region);
     setIsDetailsDialogOpen(true);
   };
 
+  const handleViewLocations = (region: RegionDto) => {
+    navigate(`/locations?regionId=${region.id}`);
+  };
+
   const addNewLocalization = (isEdit: boolean = false) => {
     const newLocalization = {
-      localizedName: '',
+      name: '',
       languageId: 0,
       isActive: true,
-    } as any;
+    };
 
     if (isEdit) {
       appendEditLocalization(newLocalization);
@@ -334,7 +339,7 @@ const Regions: React.FC = () => {
     return new Date(dateString).toLocaleDateString(isRTL ? 'ar-SA' : 'en-US');
   };
 
-  const renderRegionHierarchy = (region: Region) => {
+  const renderRegionHierarchy = (region: RegionDto) => {
     return (
       <div className={`flex items-center gap-3 ${isRTL ? ' text-right' : 'flex-row'}`}>
         <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center">
@@ -591,6 +596,13 @@ const Regions: React.FC = () => {
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}
+                              onClick={() => handleViewLocations(region)}
+                            >
+                              <MapPin className="h-4 w-4" />
+                              {isRTL ? 'عرض المواقع' : 'View Locations'}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}
                               onClick={() => handleEdit(region)}
                             >
                               <Edit className="h-4 w-4" />
@@ -802,7 +814,7 @@ const Regions: React.FC = () => {
                         />
                         <FormField
                           control={createForm.control}
-                          name={`localizations.${index}.localizedName`}
+                          name={`localizations.${index}.name`}
                           rules={{ required: isRTL ? 'الاسم مطلوب' : 'Name is required' }}
                           render={({ field }) => (
                             <FormItem>
@@ -984,7 +996,7 @@ const Regions: React.FC = () => {
                         />
                         <FormField
                           control={editForm.control}
-                          name={`localizations.${index}.localizedName`}
+                          name={`localizations.${index}.name`}
                           rules={{ required: isRTL ? 'الاسم مطلوب' : 'Name is required' }}
                           render={({ field }) => (
                             <FormItem>
@@ -1189,16 +1201,16 @@ const Regions: React.FC = () => {
                                   </div>
                                   {getStatusBadge(localization.isActive)}
                                 </div>
-                                <div className="space-y-2">
-                                  <label className="text-xs font-medium text-muted-foreground">
-                                    {isRTL ? 'الاسم المترجم' : 'Translated Name'}
-                                  </label>
-                                  <div className="p-3 bg-muted/30 rounded-lg">
-                                    <p className="text-sm font-medium">
-                                      {localization.localizedName}
-                                    </p>
+                                  <div className="space-y-2">
+                                    <label className="text-xs font-medium text-muted-foreground">
+                                      {isRTL ? 'الاسم المترجم' : 'Translated Name'}
+                                    </label>
+                                    <div className="p-3 bg-muted/30 rounded-lg">
+                                      <p className="text-sm font-medium">
+                                        {localization.name}
+                                      </p>
+                                    </div>
                                   </div>
-                                </div>
                                 <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border/30">
                                   <div className="space-y-1">
                                     <label className="text-xs font-medium text-muted-foreground">

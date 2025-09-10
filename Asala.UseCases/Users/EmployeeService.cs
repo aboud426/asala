@@ -156,7 +156,7 @@ public class EmployeeService : IEmployeeService
             {
                 Email = createDto.Email.Trim().ToLowerInvariant(),
                 PasswordHash = HashPassword(createDto.Password),
-                LocationId = createDto.LocationId,
+                // LocationId = createDto.LocationId,
                 IsActive = createDto.IsActive,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
@@ -250,7 +250,7 @@ public class EmployeeService : IEmployeeService
             {
                 Email = createDto.Email.Trim().ToLowerInvariant(),
                 PasswordHash = HashPassword(createDto.Password),
-                LocationId = null, // No location
+                // LocationId = null, // No location
                 IsActive = createDto.IsActive,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
@@ -344,7 +344,7 @@ public class EmployeeService : IEmployeeService
         if (userResult.IsSuccess && userResult.Value != null)
         {
             userResult.Value.Email = updateDto.Email.Trim().ToLowerInvariant();
-            userResult.Value.LocationId = updateDto.LocationId;
+            // userResult.Value.LocationId = updateDto.LocationId;
             userResult.Value.IsActive = updateDto.IsActive;
             userResult.Value.UpdatedAt = DateTime.UtcNow;
             _userRepository.Update(userResult.Value);
