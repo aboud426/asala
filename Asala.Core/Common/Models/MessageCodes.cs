@@ -284,4 +284,6 @@ public static class MessageCodes
     public const string CHECKOUT_FAILED = "CHECKOUT_FAILED";
     public const string PAYMENT_FAILED = "PAYMENT_FAILED";
     public const string SHIPPING_ADDRESS_REQUIRED = "SHIPPING_ADDRESS_REQUIRED";
+
+    public static string LOCALIZATION_NOT_FOUND = "LOCALIZATION_NOT_FOUND";
 }

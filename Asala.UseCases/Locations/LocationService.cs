@@ -4,6 +4,7 @@ using Asala.Core.Common.Models;
 using Asala.Core.Modules.Locations.Db;
 using Asala.Core.Modules.Locations.DTOs;
 using Asala.Core.Modules.Locations.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Asala.UseCases.Locations;
 
@@ -39,17 +40,19 @@ public class LocationService : ILocationService
             if (idValidationResult.IsFailure)
                 return Result.Failure<LocationDto?>(idValidationResult.MessageCode);
 
-            var result = await _locationRepository.GetByIdWithLocalizationsAsync(
-                id,
-                cancellationToken
-            );
-            if (result.IsFailure)
-                return Result.Failure<LocationDto?>(result.MessageCode);
-
-            if (result.Value == null || result.Value.IsDeleted)
+            var result = await _locationRepository
+                .GetQueryable()
+                .Where(l => l.Id == id && !l.IsDeleted)
+                .Include(l => l.LocationLocalizeds)
+                .ThenInclude(ll => ll.Language)
+                .Include(l => l.Region)
+                .Include(l => l.User)
+                .ThenInclude(u => u.Customer)
+                .FirstOrDefaultAsync(cancellationToken);
+            if (result == null)
                 return Result.Failure<LocationDto?>(MessageCodes.LOCATION_NOT_FOUND);
 
-            var dto = MapToDto(result.Value);
+            var dto = MapToDto(result);
             return Result.Success<LocationDto?>(dto);
         }
         catch (Exception ex)
@@ -291,7 +294,7 @@ public class LocationService : ILocationService
                     .Localizations.Select(x => new LocationLocalized
                     {
                         LanguageId = x.LanguageId,
-                        LocalizedName = x.LocalizedName,
+                        LocalizedName = x.Name,
                         IsActive = x.IsActive,
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
@@ -383,15 +386,34 @@ public class LocationService : ILocationService
 
                 foreach (var localizationDto in updateDto.Localizations)
                 {
-                    // Check if localization already exists for this language
-                    var existingLocalization = existingLocalizations.FirstOrDefault(l =>
-                        l.LanguageId == localizationDto.LanguageId
-                    );
+                    LocationLocalized? existingLocalization = null;
+
+                    // If ID is provided, try to find by ID first
+                    if (localizationDto.Id.HasValue && localizationDto.Id.Value > 0)
+                    {
+                        existingLocalization = existingLocalizations.FirstOrDefault(l =>
+                            l.Id == localizationDto.Id.Value
+                        );
+
+                        // If ID was provided but localization not found, return error
+                        if (existingLocalization == null)
+                            return Result.Failure<LocationDto?>(
+                                MessageCodes.LOCALIZATION_NOT_FOUND
+                            );
+                    }
+                    else
+                    {
+                        // If no ID provided, check if localization already exists for this language
+                        existingLocalization = existingLocalizations.FirstOrDefault(l =>
+                            l.LanguageId == localizationDto.LanguageId
+                        );
+                    }
 
                     if (existingLocalization != null)
                     {
                         // Update existing localization
-                        existingLocalization.LocalizedName = localizationDto.LocalizedName.Trim();
+                        existingLocalization.LocalizedName = localizationDto.Name.Trim();
+                        existingLocalization.LanguageId = localizationDto.LanguageId;
                         existingLocalization.IsActive = localizationDto.IsActive;
                         existingLocalization.UpdatedAt = DateTime.UtcNow;
 
@@ -405,12 +427,17 @@ public class LocationService : ILocationService
                     }
                     else
                     {
-                        // Create new localization
+                        // Create new localization (only when no ID is provided)
+                        if (localizationDto.Id.HasValue && localizationDto.Id.Value > 0)
+                            return Result.Failure<LocationDto?>(
+                                MessageCodes.LOCALIZATION_NOT_FOUND
+                            );
+
                         var newLocalization = new LocationLocalized
                         {
                             LocationId = id,
                             LanguageId = localizationDto.LanguageId,
-                            LocalizedName = localizationDto.LocalizedName.Trim(),
+                            LocalizedName = localizationDto.Name.Trim(),
                             IsActive = localizationDto.IsActive,
                             CreatedAt = DateTime.UtcNow,
                             UpdatedAt = DateTime.UtcNow,
@@ -641,6 +668,11 @@ public class LocationService : ILocationService
             RegionFullPath = location.Region?.Name, // You can build full path logic here if needed
             UserId = location.UserId,
             UserEmail = location.User?.Email,
+            UserName =
+                location.User?.Customer?.Name
+                ?? location.User?.Employee?.EmployeeName
+                ?? location.User?.Provider?.BusinessName
+                ?? "UnKnown",
             IsActive = location.IsActive,
             CreatedAt = location.CreatedAt,
             UpdatedAt = location.UpdatedAt,
@@ -651,7 +683,7 @@ public class LocationService : ILocationService
                         Id = x.Id,
                         LocationId = x.LocationId,
                         LanguageId = x.LanguageId,
-                        LocalizedName = x.LocalizedName,
+                        Name = x.LocalizedName,
                         LanguageName = x.Language?.Name ?? string.Empty,
                         LanguageCode = x.Language?.Code ?? string.Empty,
                         IsActive = x.IsActive,

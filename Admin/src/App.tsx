@@ -26,6 +26,9 @@ import Messages from "./pages/Messages";
 import PostTypes from "./pages/PostTypes";
 import Regions from "./pages/Regions";
 import Locations from "./pages/Locations";
+import CreateLocation from "./pages/CreateLocation";
+import LocationDetails from "./pages/LocationDetails";
+import EditLocation from "./pages/EditLocation";
 import Employees from "./pages/Employees";
 import Roles from "./pages/Roles";
 import RolePermissions from "./pages/RolePermissions";
@@ -38,6 +41,7 @@ import Posts from "./pages/Posts";
 import CreatePost from "./pages/CreatePost";
 import PostDetails from "./pages/PostDetails";
 import EditPost from "./pages/EditPost";
+import MapSelector from "./pages/MapSelector";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -80,11 +84,15 @@ const App = () => (
                 <Route path="/post-types" element={<PostTypes />} />
                 <Route path="/regions" element={<Regions />} />
                 <Route path="/locations" element={<Locations />} />
+                <Route path="/locations/create" element={<CreateLocation />} />
+                <Route path="/locations/:id" element={<LocationDetails />} />
+                <Route path="/locations/edit/:id" element={<EditLocation />} />
                 <Route path="/employees" element={<Employees />} />
                 <Route path="/roles" element={<Roles />} />
                 <Route path="/roles/:roleId/permissions" element={<RolePermissions />} />
                 <Route path="/permissions" element={<Permissions />} />
                 <Route path="/currencies" element={<Currencies />} />
+                <Route path="/map-selector" element={<MapSelector />} />
                 <Route path="/settings" element={<Settings />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />

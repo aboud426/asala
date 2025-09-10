@@ -35,6 +35,8 @@ public class LocationController : BaseController
     /// </summary>
     /// <param name="page">Page number (default: 1)</param>
     /// <param name="pageSize">Page size (default: 10)</param>
+    /// <param name="userId"></param>
+    /// <param name="regionId"></param>
     /// <param name="isActive">Filter by active status (optional)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Paginated list of locations</returns>

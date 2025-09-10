@@ -4,7 +4,6 @@
 export interface LocationLocalizedDto {
     id: number;
     name: string;
-    description: string;
     languageId: number;
     languageName: string;
     languageCode: string;
@@ -16,11 +15,12 @@ export interface LocationLocalizedDto {
 export interface LocationDto {
     id: number;
     name: string;
-    description: string;
     regionId: number;
     regionName: string;
     userId: number;
     userName: string;
+    latitude?: number;
+    longitude?: number;
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
@@ -29,16 +29,17 @@ export interface LocationDto {
 
 export interface CreateLocationLocalizedDto {
     name: string;
-    description: string;
+    // description: string;
     languageId: number;
     isActive?: boolean;
 }
 
 export interface CreateLocationDto {
     name: string;
-    description: string;
     regionId: number;
     userId: number;
+    latitude: number;
+    longitude: number;
     isActive?: boolean;
     localizations: CreateLocationLocalizedDto[];
 }
@@ -46,16 +47,16 @@ export interface CreateLocationDto {
 export interface UpdateLocationLocalizedDto {
     id?: number; // Optional (null for new translations)
     name: string;
-    description: string;
     languageId: number;
     isActive: boolean;
 }
 
 export interface UpdateLocationDto {
     name: string;
-    description: string;
     regionId: number;
     userId: number;
+    latitude: number;
+    longitude: number;
     isActive: boolean;
     localizations: UpdateLocationLocalizedDto[];
 }

@@ -21,6 +21,7 @@ import {
   MessageCircle,
   MapPin,
   Navigation,
+  Map,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -115,6 +116,12 @@ const navigationItems = [
     titleAr: 'المواقع',
     href: '/locations',
     icon: Navigation,
+  },
+  {
+    title: 'Map Selector',
+    titleAr: 'محدد المواقع',
+    href: '/map-selector',
+    icon: Map,
   },
   {
     title: 'Employees',

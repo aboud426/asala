@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,30 +20,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import {
   Search,
   Plus,
   Edit,
@@ -61,16 +37,10 @@ import {
   Users,
 } from 'lucide-react';
 import { useDirection } from '@/contexts/DirectionContext';
-import { Switch } from '@/components/ui/switch';
-import { useForm, useFieldArray } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import locationService, {
   LocationDto,
-  CreateLocationDto,
-  UpdateLocationDto,
-  CreateLocationLocalizedDto,
-  UpdateLocationLocalizedDto,
   PaginatedResult
 } from '@/services/locationService';
 import regionService, { RegionDropdownDto } from '@/services/regionService';
@@ -80,17 +50,13 @@ import customerAdminService, { CustomerDto } from '@/services/customerAdminServi
 const Locations: React.FC = () => {
   const { isRTL } = useDirection();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [regionFilter, setRegionFilter] = useState<'all' | string>('all');
   const [userIdFilter, setUserIdFilter] = useState<number | null>(null);
   const [regionIdFilter, setRegionIdFilter] = useState<number | null>(null);
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState<LocationDto | null>(null);
-  const [selectedLocationForDetails, setSelectedLocationForDetails] = useState<LocationDto | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(10);
 
@@ -98,9 +64,9 @@ const Locations: React.FC = () => {
   useEffect(() => {
     const userIdParam = searchParams.get('userId');
     const regionIdParam = searchParams.get('regionId');
-    
+
     console.log('URL parameters - userId:', userIdParam, 'regionId:', regionIdParam);
-    
+
     // Handle userId parameter
     if (userIdParam) {
       const parsedUserId = parseInt(userIdParam);
@@ -132,56 +98,8 @@ const Locations: React.FC = () => {
     }
   }, [searchParams]);
 
-  // Form setup
-  const createForm = useForm<CreateLocationDto>({
-    defaultValues: {
-      name: '',
-      description: '',
-      regionId: regionIdFilter || 0,
-      userId: userIdFilter || 0,
-      isActive: true,
-      localizations: [],
-    },
-  });
 
-  // Update create form when filters change
-  useEffect(() => {
-    if (userIdFilter) {
-      createForm.setValue('userId', userIdFilter);
-    }
-    if (regionIdFilter) {
-      createForm.setValue('regionId', regionIdFilter);
-    }
-  }, [userIdFilter, regionIdFilter, createForm]);
 
-  const editForm = useForm<UpdateLocationDto>({
-    defaultValues: {
-      name: '',
-      description: '',
-      regionId: 0,
-      userId: 0,
-      isActive: true,
-      localizations: [],
-    },
-  });
-
-  const {
-    fields: createLocalizations,
-    append: appendCreateLocalization,
-    remove: removeCreateLocalization,
-  } = useFieldArray({
-    control: createForm.control,
-    name: 'localizations',
-  });
-
-  const {
-    fields: editLocalizations,
-    append: appendEditLocalization,
-    remove: removeEditLocalization,
-  } = useFieldArray({
-    control: editForm.control,
-    name: 'localizations',
-  });
 
   // Query for locations data
   const { data: locationsData, isLoading, error } = useQuery({
@@ -197,14 +115,14 @@ const Locations: React.FC = () => {
         page: currentPage,
         pageSize,
       };
-      
+
       // Only add isActive filter if not showing 'all'
       if (statusFilter === 'active') {
         params.isActive = true;
       } else if (statusFilter === 'inactive') {
         params.isActive = false;
       }
-      
+
       // Add userId filter if it exists
       if (userIdFilter !== null) {
         params.userId = userIdFilter;
@@ -214,7 +132,7 @@ const Locations: React.FC = () => {
       if (regionIdFilter !== null) {
         params.regionId = regionIdFilter;
       }
-      
+
       return locationService.getLocations(params);
     },
   });
@@ -251,30 +169,6 @@ const Locations: React.FC = () => {
   });
 
   // Mutations
-  const createMutation = useMutation({
-    mutationFn: locationService.createLocation,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['locations'] });
-      queryClient.invalidateQueries({ queryKey: ['locations-all'] });
-      toast.success(isRTL ? 'تم إنشاء الموقع بنجاح' : 'Location created successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || (isRTL ? 'حدث خطأ أثناء إنشاء الموقع' : 'Error creating location'));
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateLocationDto }) => 
-      locationService.updateLocation(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['locations'] });
-      queryClient.invalidateQueries({ queryKey: ['locations-all'] });
-      toast.success(isRTL ? 'تم تحديث الموقع بنجاح' : 'Location updated successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || (isRTL ? 'حدث خطأ أثناء تحديث الموقع' : 'Error updating location'));
-    },
-  });
 
   const toggleMutation = useMutation({
     mutationFn: locationService.toggleLocationActivation,
@@ -303,16 +197,14 @@ const Locations: React.FC = () => {
   // Filter locations client-side for search and region
   const filteredLocations = locationsData?.items.filter(location => {
     const matchesSearch = location.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         location.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         location.regionName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         location.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         location.localizations.some(loc => 
-                           loc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           loc.description.toLowerCase().includes(searchTerm.toLowerCase())
-                         );
-    
+      location.regionName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      location.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      location.localizations.some(loc =>
+        loc.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+
     const matchesRegion = regionFilter === 'all' || location.regionId.toString() === regionFilter;
-    
+
     return matchesSearch && matchesRegion;
   }) || [];
 
@@ -323,73 +215,40 @@ const Locations: React.FC = () => {
     inactive: allLocationsData?.items.filter(l => !l.isActive).length || 0,
   };
 
-  // Form handlers
-  const onCreateSubmit = async (data: CreateLocationDto) => {
-    createMutation.mutate(data, {
-      onSuccess: () => {
-        setIsCreateDialogOpen(false);
-        createForm.reset();
-      },
-    });
+  // Handle navigate to create location page
+  const handleNavigateToCreate = () => {
+    const params = new URLSearchParams();
+    if (userIdFilter) params.set('userId', userIdFilter.toString());
+    if (regionIdFilter) params.set('regionId', regionIdFilter.toString());
+    const queryString = params.toString();
+    navigate(`/locations/create${queryString ? `?${queryString}` : ''}`);
   };
 
-  const onEditSubmit = async (data: UpdateLocationDto) => {
-    if (!selectedLocation) return;
-    updateMutation.mutate({ id: selectedLocation.id, data }, {
-      onSuccess: () => {
-        setIsEditDialogOpen(false);
-        setSelectedLocation(null);
-        editForm.reset();
-      },
-    });
-  };
 
   const handleEdit = (location: LocationDto) => {
-    setSelectedLocation(location);
-    editForm.reset({
-      name: location.name,
-      description: location.description,
-      regionId: location.regionId,
-      userId: location.userId,
-      isActive: location.isActive,
-      localizations: location.localizations.map(loc => ({
-        id: loc.id,
-        name: loc.name,
-        description: loc.description,
-        languageId: loc.languageId,
-        isActive: loc.isActive,
-      })),
-    });
-    setIsEditDialogOpen(true);
+    const params = new URLSearchParams();
+    if (userIdFilter) params.set('userId', userIdFilter.toString());
+    if (regionIdFilter) params.set('regionId', regionIdFilter.toString());
+    const queryString = params.toString();
+    navigate(`/locations/edit/${location.id}${queryString ? `?${queryString}` : ''}`);
   };
 
   const handleShowDetails = (location: LocationDto) => {
-    setSelectedLocationForDetails(location);
-    setIsDetailsDialogOpen(true);
+    const params = new URLSearchParams();
+    if (userIdFilter) params.set('userId', userIdFilter.toString());
+    if (regionIdFilter) params.set('regionId', regionIdFilter.toString());
+    const queryString = params.toString();
+    navigate(`/locations/${location.id}${queryString ? `?${queryString}` : ''}`);
   };
 
-  const addNewLocalization = (isEdit: boolean = false) => {
-    const newLocalization = {
-      name: '',
-      description: '',
-      languageId: 0,
-      isActive: true,
-    };
-
-    if (isEdit) {
-      appendEditLocalization(newLocalization);
-    } else {
-      appendCreateLocalization(newLocalization);
-    }
-  };
 
   const getStatusBadge = (isActive: boolean) => {
     return (
-      <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${isActive 
-        ? 'bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800' 
+      <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${isActive
+        ? 'bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800'
         : 'bg-red-50 text-red-600 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800'}`}>
-        <div className={`w-2 h-2 rounded-full animate-pulse ${isActive 
-          ? 'bg-emerald-500 shadow-sm shadow-emerald-500/50' 
+        <div className={`w-2 h-2 rounded-full animate-pulse ${isActive
+          ? 'bg-emerald-500 shadow-sm shadow-emerald-500/50'
           : 'bg-red-500 shadow-sm shadow-red-500/50'}`} />
         <span className="font-semibold">
           {isRTL ? (isActive ? 'نشط' : 'غير نشط') : (isActive ? 'Active' : 'Inactive')}
@@ -453,9 +312,9 @@ const Locations: React.FC = () => {
               </div>
             )}
           </div>
-          <Button 
+          <Button
             className="gradient-primary flex items-center gap-2"
-            onClick={() => setIsCreateDialogOpen(true)}
+            onClick={handleNavigateToCreate}
           >
             <Plus className="h-4 w-4" />
             {isRTL ? 'إضافة موقع جديد' : 'Add New Location'}
@@ -521,38 +380,37 @@ const Locations: React.FC = () => {
               <div className="flex gap-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="flex items-center gap-2 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200"
                     >
-                      <div className={`w-2 h-2 rounded-full ${
-                        statusFilter === 'active' ? 'bg-emerald-500' : 
-                        statusFilter === 'inactive' ? 'bg-red-500' : 
-                        'bg-gradient-to-r from-emerald-500 to-red-500'
-                      }`} />
-                      {isRTL ? 
-                        (statusFilter === 'all' ? 'جميع الحالات' : statusFilter === 'active' ? 'نشط' : 'غير نشط') : 
+                      <div className={`w-2 h-2 rounded-full ${statusFilter === 'active' ? 'bg-emerald-500' :
+                        statusFilter === 'inactive' ? 'bg-red-500' :
+                          'bg-gradient-to-r from-emerald-500 to-red-500'
+                        }`} />
+                      {isRTL ?
+                        (statusFilter === 'all' ? 'جميع الحالات' : statusFilter === 'active' ? 'نشط' : 'غير نشط') :
                         (statusFilter === 'all' ? 'All Status' : statusFilter === 'active' ? 'Active' : 'Inactive')
                       }
                       <ChevronDown className="h-4 w-4 opacity-50" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       onClick={() => setStatusFilter('all')}
                       className="flex items-center gap-2"
                     >
                       <div className="w-2 h-2 rounded-full bg-gradient-to-r from-emerald-500 to-red-500" />
                       {isRTL ? 'جميع الحالات' : 'All Status'}
                     </DropdownMenuItem>
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       onClick={() => setStatusFilter('active')}
                       className="flex items-center gap-2"
                     >
                       <div className="w-2 h-2 rounded-full bg-emerald-500" />
                       {isRTL ? 'نشط' : 'Active'}
                     </DropdownMenuItem>
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       onClick={() => setStatusFilter('inactive')}
                       className="flex items-center gap-2"
                     >
@@ -564,20 +422,20 @@ const Locations: React.FC = () => {
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="flex items-center gap-2 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200"
                     >
                       <MapPin className="h-4 w-4" />
-                      {regionFilter === 'all' ? 
-                        (isRTL ? 'جميع المناطق' : 'All Regions') : 
+                      {regionFilter === 'all' ?
+                        (isRTL ? 'جميع المناطق' : 'All Regions') :
                         regionsData?.find(r => r.id.toString() === regionFilter)?.name || 'Region'
                       }
                       <ChevronDown className="h-4 w-4 opacity-50" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       onClick={() => setRegionFilter('all')}
                       className="flex items-center gap-2"
                     >
@@ -585,7 +443,7 @@ const Locations: React.FC = () => {
                       {isRTL ? 'جميع المناطق' : 'All Regions'}
                     </DropdownMenuItem>
                     {regionsData?.map((region) => (
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         key={region.id}
                         onClick={() => setRegionFilter(region.id.toString())}
                         className="flex items-center gap-2"
@@ -671,7 +529,15 @@ const Locations: React.FC = () => {
                               <MapPin className="h-4 w-4 text-primary-foreground" />
                             </div>
                             <div>
-                              <p className="font-medium text-sm">{truncateText(location.name, 25)}</p>
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium text-sm">{truncateText(location.name, 25)}</p>
+                                {location.latitude !== 0 && location.longitude !== 0 && (
+                                  <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800">
+                                    <MapPin className="h-2.5 w-2.5" />
+                                    {isRTL ? 'خريطة' : 'Map'}
+                                  </Badge>
+                                )}
+                              </div>
                               <p className="text-xs text-muted-foreground">ID: #{location.id}</p>
                             </div>
                           </div>
@@ -714,28 +580,40 @@ const Locations: React.FC = () => {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align={isRTL ? 'start' : 'end'}>
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}
                                 onClick={() => handleShowDetails(location)}
                               >
                                 <Eye className="h-4 w-4" />
                                 {isRTL ? 'عرض التفاصيل' : 'View Details'}
                               </DropdownMenuItem>
-                              <DropdownMenuItem 
+                              {location.latitude !== 0 && location.longitude !== 0 && (
+                                <DropdownMenuItem
+                                  className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}
+                                  onClick={() => {
+                                    const url = `https://www.google.com/maps?q=${location.latitude},${location.longitude}`;
+                                    window.open(url, '_blank');
+                                  }}
+                                >
+                                  <MapPin className="h-4 w-4" />
+                                  {isRTL ? 'عرض على الخريطة' : 'View on Map'}
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem
                                 className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}
                                 onClick={() => handleEdit(location)}
                               >
                                 <Edit className="h-4 w-4" />
                                 {isRTL ? 'تحرير' : 'Edit'}
                               </DropdownMenuItem>
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}
                                 onClick={() => toggleMutation.mutate(location.id)}
                               >
                                 <Power className="h-4 w-4" />
                                 {isRTL ? 'تغيير الحالة' : 'Toggle Status'}
                               </DropdownMenuItem>
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 className={`flex items-center gap-2 text-destructive ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}
                                 onClick={() => deleteMutation.mutate(location.id)}
                               >
@@ -756,7 +634,7 @@ const Locations: React.FC = () => {
             {locationsData && locationsData.totalPages > 1 && (
               <div className="flex items-center justify-between mt-6">
                 <div className="text-sm text-muted-foreground">
-                  {isRTL 
+                  {isRTL
                     ? `عرض ${((locationsData.page - 1) * locationsData.pageSize) + 1} إلى ${Math.min(locationsData.page * locationsData.pageSize, locationsData.totalCount)} من ${locationsData.totalCount}`
                     : `Showing ${((locationsData.page - 1) * locationsData.pageSize) + 1} to ${Math.min(locationsData.page * locationsData.pageSize, locationsData.totalCount)} of ${locationsData.totalCount}`
                   }
@@ -787,807 +665,7 @@ const Locations: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Create Location Dialog */}
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {isRTL ? 'إضافة موقع جديد' : 'Add New Location'}
-              </DialogTitle>
-              <DialogDescription>
-                {isRTL ? 'أدخل معلومات الموقع الجديد وترجماته' : 'Enter the details for the new location and its translations'}
-              </DialogDescription>
-            </DialogHeader>
-            <Form {...createForm}>
-              <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-4">
-                <FormField
-                  control={createForm.control}
-                  name="name"
-                  rules={{ required: isRTL ? 'اسم الموقع مطلوب' : 'Location name is required' }}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{isRTL ? 'اسم الموقع' : 'Location Name'}</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder={isRTL ? 'مثال: المكتب الرئيسي، المتجر الفرعي' : 'e.g., Main Office, Branch Store'} 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={createForm.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{isRTL ? 'الوصف' : 'Description'}</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder={isRTL ? 'وصف الموقع' : 'Location description'} 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className={`grid grid-cols-1 ${!userIdFilter && !regionIdFilter ? 'md:grid-cols-2' : (!userIdFilter || !regionIdFilter) ? 'md:grid-cols-2' : ''} gap-4`}>
-                  {!regionIdFilter && (
-                    <FormField
-                      control={createForm.control}
-                      name="regionId"
-                      rules={{ required: isRTL ? 'المنطقة مطلوبة' : 'Region is required' }}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{isRTL ? 'المنطقة' : 'Region'}</FormLabel>
-                          <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder={isRTL ? 'اختر المنطقة' : 'Select Region'} />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {regionsData?.map((region) => (
-                                <SelectItem key={region.id} value={region.id.toString()}>
-                                  <div className="flex items-center gap-2">
-                                    <MapPin className="h-4 w-4" />
-                                    {region.fullPath}
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-                  {regionIdFilter && (
-                    <div className="space-y-2">
-                      <FormLabel>{isRTL ? 'المنطقة المحددة' : 'Selected Region'}</FormLabel>
-                      <div className="p-3 bg-muted/50 rounded-lg border">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-primary" />
-                          <span className="text-sm font-medium">
-                            {regionsData?.find(r => r.id === regionIdFilter)?.fullPath || `Region ID: ${regionIdFilter}`}
-                          </span>
-                          <Badge variant="secondary" className="ml-2">
-                            {isRTL ? 'محدد تلقائياً' : 'Auto-selected'}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {!userIdFilter && (
-                    <FormField
-                      control={createForm.control}
-                      name="userId"
-                      rules={{ required: isRTL ? 'العميل مطلوب' : 'Customer is required' }}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{isRTL ? 'العميل' : 'Customer'}</FormLabel>
-                          <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder={isRTL ? 'اختر العميل' : 'Select Customer'} />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {customersData?.items.map((customer) => (
-                                <SelectItem key={customer.userId} value={customer.userId.toString()}>
-                                  <div className="flex items-center gap-2">
-                                    <Users className="h-4 w-4" />
-                                    {customer.name}
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-                  {userIdFilter && (
-                    <div className="space-y-2">
-                      <FormLabel>{isRTL ? 'العميل المحدد' : 'Selected Customer'}</FormLabel>
-                      <div className="p-3 bg-muted/50 rounded-lg border">
-                        <div className="flex items-center gap-2">
-                          <Users className="h-4 w-4 text-primary" />
-                          <span className="text-sm font-medium">
-                            {customersData?.items.find(c => c.userId === userIdFilter)?.name || `Customer ID: ${userIdFilter}`}
-                          </span>
-                          <Badge variant="secondary" className="ml-2">
-                            {isRTL ? 'محدد تلقائياً' : 'Auto-selected'}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
 
-                <FormField
-                  control={createForm.control}
-                  name="isActive"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">
-                          {isRTL ? 'الموقع نشط' : 'Active Location'}
-                        </FormLabel>
-                        <div className="text-sm text-muted-foreground">
-                          {isRTL ? 'تفعيل أو إلغاء تفعيل الموقع' : 'Enable or disable this location'}
-                        </div>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                {/* Localizations */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-medium">{isRTL ? 'الترجمات' : 'Localizations'}</h4>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => addNewLocalization(false)}
-                    >
-                      <Plus className="h-4 w-4" />
-                      {isRTL ? 'إضافة ترجمة' : 'Add Translation'}
-                    </Button>
-                  </div>
-                  
-                  {createLocalizations.map((field, index) => (
-                    <Card key={field.id} className="p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <h5 className="text-sm font-medium">
-                          {isRTL ? `الترجمة ${index + 1}` : `Translation ${index + 1}`}
-                        </h5>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeCreateLocalization(index)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={createForm.control}
-                          name={`localizations.${index}.languageId`}
-                          rules={{ required: isRTL ? 'اللغة مطلوبة' : 'Language is required' }}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{isRTL ? 'اللغة' : 'Language'}</FormLabel>
-                              <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder={isRTL ? 'اختر اللغة' : 'Select Language'} />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {languagesData?.map((lang) => (
-                                    <SelectItem key={lang.id} value={lang.id.toString()}>
-                                      <div className="flex items-center gap-2">
-                                        <Globe className="h-4 w-4" />
-                                        {lang.name} ({lang.code})
-                                      </div>
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={createForm.control}
-                          name={`localizations.${index}.name`}
-                          rules={{ required: isRTL ? 'الاسم مطلوب' : 'Name is required' }}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{isRTL ? 'الاسم المترجم' : 'Translated Name'}</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  placeholder={isRTL ? 'الاسم المترجم' : 'Translated name'} 
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      <div className="mt-4">
-                        <FormField
-                          control={createForm.control}
-                          name={`localizations.${index}.description`}
-                          rules={{ required: isRTL ? 'الوصف مطلوب' : 'Description is required' }}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{isRTL ? 'الوصف المترجم' : 'Translated Description'}</FormLabel>
-                              <FormControl>
-                                <Textarea 
-                                  placeholder={isRTL ? 'الوصف المترجم' : 'Translated description'} 
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-
-                <DialogFooter>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsCreateDialogOpen(false)}
-                  >
-                    {isRTL ? 'إلغاء' : 'Cancel'}
-                  </Button>
-                  <Button type="submit" className="gradient-primary" disabled={createMutation.isPending}>
-                    {createMutation.isPending ? (
-                      <div className="flex items-center gap-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground"></div>
-                        {isRTL ? 'جاري الإنشاء...' : 'Creating...'}
-                      </div>
-                    ) : (
-                      isRTL ? 'إنشاء' : 'Create'
-                    )}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
-
-        {/* Edit Location Dialog */}
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {isRTL ? 'تحرير الموقع' : 'Edit Location'}
-              </DialogTitle>
-              <DialogDescription>
-                {isRTL ? 'قم بتحديث معلومات الموقع وترجماته' : 'Update the location details and translations'}
-              </DialogDescription>
-            </DialogHeader>
-            <Form {...editForm}>
-              <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
-                <FormField
-                  control={editForm.control}
-                  name="name"
-                  rules={{ required: isRTL ? 'اسم الموقع مطلوب' : 'Location name is required' }}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{isRTL ? 'اسم الموقع' : 'Location Name'}</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={editForm.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{isRTL ? 'الوصف' : 'Description'}</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={editForm.control}
-                    name="regionId"
-                    rules={{ required: isRTL ? 'المنطقة مطلوبة' : 'Region is required' }}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{isRTL ? 'المنطقة' : 'Region'}</FormLabel>
-                        <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder={isRTL ? 'اختر المنطقة' : 'Select Region'} />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {regionsData?.map((region) => (
-                              <SelectItem key={region.id} value={region.id.toString()}>
-                                <div className="flex items-center gap-2">
-                                  <MapPin className="h-4 w-4" />
-                                  {region.fullPath}
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={editForm.control}
-                    name="userId"
-                    rules={{ required: isRTL ? 'العميل مطلوب' : 'Customer is required' }}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{isRTL ? 'العميل' : 'Customer'}</FormLabel>
-                        <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder={isRTL ? 'اختر العميل' : 'Select Customer'} />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {customersData?.items.map((customer) => (
-                              <SelectItem key={customer.userId} value={customer.userId.toString()}>
-                                <div className="flex items-center gap-2">
-                                  <Users className="h-4 w-4" />
-                                  {customer.name}
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <FormField
-                  control={editForm.control}
-                  name="isActive"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">
-                          {isRTL ? 'الموقع نشط' : 'Active Location'}
-                        </FormLabel>
-                        <div className="text-sm text-muted-foreground">
-                          {isRTL ? 'تفعيل أو إلغاء تفعيل الموقع' : 'Enable or disable this location'}
-                        </div>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                {/* Edit Localizations */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-medium">{isRTL ? 'الترجمات' : 'Localizations'}</h4>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => addNewLocalization(true)}
-                    >
-                      <Plus className="h-4 w-4" />
-                      {isRTL ? 'إضافة ترجمة' : 'Add Translation'}
-                    </Button>
-                  </div>
-                  
-                  {editLocalizations.map((field, index) => (
-                    <Card key={field.id} className="p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <h5 className="text-sm font-medium">
-                          {isRTL ? `الترجمة ${index + 1}` : `Translation ${index + 1}`}
-                        </h5>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeEditLocalization(index)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={editForm.control}
-                          name={`localizations.${index}.languageId`}
-                          rules={{ required: isRTL ? 'اللغة مطلوبة' : 'Language is required' }}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{isRTL ? 'اللغة' : 'Language'}</FormLabel>
-                              <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder={isRTL ? 'اختر اللغة' : 'Select Language'} />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {languagesData?.map((lang) => (
-                                    <SelectItem key={lang.id} value={lang.id.toString()}>
-                                      <div className="flex items-center gap-2">
-                                        <Globe className="h-4 w-4" />
-                                        {lang.name} ({lang.code})
-                                      </div>
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={editForm.control}
-                          name={`localizations.${index}.name`}
-                          rules={{ required: isRTL ? 'الاسم مطلوب' : 'Name is required' }}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{isRTL ? 'الاسم المترجم' : 'Translated Name'}</FormLabel>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      <div className="mt-4">
-                        <FormField
-                          control={editForm.control}
-                          name={`localizations.${index}.description`}
-                          rules={{ required: isRTL ? 'الوصف مطلوب' : 'Description is required' }}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{isRTL ? 'الوصف المترجم' : 'Translated Description'}</FormLabel>
-                              <FormControl>
-                                <Textarea {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      <div className="mt-4">
-                        <FormField
-                          control={editForm.control}
-                          name={`localizations.${index}.isActive`}
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                              <div className="space-y-0.5">
-                                <FormLabel className="text-sm">
-                                  {isRTL ? 'الترجمة نشطة' : 'Active Translation'}
-                                </FormLabel>
-                              </div>
-                              <FormControl>
-                                <Switch
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-
-                <DialogFooter>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsEditDialogOpen(false)}
-                  >
-                    {isRTL ? 'إلغاء' : 'Cancel'}
-                  </Button>
-                  <Button type="submit" className="gradient-primary" disabled={updateMutation.isPending}>
-                    {updateMutation.isPending ? (
-                      <div className="flex items-center gap-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground"></div>
-                        {isRTL ? 'جاري التحديث...' : 'Updating...'}
-                      </div>
-                    ) : (
-                      isRTL ? 'حفظ التغييرات' : 'Save Changes'
-                    )}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
-
-        {/* Location Details Dialog */}
-        <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
-          <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center">
-                  <MapPin className="h-5 w-5 text-primary-foreground" />
-                </div>
-                {isRTL ? 'تفاصيل الموقع' : 'Location Details'}
-              </DialogTitle>
-              <DialogDescription>
-                {isRTL ? 'عرض شامل لمعلومات الموقع وترجماته' : 'Comprehensive view of location information and translations'}
-              </DialogDescription>
-            </DialogHeader>
-            
-            {selectedLocationForDetails && (
-              <div className="space-y-6">
-                {/* Basic Information */}
-                <Card className="border-0 shadow-sm">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <MapPin className="h-5 w-5 text-primary" />
-                      {isRTL ? 'المعلومات الأساسية' : 'Basic Information'}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">
-                          {isRTL ? 'اسم الموقع' : 'Location Name'}
-                        </label>
-                        <div className="p-3 bg-muted/50 rounded-lg">
-                          <span className="text-sm font-medium">{selectedLocationForDetails.name}</span>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">
-                          {isRTL ? 'المنطقة' : 'Region'}
-                        </label>
-                        <div className="p-3 bg-muted/50 rounded-lg">
-                          <span className="text-sm font-medium">{selectedLocationForDetails.regionName}</span>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">
-                          {isRTL ? 'اسم العميل' : 'Customer Name'}
-                        </label>
-                        <div className="p-3 bg-muted/50 rounded-lg">
-                          <span className="text-sm">{selectedLocationForDetails.userName}</span>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">
-                          {isRTL ? 'الحالة' : 'Status'}
-                        </label>
-                        <div className="p-3">
-                          {getStatusBadge(selectedLocationForDetails.isActive)}
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">
-                          {isRTL ? 'تاريخ الإنشاء' : 'Created Date'}
-                        </label>
-                        <div className="p-3 bg-muted/50 rounded-lg">
-                          <span className="text-sm">{formatDate(selectedLocationForDetails.createdAt)}</span>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">
-                          {isRTL ? 'تاريخ التحديث' : 'Last Modified'}
-                        </label>
-                        <div className="p-3 bg-muted/50 rounded-lg">
-                          <span className="text-sm">{formatDate(selectedLocationForDetails.updatedAt)}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-muted-foreground">
-                        {isRTL ? 'الوصف' : 'Description'}
-                      </label>
-                      <div className="p-4 bg-muted/50 rounded-lg">
-                        <p className="text-sm leading-relaxed">
-                          {selectedLocationForDetails.description || (isRTL ? 'لا يوجد وصف' : 'No description')}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Localizations */}
-                <Card className="border-0 shadow-sm">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Globe className="h-5 w-5 text-primary" />
-                      {isRTL ? 'الترجمات' : 'Localizations'}
-                      <Badge variant="secondary" className="ml-2">
-                        {selectedLocationForDetails.localizations.length}
-                      </Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {selectedLocationForDetails.localizations.length === 0 ? (
-                      <div className="text-center py-8">
-                        <Globe className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                        <p className="text-muted-foreground">
-                          {isRTL ? 'لا توجد ترجمات متاحة لهذا الموقع' : 'No translations available for this location'}
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {selectedLocationForDetails.localizations.map((localization, index) => (
-                          <Card key={localization.id} className="border border-border/50">
-                            <CardContent className="p-4">
-                              <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                                      <Globe className="h-4 w-4 text-primary" />
-                                    </div>
-                                    <div>
-                                      <h4 className="font-medium text-sm">
-                                        {localization.languageName} ({localization.languageCode})
-                                      </h4>
-                                      <p className="text-xs text-muted-foreground">
-                                        {isRTL ? `الترجمة ${index + 1}` : `Translation ${index + 1}`}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  {getStatusBadge(localization.isActive)}
-                                </div>
-                                <div className="space-y-2">
-                                  <label className="text-xs font-medium text-muted-foreground">
-                                    {isRTL ? 'الاسم المترجم' : 'Translated Name'}
-                                  </label>
-                                  <div className="p-3 bg-muted/30 rounded-lg">
-                                    <p className="text-sm font-medium">
-                                      {localization.name}
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="space-y-2">
-                                  <label className="text-xs font-medium text-muted-foreground">
-                                    {isRTL ? 'الوصف المترجم' : 'Translated Description'}
-                                  </label>
-                                  <div className="p-3 bg-muted/30 rounded-lg">
-                                    <p className="text-sm leading-relaxed">
-                                      {localization.description}
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border/30">
-                                  <div className="space-y-1">
-                                    <label className="text-xs font-medium text-muted-foreground">
-                                      {isRTL ? 'تاريخ الإنشاء' : 'Created'}
-                                    </label>
-                                    <p className="text-xs text-muted-foreground">
-                                      {formatDate(localization.createdAt)}
-                                    </p>
-                                  </div>
-                                  <div className="space-y-1">
-                                    <label className="text-xs font-medium text-muted-foreground">
-                                      {isRTL ? 'تاريخ التحديث' : 'Updated'}
-                                    </label>
-                                    <p className="text-xs text-muted-foreground">
-                                      {formatDate(localization.updatedAt)}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                {/* Statistics */}
-                <Card className="border-0 shadow-sm">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <CheckCircle className="h-5 w-5 text-primary" />
-                      {isRTL ? 'إحصائيات الموقع' : 'Location Statistics'}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="text-center p-4 bg-muted/30 rounded-lg">
-                        <div className="text-2xl font-bold text-primary mb-1">
-                          {selectedLocationForDetails.localizations.length}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {isRTL ? 'إجمالي الترجمات' : 'Total Translations'}
-                        </div>
-                      </div>
-                      <div className="text-center p-4 bg-muted/30 rounded-lg">
-                        <div className="text-2xl font-bold text-emerald-600 mb-1">
-                          {selectedLocationForDetails.localizations.filter(l => l.isActive).length}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {isRTL ? 'ترجمات نشطة' : 'Active Translations'}
-                        </div>
-                      </div>
-                      <div className="text-center p-4 bg-muted/30 rounded-lg">
-                        <div className="text-2xl font-bold text-red-600 mb-1">
-                          {selectedLocationForDetails.localizations.filter(l => !l.isActive).length}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {isRTL ? 'ترجمات غير نشطة' : 'Inactive Translations'}
-                        </div>
-                      </div>
-                      <div className="text-center p-4 bg-muted/30 rounded-lg">
-                        <div className="text-2xl font-bold text-blue-600 mb-1">
-                          {selectedLocationForDetails.name.length}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {isRTL ? 'طول الاسم' : 'Name Length'}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setIsDetailsDialogOpen(false);
-                  setSelectedLocationForDetails(null);
-                }}
-              >
-                {isRTL ? 'إغلاق' : 'Close'}
-              </Button>
-              <Button
-                type="button"
-                className="gradient-primary"
-                onClick={() => {
-                  if (selectedLocationForDetails) {
-                    handleEdit(selectedLocationForDetails);
-                    setIsDetailsDialogOpen(false);
-                    setSelectedLocationForDetails(null);
-                  }
-                }}
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                {isRTL ? 'تحرير الموقع' : 'Edit Location'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
     </DashboardLayout>
   );

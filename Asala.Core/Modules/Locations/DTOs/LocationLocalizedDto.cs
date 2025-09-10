@@ -4,7 +4,7 @@ public class LocationLocalizedDto
 {
     public int Id { get; set; }
     public int LocationId { get; set; }
-    public string LocalizedName { get; set; } = null!;
+    public string Name { get; set; } = null!;
     public int LanguageId { get; set; }
     public string LanguageName { get; set; } = string.Empty;
     public string LanguageCode { get; set; } = string.Empty;
@@ -14,15 +14,17 @@ public class LocationLocalizedDto
 
 public class CreateLocationLocalizedDto
 {
-    public int LocationId { get; set; }
-    public string LocalizedName { get; set; } = null!;
+    public string Name { get; set; } = null!;
+
+    // public string Description { get; set; } = null!;
     public int LanguageId { get; set; }
     public bool IsActive { get; set; } = true;
 }
 
 public class UpdateLocationLocalizedDto
 {
-    public string LocalizedName { get; set; } = null!;
+    public int? Id { get; set; }
+    public string Name { get; set; } = null!;
     public int LanguageId { get; set; }
     public bool IsActive { get; set; }
 }
