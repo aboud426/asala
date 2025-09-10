@@ -144,6 +144,7 @@ class LocationService {
         pageSize?: number;
         isActive?: boolean;
         userId?: number;
+        regionId?: number;
     } = {}): Promise<PaginatedResult<LocationDto>> => {
         const searchParams = new URLSearchParams();
 
@@ -151,6 +152,7 @@ class LocationService {
         if (params.pageSize) searchParams.append('pageSize', params.pageSize.toString());
         if (params.isActive !== undefined) searchParams.append('isActive', params.isActive.toString());
         if (params.userId !== undefined) searchParams.append('userId', params.userId.toString());
+        if (params.regionId !== undefined) searchParams.append('regionId', params.regionId.toString());
 
         const endpoint = searchParams.toString() ? `?${searchParams.toString()}` : '';
         const response = await this.request<PaginatedResult<LocationDto>>(endpoint);

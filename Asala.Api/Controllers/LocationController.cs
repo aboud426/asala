@@ -43,6 +43,7 @@ public class LocationController : BaseController
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] int? userId = null,
+        [FromQuery] int? regionId = null,
         [FromQuery] bool? isActive = null,
         CancellationToken cancellationToken = default
     )
@@ -51,6 +52,7 @@ public class LocationController : BaseController
             page,
             pageSize,
             userId,
+            regionId,
             isActive,
             cancellationToken
         );

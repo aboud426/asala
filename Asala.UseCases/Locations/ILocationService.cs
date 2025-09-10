@@ -10,6 +10,7 @@ public interface ILocationService
         int page,
         int pageSize,
         int? userId = null,
+        int? regionId = null,
         bool? isActive = null,
         CancellationToken cancellationToken = default
     );

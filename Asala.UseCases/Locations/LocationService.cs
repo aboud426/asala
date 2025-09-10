@@ -14,7 +14,12 @@ public class LocationService : ILocationService
     private readonly IRegionRepository _regionRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public LocationService(ILocationRepository locationRepository, ILocationLocalizedRepository locationLocalizedRepository, IRegionRepository regionRepository, IUnitOfWork unitOfWork)
+    public LocationService(
+        ILocationRepository locationRepository,
+        ILocationLocalizedRepository locationLocalizedRepository,
+        IRegionRepository regionRepository,
+        IUnitOfWork unitOfWork
+    )
     {
         _locationRepository = locationRepository;
         _locationLocalizedRepository = locationLocalizedRepository;
@@ -34,7 +39,10 @@ public class LocationService : ILocationService
             if (idValidationResult.IsFailure)
                 return Result.Failure<LocationDto?>(idValidationResult.MessageCode);
 
-            var result = await _locationRepository.GetByIdWithLocalizationsAsync(id, cancellationToken);
+            var result = await _locationRepository.GetByIdWithLocalizationsAsync(
+                id,
+                cancellationToken
+            );
             if (result.IsFailure)
                 return Result.Failure<LocationDto?>(result.MessageCode);
 
@@ -54,6 +62,7 @@ public class LocationService : ILocationService
         int page,
         int pageSize,
         int? userId = null,
+        int? regionId = null,
         bool? isActive = null,
         CancellationToken cancellationToken = default
     )
@@ -63,7 +72,7 @@ public class LocationService : ILocationService
             var result = await _locationRepository.GetPaginatedWithDetailsAsync(
                 page,
                 pageSize,
-                null,
+                regionId,
                 userId,
                 isActive,
                 cancellationToken
@@ -168,7 +177,7 @@ public class LocationService : ILocationService
                     Id = x.Id,
                     Name = x.Name,
                     RegionName = x.Region?.Name,
-                    DisplayName = $"{x.Name} - {x.Region?.Name}"
+                    DisplayName = $"{x.Name} - {x.Region?.Name}",
                 })
                 .ToList();
 
@@ -226,7 +235,7 @@ public class LocationService : ILocationService
                     Id = x.Id,
                     Name = x.Name,
                     RegionName = x.Region?.Name,
-                    DisplayName = $"{x.Name} - {x.Region?.Name}"
+                    DisplayName = $"{x.Name} - {x.Region?.Name}",
                 })
                 .ToList();
 
@@ -365,7 +374,8 @@ public class LocationService : ILocationService
             if (updateDto.Localizations != null && updateDto.Localizations.Any())
             {
                 // Get existing localizations for this location
-                var existingLocalizationsResult = await _locationLocalizedRepository.GetByLocationIdAsync(id, cancellationToken);
+                var existingLocalizationsResult =
+                    await _locationLocalizedRepository.GetByLocationIdAsync(id, cancellationToken);
                 if (existingLocalizationsResult.IsFailure)
                     return Result.Failure<LocationDto?>(existingLocalizationsResult.MessageCode);
 
@@ -374,8 +384,9 @@ public class LocationService : ILocationService
                 foreach (var localizationDto in updateDto.Localizations)
                 {
                     // Check if localization already exists for this language
-                    var existingLocalization = existingLocalizations
-                        .FirstOrDefault(l => l.LanguageId == localizationDto.LanguageId);
+                    var existingLocalization = existingLocalizations.FirstOrDefault(l =>
+                        l.LanguageId == localizationDto.LanguageId
+                    );
 
                     if (existingLocalization != null)
                     {
@@ -384,9 +395,13 @@ public class LocationService : ILocationService
                         existingLocalization.IsActive = localizationDto.IsActive;
                         existingLocalization.UpdatedAt = DateTime.UtcNow;
 
-                        var updateLocalizationResult = _locationLocalizedRepository.Update(existingLocalization);
+                        var updateLocalizationResult = _locationLocalizedRepository.Update(
+                            existingLocalization
+                        );
                         if (updateLocalizationResult.IsFailure)
-                            return Result.Failure<LocationDto?>(updateLocalizationResult.MessageCode);
+                            return Result.Failure<LocationDto?>(
+                                updateLocalizationResult.MessageCode
+                            );
                     }
                     else
                     {
@@ -398,10 +413,13 @@ public class LocationService : ILocationService
                             LocalizedName = localizationDto.LocalizedName.Trim(),
                             IsActive = localizationDto.IsActive,
                             CreatedAt = DateTime.UtcNow,
-                            UpdatedAt = DateTime.UtcNow
+                            UpdatedAt = DateTime.UtcNow,
                         };
 
-                        var addLocalizationResult = await _locationLocalizedRepository.AddAsync(newLocalization, cancellationToken);
+                        var addLocalizationResult = await _locationLocalizedRepository.AddAsync(
+                            newLocalization,
+                            cancellationToken
+                        );
                         if (addLocalizationResult.IsFailure)
                             return Result.Failure<LocationDto?>(addLocalizationResult.MessageCode);
                     }
@@ -417,7 +435,10 @@ public class LocationService : ILocationService
                 return Result.Failure<LocationDto?>(saveResult.MessageCode);
 
             // Get the updated location with its localizations to ensure we return the complete data
-            var updatedLocationResult = await _locationRepository.GetByIdWithLocalizationsAsync(id, cancellationToken);
+            var updatedLocationResult = await _locationRepository.GetByIdWithLocalizationsAsync(
+                id,
+                cancellationToken
+            );
             if (updatedLocationResult.IsFailure)
                 return Result.Failure<LocationDto?>(updatedLocationResult.MessageCode);
 
@@ -623,19 +644,20 @@ public class LocationService : ILocationService
             IsActive = location.IsActive,
             CreatedAt = location.CreatedAt,
             UpdatedAt = location.UpdatedAt,
-            Localizations = location
-                .LocationLocalizeds?.Select(x => new LocationLocalizedDto
-                {
-                    Id = x.Id,
-                    LocationId = x.LocationId,
-                    LanguageId = x.LanguageId,
-                    LocalizedName = x.LocalizedName,
-                    LanguageName = x.Language?.Name ?? string.Empty,
-                    LanguageCode = x.Language?.Code ?? string.Empty,
-                    IsActive = x.IsActive,
-                    CreatedAt = x.CreatedAt,
-                })
-                .ToList() ?? new List<LocationLocalizedDto>(),
+            Localizations =
+                location
+                    .LocationLocalizeds?.Select(x => new LocationLocalizedDto
+                    {
+                        Id = x.Id,
+                        LocationId = x.LocationId,
+                        LanguageId = x.LanguageId,
+                        LocalizedName = x.LocalizedName,
+                        LanguageName = x.Language?.Name ?? string.Empty,
+                        LanguageCode = x.Language?.Code ?? string.Empty,
+                        IsActive = x.IsActive,
+                        CreatedAt = x.CreatedAt,
+                    })
+                    .ToList() ?? new List<LocationLocalizedDto>(),
         };
     }
 
