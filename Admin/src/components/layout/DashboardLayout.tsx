@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
 import { TopLoadingBar } from '@/components/ui/TopLoadingBar';
@@ -9,9 +9,20 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
+const SIDEBAR_COLLAPSED_KEY = 'sidebar-collapsed';
+
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    // Load initial state from localStorage
+    const saved = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+    return saved ? JSON.parse(saved) : false;
+  });
   const { isRTL } = useDirection();
+
+  // Save sidebar collapsed state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(SIDEBAR_COLLAPSED_KEY, JSON.stringify(sidebarCollapsed));
+  }, [sidebarCollapsed]);
 
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
