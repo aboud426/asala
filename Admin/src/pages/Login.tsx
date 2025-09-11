@@ -16,6 +16,16 @@ import { useDirection } from '@/contexts/DirectionContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { toast } from 'sonner';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import {
+    TypewriterText,
+    StaggeredText,
+    CharacterFade,
+    GradientText,
+    SlidingText,
+    WaveText
+} from '@/components/ui/animated-text';
+import TextType from './TextType';
+import { LogoLoop, type LogoItem } from '@/components/LogoLoop';
 import hourglassSvg from '@/../public/hourglass-svgrepo-com.svg';
 import compassSvg from '@/../public/compass-svgrepo-com.svg';
 import museumSvg from '@/../public/museum-svgrepo-com.svg';
@@ -78,66 +88,68 @@ const Login: React.FC = () => {
         }
     };
 
-    // Animated SVGs Component
-    const AnimatedSvgs: React.FC = () => (
-        <div className="relative w-[420px] h-[420px] mx-auto select-none">
-            {/* Hourglass */}
-            <img
-                src={hourglassSvg}
-                alt="hourglass"
-                className="absolute top-0 left-1/2 -translate-x-1/2 w-12 md:w-16"
-            />
+    // Animated SVGs Component using LogoLoop
+    const AnimatedSvgs: React.FC = () => {
+        const logoItems: LogoItem[] = [
+            {
+                src: hourglassSvg,
+                alt: 'hourglass',
+                title: 'Hourglass'
+            },
+            {
+                src: compassSvg,
+                alt: 'compass',
+                title: 'Compass'
+            },
+            {
+                src: museumSvg,
+                alt: 'museum',
+                title: 'Museum'
+            },
+            {
+                src: medalSvg,
+                alt: 'medal',
+                title: 'Medal'
+            },
+            {
+                src: admissionTicketsSvg,
+                alt: 'tickets',
+                title: 'Admission Tickets'
+            },
+            {
+                src: artistPaletteSvg,
+                alt: 'palette',
+                title: 'Artist Palette'
+            },
+            {
+                src: presentSvg,
+                alt: 'present',
+                title: 'Present'
+            },
+            {
+                src: shoppingcartSvg,
+                alt: 'cart',
+                title: 'Shopping Cart'
+            }
+        ];
 
-            {/* Compass */}
-            <img
-                src={compassSvg}
-                alt="compass"
-                className="absolute top-1/4 right-0 w-14 md:w-20"
-            />
-
-            {/* Museum */}
-            <img
-                src={museumSvg}
-                alt="museum"
-                className="absolute top-1/2 left-0 w-16 md:w-24 -translate-y-1/2"
-            />
-
-            {/* Medal */}
-            <img
-                src={medalSvg}
-                alt="medal"
-                className="absolute bottom-1/4 left-1/3 w-12 md:w-16 animate-pulse"
-            />
-
-            {/* Admission Tickets */}
-            <img
-                src={admissionTicketsSvg}
-                alt="tickets"
-                className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 md:w-20"
-            />
-
-            {/* Artist Palette */}
-            <img
-                src={artistPaletteSvg}
-                alt="palette"
-                className="absolute top-1/3 left-1/4 w-14 md:w-20"
-            />
-
-            {/* Gift */}
-            <img
-                src={presentSvg}
-                alt="present"
-                className="absolute bottom-1/3 right-1/4 w-14 md:w-20"
-            />
-
-            {/* Shopping Cart */}
-            <img
-                src={shoppingcartSvg}
-                alt="cart"
-                className="absolute top-2/3 right-0 w-16 md:w-24 -translate-y-1/2"
-            />
-        </div>
-    );
+        return (
+            <div style={{ width: '100%', maxWidth: '800px' }}>
+                <LogoLoop
+                    logos={logoItems}
+                    speed={50}
+                    direction={isRTL ? 'left' : 'right'}
+                    logoHeight={200}
+                    gap={56}
+                    pauseOnHover={true}
+                    scaleOnHover={true}
+                    fadeOut={true}
+                    className="opacity-80 hover:opacity-100 transition duration-500"
+                    ariaLabel="Platform services"
+                />
+            </div>
+        );
+    };
 
     return (
         <div className="min-h-screen flex">
@@ -155,10 +167,18 @@ const Login: React.FC = () => {
                             </svg>
                         </div>
                         <h1 className="text-3xl font-bold text-foreground">
-                            {isRTL ? 'مرحباً بك' : 'Welcome Back'}
+                            <StaggeredText
+                                text={isRTL ? 'مرحباً بك' : 'Welcome Back'}
+                                delay={800}
+                                stagger={80}
+                            />
                         </h1>
                         <p className="text-muted-foreground">
-                            {isRTL ? 'سجل دخولك للوصول إلى لوحة التحكم' : 'Sign in to access your admin dashboard'}
+                            <StaggeredText
+                                text={isRTL ? 'سجل دخولك للوصول إلى لوحة التحكم' : 'Sign in to access your admin dashboard'}
+                                delay={800}
+                                stagger={80}
+                            />
                         </p>
                     </div>
 
@@ -166,7 +186,12 @@ const Login: React.FC = () => {
                     <Card className="border-border/50 shadow-lg">
                         <CardHeader>
                             <CardTitle className="text-center">
-                                {isRTL ? 'تسجيل الدخول' : 'Sign In'}
+                                <TypewriterText
+                                    text={isRTL ? 'تسجيل الدخول' : 'Sign In'}
+                                    speed={100}
+                                    delay={1500}
+                                    showCursor={false}
+                                />
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -263,9 +288,19 @@ const Login: React.FC = () => {
                     {/* Footer */}
                     <div className="text-center text-sm text-muted-foreground">
                         <p>
-                            {isRTL ? 'نسيت كلمة المرور؟' : 'Forgot your password?'}{' '}
-                            <button className="text-primary hover:underline">
-                                {isRTL ? 'إعادة تعيين' : 'Reset here'}
+                            <SlidingText
+                                text={isRTL ? 'نسيت كلمة المرور؟' : 'Forgot your password?'}
+                                direction="left"
+                                delay={2500}
+                                duration="0.6s"
+                            />{' '}
+                            <button className="text-primary hover:underline transition-all duration-200 hover:scale-105">
+                                <SlidingText
+                                    text={isRTL ? 'إعادة تعيين' : 'Reset here'}
+                                    direction="right"
+                                    delay={2800}
+                                    duration="0.6s"
+                                />
                             </button>
                         </p>
                     </div>
@@ -282,22 +317,49 @@ const Login: React.FC = () => {
                     {playSuccessAnimation ? (
                         <div className="animate-fade-in-up space-y-6">
                             <h1 className="text-4xl md:text-6xl font-bold text-primary-foreground">
-                                {isRTL ? 'أهلاً وسهلاً' : 'Welcome'}
+                                <WaveText
+                                    text={isRTL ? 'أهلاً وسهلاً' : 'Welcome'}
+                                    delay={0}
+                                    stagger={150}
+                                    className="animate-glow-pulse"
+                                />
                             </h1>
                         </div>
                     ) : (
                         <>
+                            {/* Note: Make sure the font you're using supports all the variable properties. 
+                                React Bits does not take responsibility for the fonts used */}
+                            <div>
+                                <TextType 
+                                    text={isRTL ? 
+                                        ["أصالة", "منصة إدارية شاملة", "مرحباً بك!"] : 
+                                        ["Asala", "Admin Platform", "Welcome!"]}
+                                    typingSpeed={75}
+                                    pauseDuration={1500}
+                                    showCursor={true}
+                                    cursorCharacter="|"
+                                />
+                            </div>  
                             <AnimatedSvgs />
-                            <div className="mt-8 space-y-4">
+                            {/* <div className="mt-8 space-y-4">
                                 <h2 className="text-2xl font-bold text-primary-foreground">
-                                    {isRTL ? 'لوحة تحكم أصالة' : 'Asala Admin Dashboard'}
+                                    <SlidingText
+                                        text={isRTL ? 'لوحة تحكم أصالة' : 'Asala Admin Dashboard'}
+                                        direction="up"
+                                        delay={300}
+                                        duration="1.2s"
+                                    />
                                 </h2>
                                 <p className="text-primary-foreground/80 max-w-md mx-auto leading-relaxed">
-                                    {isRTL
-                                        ? 'منصة إدارية شاملة لإدارة المتاجر والمنتجات والعملاء بكفاءة عالية ومرونة تامة'
-                                        : 'A comprehensive admin platform for managing stores, products, and customers with high efficiency and complete flexibility'}
+                                    <CharacterFade
+                                        text={isRTL
+                                            ? 'منصة إدارية شاملة لإدارة المتاجر والمنتجات والعملاء بكفاءة عالية ومرونة تامة'
+                                            : 'A comprehensive admin platform for managing stores, products, and customers with high efficiency and complete flexibility'}
+                                        delay={1000}
+                                        stagger={25}
+                                    />
                                 </p>
-                            </div>
+                            </div> */}
                         </>
                     )}
                 </div>

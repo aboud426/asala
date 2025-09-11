@@ -10,7 +10,7 @@ public class OrderItem : BaseEntity<int>
     public int OrderId { get; set; }
     public int ProductId { get; set; }
     public int? PostId { get; set; }
-    public int Quantity { get; set; }
+    public decimal Quantity { get; set; }
     public decimal Price { get; set; }
     public int ProviderId { get; set; }
 

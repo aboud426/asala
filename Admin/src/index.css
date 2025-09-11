@@ -707,6 +707,112 @@ All colors MUST be HSL for proper theming.
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
+  /* Text Animation Keyframes */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInFade {
+    from {
+      opacity: 0;
+      transform: var(--slide-from, translateX(-100px));
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0) translateY(0);
+    }
+  }
+
+  @keyframes gradient-shift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  @keyframes typewriter {
+    from {
+      width: 0;
+    }
+    to {
+      width: 100%;
+    }
+  }
+
+  @keyframes blink {
+    from, to {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes wave {
+    0%, 60%, 100% {
+      transform: translateY(0);
+    }
+    30% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% {
+      text-shadow: 0 0 5px currentColor, 0 0 10px currentColor, 0 0 15px currentColor;
+    }
+    50% {
+      text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
+    }
+  }
+
+  /* Animation Classes */
+  .animate-gradient-shift {
+    animation: gradient-shift 3s ease infinite;
+  }
+
+  .animate-typewriter {
+    animation: typewriter 2s steps(40, end) 1s forwards, blink 0.75s step-end infinite;
+  }
+
+  .animate-wave {
+    animation: wave 0.6s ease-in-out;
+  }
+
+  .animate-glow-pulse {
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+
+  /* Utility classes for text animations */
+  .text-animate-in {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+
+  .text-animate-slide {
+    animation: slideInFade 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
   /* Page transition fade */
   .page-transition-enter {
     opacity: 0;
