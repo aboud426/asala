@@ -22,6 +22,7 @@ import {
   MapPin,
   Navigation,
   Map,
+  PieChart,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -74,6 +75,12 @@ const navigationItems = [
     titleAr: 'التحليلات',
     href: '/analytics',
     icon: BarChart3,
+  },
+  {
+    title: 'Statistics',
+    titleAr: 'الإحصائيات',
+    href: '/statistics',
+    icon: PieChart,
   },
   {
     title: 'Languages',

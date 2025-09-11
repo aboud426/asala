@@ -42,6 +42,7 @@ import CreatePost from "./pages/CreatePost";
 import PostDetails from "./pages/PostDetails";
 import EditPost from "./pages/EditPost";
 import MapSelector from "./pages/MapSelector";
+import Statistics from "./pages/Statistics";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -93,6 +94,7 @@ const App = () => (
                 <Route path="/permissions" element={<Permissions />} />
                 <Route path="/currencies" element={<Currencies />} />
                 <Route path="/map-selector" element={<MapSelector />} />
+                <Route path="/statistics" element={<Statistics />} />
                 <Route path="/settings" element={<Settings />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
