@@ -69,8 +69,6 @@ public class AsalaDbContext : DbContext
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<OrderActivity> OrderActivities => Set<OrderActivity>();
     public DbSet<OrderItemActivity> OrderItemActivities => Set<OrderItemActivity>();
-    public DbSet<OrderStatus> OrderStatuses => Set<OrderStatus>();
-    public DbSet<OrderItemStatus> OrderItemStatuses => Set<OrderItemStatus>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

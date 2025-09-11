@@ -109,23 +109,20 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICartItemRepository, CartItemRepository>();
         services.AddScoped<IOrderRepository, OrderRepository>();
         services.AddScoped<IOrderItemRepository, OrderItemRepository>();
-        services.AddScoped<IOrderStatusRepository, OrderStatusRepository>();
 
         // Location repositories
         services.AddScoped<IRegionRepository, RegionRepository>();
         services.AddScoped<ILocalizedRegionRepository, LocalizedRegionRepository>();
         services.AddScoped<ILocationRepository, LocationRepository>();
 
-        // Shopping services
-        services.AddScoped<ICartService, CartService>();
-        services.AddScoped<IOrderService, OrderService>();
-        services.AddScoped<IOrderStatusService, OrderStatusService>();
-
         // Location services
         services.AddScoped<IRegionService, RegionService>();
         services.AddScoped<ILocationService, LocationService>();
         services.AddScoped<ILocalizedRegionRepository, LocalizedRegionRepository>();
         services.AddScoped<ILocationLocalizedRepository, LocationLocalizedRepository>();
+
+        // Shopping services
+        services.AddScoped<IOrderService, OrderService>();
 
         return services;
     }

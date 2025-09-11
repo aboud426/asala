@@ -6,14 +6,18 @@ namespace Asala.Core.Modules.Shopping.Db;
 
 public interface IOrderRepository : IRepository<Order, int>
 {
-    Task<Result<IEnumerable<Order>>> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default);
-    Task<Result<Order?>> GetByIdWithDetailsAsync(int id, CancellationToken cancellationToken = default);
-    Task<Result<PaginatedResult<Order>>> GetPaginatedWithDetailsAsync(
+    Task<Result<Order?>> GetByIdWithItemsAsync(int id, CancellationToken cancellationToken = default);
+    Task<Result<PaginatedResult<Order>>> GetByUserIdPaginatedAsync(
+        int userId,
         int page,
         int pageSize,
-        int? userId = null,
+        CancellationToken cancellationToken = default
+    );
+    Task<Result<PaginatedResult<Order>>> GetPaginatedWithItemsAsync(
+        int page,
+        int pageSize,
+        OrderStatus? status = null,
         bool? activeOnly = null,
         CancellationToken cancellationToken = default
     );
-    Task<Result<IEnumerable<Order>>> GetByProviderIdAsync(int providerId, CancellationToken cancellationToken = default);
 }

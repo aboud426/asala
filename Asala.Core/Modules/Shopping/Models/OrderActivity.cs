@@ -14,9 +14,9 @@ public class OrderActivity : BaseEntity<int>
 
 public enum OrderActivityType
 {
-    Submitted = 1,
-    Approved = 2,
-    Rejected = 3,
-    Cancelled = 4,
-    Completed = 5,
+    Initial = 1,
+    Prepairing = 2,
+    ReadyToShip = 3,
+    InShipping = 4,
+    Delivered = 5,
 }

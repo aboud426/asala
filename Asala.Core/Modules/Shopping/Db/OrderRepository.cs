@@ -8,44 +8,50 @@ namespace Asala.Core.Modules.Shopping.Db;
 
 public class OrderRepository : Repository<Order, int>, IOrderRepository
 {
-    public OrderRepository(AsalaDbContext context) : base(context) { }
+    public OrderRepository(AsalaDbContext context)
+        : base(context) { }
 
-    public async Task<Result<IEnumerable<Order>>> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default)
+    public async Task<Result<Order?>> GetByIdWithItemsAsync(
+        int id,
+        CancellationToken cancellationToken = default
+    )
     {
         try
         {
-            var orders = await _context.Orders
-                .Include(o => o.OrderItems)
-                .Include(o => o.OrderActivities)
-                    .ThenInclude(oa => oa.OrderStatus)
-                .Where(o => o.UserId == userId && !o.IsDeleted)
-                .OrderByDescending(o => o.CreatedAt)
-                .ToListAsync(cancellationToken);
-
-            return Result.Success<IEnumerable<Order>>(orders);
-        }
-        catch (Exception ex)
-        {
-            return Result.Failure<IEnumerable<Order>>(MessageCodes.DB_ERROR, ex);
-        }
-    }
-
-    public async Task<Result<Order?>> GetByIdWithDetailsAsync(int id, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var order = await _context.Orders
+            var order = await _context
+                .Orders
+                // Include User with related data
                 .Include(o => o.User)
+                    .ThenInclude(u => u.Provider)
+                .Include(o => o.User)
+                    .ThenInclude(u => u.Customer)
+                    
+                // Include Shipping Address with region
                 .Include(o => o.ShippingAddress)
+                    .ThenInclude(sa => sa.Region)
+                    
+                // Include Order Items with complete related data
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.Product)
+                        .ThenInclude(p => p.ProductCategory)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                        .ThenInclude(p => p.ProductMedias)
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.Provider)
+                        .ThenInclude(p => p.User)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Provider)
+                        .ThenInclude(p => p.ProviderMedias)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Currency)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Post)
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.OrderItemActivities)
-                        .ThenInclude(oia => oia.OrderItemStatus)
+                    
+                // Include Order Activities
                 .Include(o => o.OrderActivities)
-                    .ThenInclude(oa => oa.OrderStatus)
                 .FirstOrDefaultAsync(o => o.Id == id && !o.IsDeleted, cancellationToken);
 
             return Result.Success(order);
@@ -56,28 +62,37 @@ public class OrderRepository : Repository<Order, int>, IOrderRepository
         }
     }
 
-    public async Task<Result<PaginatedResult<Order>>> GetPaginatedWithDetailsAsync(
+    public async Task<Result<PaginatedResult<Order>>> GetByUserIdPaginatedAsync(
+        int userId,
         int page,
         int pageSize,
-        int? userId = null,
-        bool? activeOnly = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         try
         {
-            var query = _context.Orders
+            var query = _context
+                .Orders
+                // Include User with related data
                 .Include(o => o.User)
+                    .ThenInclude(u => u.Provider)
+                .Include(o => o.User)
+                    .ThenInclude(u => u.Customer)
+                    
+                // Include Shipping Address
                 .Include(o => o.ShippingAddress)
+                    .ThenInclude(sa => sa.Region)
+                    
+                // Include Order Items with basic related data
                 .Include(o => o.OrderItems)
-                .Include(o => o.OrderActivities)
-                    .ThenInclude(oa => oa.OrderStatus)
-                .Where(o => !o.IsDeleted);
-
-            if (userId.HasValue)
-                query = query.Where(o => o.UserId == userId.Value);
-
-            if (activeOnly.HasValue)
-                query = query.Where(o => o.IsActive == activeOnly.Value);
+                    .ThenInclude(oi => oi.Product)
+                        .ThenInclude(p => p.ProductMedias)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Provider)
+                        .ThenInclude(p => p.User)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Currency)
+                .Where(o => o.UserId == userId && !o.IsDeleted);
 
             var totalCount = await query.CountAsync(cancellationToken);
 
@@ -102,24 +117,68 @@ public class OrderRepository : Repository<Order, int>, IOrderRepository
         }
     }
 
-    public async Task<Result<IEnumerable<Order>>> GetByProviderIdAsync(int providerId, CancellationToken cancellationToken = default)
+    public async Task<Result<PaginatedResult<Order>>> GetPaginatedWithItemsAsync(
+        int page,
+        int pageSize,
+        OrderStatus? status = null,
+        bool? activeOnly = null,
+        CancellationToken cancellationToken = default
+    )
     {
         try
         {
-            var orders = await _context.Orders
+            var query = _context
+                .Orders
+                // Include User with related data
+                .Include(o => o.User)
+                    .ThenInclude(u => u.Provider)
+                .Include(o => o.User)
+                    .ThenInclude(u => u.Customer)
+                    
+                // Include Shipping Address
+                .Include(o => o.ShippingAddress)
+                    .ThenInclude(sa => sa.Region)
+                    
+                // Include Order Items with complete related data
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.Product)
-                .Include(o => o.OrderActivities)
-                    .ThenInclude(oa => oa.OrderStatus)
-                .Where(o => o.OrderItems.Any(oi => oi.ProviderId == providerId) && !o.IsDeleted)
+                        .ThenInclude(p => p.ProductCategory)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                        .ThenInclude(p => p.ProductMedias)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Provider)
+                        .ThenInclude(p => p.User)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Currency)
+                .Where(o => !o.IsDeleted);
+
+            if (status.HasValue)
+                query = query.Where(o => o.Status == status.Value);
+
+            if (activeOnly.HasValue)
+                query = query.Where(o => o.IsActive == activeOnly.Value);
+
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            var orders = await query
                 .OrderByDescending(o => o.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync(cancellationToken);
 
-            return Result.Success<IEnumerable<Order>>(orders);
+            var result = new PaginatedResult<Order>(
+                items: orders,
+                totalCount: totalCount,
+                page: page,
+                pageSize: pageSize
+            );
+
+            return Result.Success(result);
         }
         catch (Exception ex)
         {
-            return Result.Failure<IEnumerable<Order>>(MessageCodes.DB_ERROR, ex);
+            return Result.Failure<PaginatedResult<Order>>(MessageCodes.DB_ERROR, ex);
         }
     }
 }

@@ -13,11 +13,13 @@ public class OrderItem : BaseEntity<int>
     public decimal Quantity { get; set; }
     public decimal Price { get; set; }
     public int ProviderId { get; set; }
+    public int CurrencyId { get; set; }
 
     // Navigation properties
     public Order Order { get; set; } = null!;
     public Product Product { get; set; } = null!;
     public Post? Post { get; set; }
     public Provider Provider { get; set; } = null!;
+    public Currency Currency { get; set; } = null!;
     public List<OrderItemActivity> OrderItemActivities { get; set; } = [];
 }

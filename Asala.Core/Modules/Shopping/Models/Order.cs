@@ -9,9 +9,9 @@ public class Order : BaseEntity<int>
     public int UserId { get; set; }
     public decimal TotalAmount { get; set; }
     public int ShippingAddressId { get; set; }
-    public OrderStatus Status { get; set; }
-    public OrderPaymentStatus PaymentStatus { get; set; }
-    public OrderPaymentMethod PaymentMethod { get; set; }
+    public OrderStatus Status { get; set; } = OrderStatus.Initial;
+    public OrderPaymentStatus PaymentStatus { get; set; } = OrderPaymentStatus.Unpaid;
+    public OrderPaymentMethod PaymentMethod { get; set; } = OrderPaymentMethod.NoYetSpecified;
 
     // Navigation properties
     public User User { get; set; } = null!;
@@ -29,16 +29,6 @@ public enum OrderStatus
     Delivered = 5,
 }
 
-public enum OrderItemStatus
-{
-    Initial = 1,
-    Pending = 2,
-    Approved = 2,
-    Rejected = 3,
-    Cancelled = 4,
-    Completed = 5,
-}
-
 public enum OrderPaymentStatus
 {
     Paid = 1,
@@ -49,6 +39,7 @@ public enum OrderPaymentStatus
 
 public enum OrderPaymentMethod
 {
+    NoYetSpecified = 0,
     Cash = 1,
     Card = 2,
     BankTransfer = 3,

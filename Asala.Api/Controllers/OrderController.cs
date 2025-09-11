@@ -1,49 +1,75 @@
+using Asala.Core.Modules.Shopping.DTOs;
+using Asala.Core.Modules.Shopping.Models;
 using Asala.UseCases.Shopping;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace Asala.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
-[Authorize]
+[Route("api/orders")]
 public class OrderController : BaseController
 {
     private readonly IOrderService _orderService;
 
     public OrderController(IOrderService orderService)
+        : base()
     {
         _orderService = orderService;
     }
 
-    [HttpGet("{orderId}")]
-    public async Task<IActionResult> GetOrder(int orderId, CancellationToken cancellationToken = default)
+    [HttpPost("create")]
+    public async Task<IActionResult> CreateOrder(
+        [FromBody] CreateOrderDto createOrderDto,
+        CancellationToken cancellationToken = default
+    )
     {
-        // Get user ID from JWT token
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
-        {
-            return Unauthorized("Invalid user token");
-        }
+        var result = await _orderService.CreateOrderAsync(createOrderDto, cancellationToken);
+        return CreateResponse(result);
+    }
 
-        var result = await _orderService.GetOrderByIdAsync(userId, orderId, cancellationToken);
-        
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetOrderById(
+        [FromRoute] int id,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var result = await _orderService.GetOrderByIdAsync(id, cancellationToken);
+        return CreateResponse(result);
+    }
+
+    [HttpGet("user/{userId}")]
+    public async Task<IActionResult> GetOrdersByUserId(
+        [FromRoute] int userId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var result = await _orderService.GetOrdersByUserIdAsync(
+            userId,
+            page,
+            pageSize,
+            cancellationToken
+        );
         return CreateResponse(result);
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetUserOrders([FromQuery] int page = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetPaginatedOrders(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] OrderStatus? status = null,
+        [FromQuery] bool? activeOnly = null,
+        CancellationToken cancellationToken = default
+    )
     {
-        // Get user ID from JWT token
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
-        {
-            return Unauthorized("Invalid user token");
-        }
-
-        var result = await _orderService.GetUserOrdersAsync(userId, page, pageSize, cancellationToken);
-        
+        var result = await _orderService.GetPaginatedOrdersAsync(
+            page,
+            pageSize,
+            status,
+            activeOnly,
+            cancellationToken
+        );
         return CreateResponse(result);
     }
 }

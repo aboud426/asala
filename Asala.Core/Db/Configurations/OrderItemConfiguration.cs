@@ -12,47 +12,51 @@ public class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.OrderId)
-            .IsRequired();
+        builder.Property(x => x.OrderId).IsRequired();
 
-        builder.Property(x => x.ProductId)
-            .IsRequired();
+        builder.Property(x => x.ProductId).IsRequired();
 
-        builder.Property(x => x.PostId)
-            .IsRequired(false);
+        builder.Property(x => x.PostId).IsRequired(false);
 
-        builder.Property(x => x.Quantity)
-            .IsRequired();
+        builder.Property(x => x.Quantity).IsRequired();
 
-        builder.Property(x => x.Price)
-            .HasColumnType("decimal(10,2)")
-            .IsRequired();
+        builder.Property(x => x.Price).HasColumnType("decimal(10,2)").IsRequired();
 
-        builder.Property(x => x.ProviderId)
-            .IsRequired();
+        builder.Property(x => x.ProviderId).IsRequired();
 
         // Relationships
-        builder.HasOne(x => x.Order)
+        builder
+            .HasOne(x => x.Currency)
+            .WithMany()
+            .HasForeignKey(x => x.CurrencyId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder
+            .HasOne(x => x.Order)
             .WithMany(x => x.OrderItems)
             .HasForeignKey(x => x.OrderId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(x => x.Product)
+        builder
+            .HasOne(x => x.Product)
             .WithMany()
             .HasForeignKey(x => x.ProductId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(x => x.Post)
+        builder
+            .HasOne(x => x.Post)
             .WithMany()
             .HasForeignKey(x => x.PostId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(x => x.Provider)
+        builder
+            .HasOne(x => x.Provider)
             .WithMany()
             .HasForeignKey(x => x.ProviderId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasMany(x => x.OrderItemActivities)
+        builder
+            .HasMany(x => x.OrderItemActivities)
             .WithOne(x => x.OrderItem)
             .HasForeignKey(x => x.OrderItemId)
             .OnDelete(DeleteBehavior.Cascade);

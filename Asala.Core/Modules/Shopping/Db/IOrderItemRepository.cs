@@ -6,7 +6,11 @@ namespace Asala.Core.Modules.Shopping.Db;
 
 public interface IOrderItemRepository : IRepository<OrderItem, int>
 {
-    Task<Result<IEnumerable<OrderItem>>> GetByOrderIdAsync(int orderId, CancellationToken cancellationToken = default);
-    Task<Result<IEnumerable<OrderItem>>> GetByProviderIdAsync(int providerId, CancellationToken cancellationToken = default);
-    Task<Result<OrderItem?>> GetByIdWithDetailsAsync(int id, CancellationToken cancellationToken = default);
+    Task<Result<List<OrderItem>>> GetByOrderIdAsync(int orderId, CancellationToken cancellationToken = default);
+    Task<Result<OrderItem?>> GetByOrderIdAndProductIdAsync(
+        int orderId,
+        int productId,
+        int? postId = null,
+        CancellationToken cancellationToken = default
+    );
 }

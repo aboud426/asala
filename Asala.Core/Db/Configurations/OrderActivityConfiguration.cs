@@ -12,26 +12,17 @@ public class OrderActivityConfiguration : IEntityTypeConfiguration<OrderActivity
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.OrderStatusId)
-            .IsRequired();
-
-        builder.Property(x => x.OrderId)
-            .IsRequired();
+        builder.Property(x => x.OrderId).IsRequired();
 
         // Relationships
-        builder.HasOne(x => x.Order)
+        builder
+            .HasOne(x => x.Order)
             .WithMany(x => x.OrderActivities)
             .HasForeignKey(x => x.OrderId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(x => x.OrderStatus)
-            .WithMany(x => x.OrderActivities)
-            .HasForeignKey(x => x.OrderStatusId)
-            .OnDelete(DeleteBehavior.Restrict);
-
         // Indexes
         builder.HasIndex(x => x.OrderId);
-        builder.HasIndex(x => x.OrderStatusId);
         builder.HasIndex(x => new { x.OrderId, x.CreatedAt });
     }
 }
