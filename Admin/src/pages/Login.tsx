@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     Form,
     FormControl,
@@ -27,7 +28,7 @@ import {
     WaveText
 } from '@/components/ui/animated-text';
 import TextType from './TextType';
-import { LogoLoop, type LogoItem } from '@/components/LogoLoop';
+import { LogoLoop, type LogoItem } from '@/components/LogoLoop.tsx';
 import hourglassSvg from '@/../public/hourglass-svgrepo-com.svg';
 import compassSvg from '@/../public/compass-svgrepo-com.svg';
 import museumSvg from '@/../public/museum-svgrepo-com.svg';
@@ -50,6 +51,9 @@ const Login: React.FC = () => {
     const { login } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [rememberPassword, setRememberPassword] = useState(false);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [savedCredentials, setSavedCredentials] = useState<{email: string, password: string}[]>([]);
     /**
      * Controls the short "welcome" animation that plays once the user has
      * successfully authenticated. While the animation is running we collapse
@@ -65,6 +69,20 @@ const Login: React.FC = () => {
         },
     });
 
+    // Load saved credentials from localStorage on component mount
+    useEffect(() => {
+        const savedCredentialsStr = localStorage.getItem('asala_saved_credentials');
+        if (savedCredentialsStr) {
+            try {
+                const credentials = JSON.parse(savedCredentialsStr);
+                setSavedCredentials(credentials);
+            } catch (error) {
+                console.error('Error parsing saved credentials:', error);
+                localStorage.removeItem('asala_saved_credentials');
+            }
+        }
+    }, []);
+
     const onSubmit = async (data: LoginFormData) => {
         setIsLoading(true);
 
@@ -77,6 +95,15 @@ const Login: React.FC = () => {
 
             // Use the AuthContext login method to save to cookies and update state
             login(authResponse);
+
+            // Save or update credentials in localStorage based on user preference
+            if (rememberPassword) {
+                const newCredential = { email: data.email, password: data.password };
+                const existingCredentials = savedCredentials.filter(cred => cred.email !== data.email);
+                const updatedCredentials = [newCredential, ...existingCredentials].slice(0, 5); // Keep only 5 most recent
+                localStorage.setItem('asala_saved_credentials', JSON.stringify(updatedCredentials));
+                setSavedCredentials(updatedCredentials);
+            }
 
             // Show success message
             toast.success(isRTL ? 'تم تسجيل الدخول بنجاح' : 'Login successful');
@@ -100,6 +127,29 @@ const Login: React.FC = () => {
             setIsLoading(false);
         }
     };
+
+    // Helper functions for credential suggestions
+    const handleSuggestionClick = (credential: {email: string, password: string}) => {
+        form.setValue('email', credential.email);
+        form.setValue('password', credential.password);
+        setShowSuggestions(false);
+        setRememberPassword(true);
+    };
+
+    const handleEmailFocus = () => {
+        if (savedCredentials.length > 0) {
+            setShowSuggestions(true);
+        }
+    };
+
+    const handleEmailBlur = () => {
+        // Delay hiding suggestions to allow clicking on them
+        setTimeout(() => setShowSuggestions(false), 150);
+    };
+
+    const filteredCredentials = savedCredentials.filter(cred => 
+        cred.email.toLowerCase().includes(form.watch('email').toLowerCase())
+    );
 
     // Animated SVGs Component using LogoLoop
     const AnimatedSvgs: React.FC = () => {
@@ -226,12 +276,43 @@ const Login: React.FC = () => {
                                                     {isRTL ? 'البريد الإلكتروني' : 'Email Address'}
                                                 </FormLabel>
                                                 <FormControl>
-                                                    <Input
-                                                        type="email"
-                                                        placeholder={isRTL ? 'مثال: admin@asala.com' : 'e.g., admin@asala.com'}
-                                                        {...field}
-                                                        className="h-11"
-                                                    />
+                                                    <div className="relative">
+                                                        <Input
+                                                            type="text"
+                                                            autoComplete="off"
+                                                            placeholder={isRTL ? 'مثال: admin@asala.com' : 'e.g., admin@asala.com'}
+                                                            {...field}
+                                                            className="h-11"
+                                                            onFocus={handleEmailFocus}
+                                                            onBlur={handleEmailBlur}
+                                                        />
+                                                        {/* Suggestions Dropdown */}
+                                                        {showSuggestions && filteredCredentials.length > 0 && (
+                                                            <div className="absolute top-full left-0 right-0 z-50 bg-background border border-border rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
+                                                                {filteredCredentials.map((credential, index) => (
+                                                                    <div
+                                                                        key={index}
+                                                                        className="px-4 py-3 hover:bg-muted cursor-pointer border-b border-border last:border-b-0 transition-colors"
+                                                                        onClick={() => handleSuggestionClick(credential)}
+                                                                    >
+                                                                        <div className="flex items-center justify-between">
+                                                                            <div className="flex-1 min-w-0">
+                                                                                <p className="text-sm font-medium text-foreground truncate">
+                                                                                    {credential.email}
+                                                                                </p>
+                                                                                <p className="text-xs text-muted-foreground">
+                                                                                    {isRTL ? 'كلمة المرور محفوظة' : 'Saved password'}
+                                                                                </p>
+                                                                            </div>
+                                                                            <div className="text-xs text-muted-foreground">
+                                                                                ●●●●●●
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -279,6 +360,22 @@ const Login: React.FC = () => {
                                             </FormItem>
                                         )}
                                     />
+
+                                    {/* Remember Password Checkbox */}
+                                    <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                                        <Checkbox
+                                            id="remember-password"
+                                            checked={rememberPassword}
+                                            onCheckedChange={(checked) => setRememberPassword(checked as boolean)}
+                                        />
+                                        <label
+                                            htmlFor="remember-password"
+                                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                                        >
+                                            {isRTL ? 'حفظ كلمة المرور' : 'Remember Password'}
+                                        </label>
+                                    </div>
+
                                     <Button
                                         type="submit"
                                         className="w-full h-11 text-base font-medium"
