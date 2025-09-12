@@ -3,9 +3,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Asala.Core.Common.Abstractions;
 using Asala.Core.Common.Models;
-using Asala.Core.Modules.Users.Models;
-using Asala.Core.Modules.Users.DTOs;
 using Asala.Core.Modules.Users.Db;
+using Asala.Core.Modules.Users.DTOs;
+using Asala.Core.Modules.Users.Models;
 
 namespace Asala.UseCases.Users;
 
@@ -24,19 +24,24 @@ public class AuthenticationService : IAuthenticationService
         IProviderRepository providerRepository,
         IEmployeeRepository employeeRepository,
         IOtpService otpService,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork
+    )
     {
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-        _customerRepository = customerRepository ?? throw new ArgumentNullException(nameof(customerRepository));
-        _providerRepository = providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
-        _employeeRepository = employeeRepository ?? throw new ArgumentNullException(nameof(employeeRepository));
+        _customerRepository =
+            customerRepository ?? throw new ArgumentNullException(nameof(customerRepository));
+        _providerRepository =
+            providerRepository ?? throw new ArgumentNullException(nameof(providerRepository));
+        _employeeRepository =
+            employeeRepository ?? throw new ArgumentNullException(nameof(employeeRepository));
         _otpService = otpService ?? throw new ArgumentNullException(nameof(otpService));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
     }
 
     public async Task<Result<AuthResponseDto>> LoginCustomerAsync(
         CustomerLoginDto loginDto,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         if (loginDto == null)
             return Result.Failure<AuthResponseDto>(MessageCodes.ENTITY_NULL);
@@ -50,7 +55,7 @@ public class AuthenticationService : IAuthenticationService
         {
             PhoneNumber = loginDto.PhoneNumber,
             Code = loginDto.OtpCode,
-            Purpose = "Login"
+            Purpose = "Login",
         };
 
         var otpResult = await _otpService.VerifyOtpAsync(otpVerifyDto, cancellationToken);
@@ -61,7 +66,10 @@ public class AuthenticationService : IAuthenticationService
             return Result.Failure<AuthResponseDto>("Invalid or expired OTP");
 
         // Get user by phone number
-        var userResult = await _userRepository.GetByPhoneNumberAsync(loginDto.PhoneNumber, cancellationToken);
+        var userResult = await _userRepository.GetByPhoneNumberAsync(
+            loginDto.PhoneNumber,
+            cancellationToken
+        );
         if (userResult.IsFailure)
             return Result.Failure<AuthResponseDto>(userResult.MessageCode);
 
@@ -75,8 +83,7 @@ public class AuthenticationService : IAuthenticationService
             return Result.Failure<AuthResponseDto>("Account is not active");
 
         // Check if customer exists
-        var customerResult = await _customerRepository.GetAsync(
-            filter: c => c.UserId == user.Id);
+        var customerResult = await _customerRepository.GetAsync(filter: c => c.UserId == user.Id);
 
         if (customerResult.IsFailure)
             return Result.Failure<AuthResponseDto>(customerResult.MessageCode);
@@ -92,7 +99,7 @@ public class AuthenticationService : IAuthenticationService
         {
             Token = token!,
             User = MapUserToDto(user),
-            ExpiresAt = DateTime.UtcNow.AddHours(24)
+            ExpiresAt = DateTime.UtcNow.AddHours(24),
         };
 
         return Result.Success(authResponse);
@@ -100,7 +107,8 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<Result<AuthResponseDto>> LoginProviderAsync(
         ProviderLoginDto loginDto,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         if (loginDto == null)
             return Result.Failure<AuthResponseDto>(MessageCodes.ENTITY_NULL);
@@ -114,7 +122,7 @@ public class AuthenticationService : IAuthenticationService
         {
             PhoneNumber = loginDto.PhoneNumber,
             Code = loginDto.OtpCode,
-            Purpose = "Login"
+            Purpose = "Login",
         };
 
         var otpResult = await _otpService.VerifyOtpAsync(otpVerifyDto, cancellationToken);
@@ -125,7 +133,10 @@ public class AuthenticationService : IAuthenticationService
             return Result.Failure<AuthResponseDto>("Invalid or expired OTP");
 
         // Get user by phone number
-        var userResult = await _userRepository.GetByPhoneNumberAsync(loginDto.PhoneNumber, cancellationToken);
+        var userResult = await _userRepository.GetByPhoneNumberAsync(
+            loginDto.PhoneNumber,
+            cancellationToken
+        );
         if (userResult.IsFailure)
             return Result.Failure<AuthResponseDto>(userResult.MessageCode);
 
@@ -139,8 +150,7 @@ public class AuthenticationService : IAuthenticationService
             return Result.Failure<AuthResponseDto>("Account is not active");
 
         // Check if provider exists
-        var providerResult = await _providerRepository.GetAsync(
-            filter: p => p.UserId == user.Id);
+        var providerResult = await _providerRepository.GetAsync(filter: p => p.UserId == user.Id);
 
         if (providerResult.IsFailure)
             return Result.Failure<AuthResponseDto>(providerResult.MessageCode);
@@ -156,7 +166,7 @@ public class AuthenticationService : IAuthenticationService
         {
             Token = token!,
             User = MapUserToDto(user),
-            ExpiresAt = DateTime.UtcNow.AddHours(24)
+            ExpiresAt = DateTime.UtcNow.AddHours(24),
         };
 
         return Result.Success(authResponse);
@@ -164,7 +174,8 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<Result<AuthResponseDto>> LoginEmployeeAsync(
         LoginDto loginDto,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         if (loginDto == null)
             return Result.Failure<AuthResponseDto>(MessageCodes.ENTITY_NULL);
@@ -192,8 +203,7 @@ public class AuthenticationService : IAuthenticationService
             return Result.Failure<AuthResponseDto>("Invalid email or password");
 
         // Check if employee exists
-        var employeeResult = await _employeeRepository.GetAsync(
-            filter: e => e.UserId == user.Id);
+        var employeeResult = await _employeeRepository.GetAsync(filter: e => e.UserId == user.Id);
 
         if (employeeResult.IsFailure)
             return Result.Failure<AuthResponseDto>(employeeResult.MessageCode);
@@ -209,7 +219,7 @@ public class AuthenticationService : IAuthenticationService
         {
             Token = token!,
             User = MapUserToDto(user),
-            ExpiresAt = DateTime.UtcNow.AddHours(24)
+            ExpiresAt = DateTime.UtcNow.AddHours(24),
         };
 
         return Result.Success(authResponse);
@@ -218,7 +228,8 @@ public class AuthenticationService : IAuthenticationService
     public async Task<Result> ValidatePasswordAsync(
         int userId,
         string password,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         if (userId <= 0)
             return Result.Failure(MessageCodes.USER_ID_INVALID);
@@ -243,7 +254,8 @@ public class AuthenticationService : IAuthenticationService
         int userId,
         string currentPassword,
         string newPassword,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         if (userId <= 0)
             return Result.Failure(MessageCodes.USER_ID_INVALID);
@@ -349,7 +361,7 @@ public class AuthenticationService : IAuthenticationService
             // LocationId = user.LocationId,
             IsActive = user.IsActive,
             CreatedAt = user.CreatedAt,
-            UpdatedAt = user.UpdatedAt
+            UpdatedAt = user.UpdatedAt,
         };
     }
 }

@@ -16,6 +16,7 @@ import { useDirection } from '@/contexts/DirectionContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { toast } from 'sonner';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { employeeAuthService } from '@/services/employeeAuthService';
 import {
     TypewriterText,
     StaggeredText,
@@ -65,24 +66,31 @@ const Login: React.FC = () => {
     const onSubmit = async (data: LoginFormData) => {
         setIsLoading(true);
 
-        // Simulate API call - replace with actual authentication logic
         try {
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            // Call the actual employee authentication API
+            const authResponse = await employeeAuthService.login({
+                email: data.email,
+                password: data.password
+            });
 
-            // For demo purposes, accept any email/password combination
-            if (data.email && data.password) {
-                toast.success(isRTL ? 'تم تسجيل الدخول بنجاح' : 'Login successful');
+            // Show success message
+            toast.success(isRTL ? 'تم تسجيل الدخول بنجاح' : 'Login successful');
 
-                // Trigger the post-login animation: collapse the form and
-                // enlarge the welcome section. After the animation finishes we
-                // navigate to the dashboard.
-                setPlaySuccessAnimation(true);
-                setTimeout(() => navigate('/'), 2000); // keep in sync with transition duration
-            } else {
-                throw new Error('Invalid credentials');
-            }
+            // Trigger the post-login animation: collapse the form and
+            // enlarge the welcome section. After the animation finishes we
+            // navigate to the dashboard.
+            setPlaySuccessAnimation(true);
+            setTimeout(() => navigate('/'), 2000); // keep in sync with transition duration
+
         } catch (error) {
-            toast.error(isRTL ? 'خطأ في تسجيل الدخول' : 'Login failed');
+            console.error('Login error:', error);
+            
+            // Show error message from API or generic message
+            const errorMessage = error instanceof Error 
+                ? error.message 
+                : (isRTL ? 'خطأ في تسجيل الدخول' : 'Login failed');
+                
+            toast.error(errorMessage);
         } finally {
             setIsLoading(false);
         }

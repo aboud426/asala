@@ -9,23 +9,23 @@ public interface IAuthenticationService
         CustomerLoginDto loginDto,
         CancellationToken cancellationToken = default
     );
-    
+
     Task<Result<AuthResponseDto>> LoginProviderAsync(
         ProviderLoginDto loginDto,
         CancellationToken cancellationToken = default
     );
-    
+
     Task<Result<AuthResponseDto>> LoginEmployeeAsync(
         LoginDto loginDto,
         CancellationToken cancellationToken = default
     );
-    
+
     Task<Result> ValidatePasswordAsync(
         int userId,
         string password,
         CancellationToken cancellationToken = default
     );
-    
+
     Task<Result> ChangePasswordAsync(
         int userId,
         string currentPassword,
