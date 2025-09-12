@@ -171,7 +171,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
       className={cn(
         'fixed inset-y-0 z-50 flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300 ease-in-out',
         isRTL ? 'right-0' : 'left-0',
-        isCollapsed ? 'w-16' : 'w-64'
+        isCollapsed ? 'w-20' : 'w-64'
       )}
     >
       {/* Header */}
@@ -187,18 +187,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
             </div>
           )}
         </div>
-
-        {/* <Button
-          variant="ghost"
-          size="sm"
-          onClick={onToggle}
-          className={cn(
-            'h-8 w-8 p-0 hover:bg-sidebar-accent transition-smooth',
-            isCollapsed && 'hidden'
-          )}
-        > */}
-        {/* <ChevronLeft className={cn('h-4 w-4', isRTL && 'rotate-180')} /> */}
-        {/* </Button> */}
       </div>
 
       {/* Navigation */}
