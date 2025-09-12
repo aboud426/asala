@@ -1,6 +1,9 @@
 // Employee Authentication API Service
 // Based on the EmployeeAuthController API endpoints
 
+import TokenManager from '@/utils/tokenManager';
+import type { UserDto } from '@/types/auth';
+
 export interface LoginDto {
     email: string;
     password: string;
@@ -9,12 +12,6 @@ export interface LoginDto {
 export interface ChangePasswordDto {
     currentPassword: string;
     newPassword: string;
-}
-
-export interface UserDto {
-    id: number;
-    email: string;
-    // Add other user properties as needed based on your user model
 }
 
 export interface AuthResponse {
@@ -81,10 +78,8 @@ class EmployeeAuthService {
             throw new Error('No authentication data returned from server');
         }
 
-        // Store the token in localStorage for future requests
-        localStorage.setItem('auth_token', response.data.token);
-        localStorage.setItem('auth_expires_at', response.data.expiresAt);
-        localStorage.setItem('user_data', JSON.stringify(response.data.user));
+        // Store the token in cookies for future requests
+        TokenManager.setAuthData(response.data);
 
         return response.data;
     };
@@ -103,9 +98,7 @@ class EmployeeAuthService {
         }
 
         // Clear stored authentication data
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('auth_expires_at');
-        localStorage.removeItem('user_data');
+        TokenManager.clearAuthData();
     };
 
     /**
@@ -142,47 +135,28 @@ class EmployeeAuthService {
      * Get stored authentication token
      */
     getToken = (): string | null => {
-        return localStorage.getItem('auth_token');
+        return TokenManager.getToken();
     };
 
     /**
      * Get stored user data
      */
     getUserData = (): UserDto | null => {
-        const userData = localStorage.getItem('user_data');
-        return userData ? JSON.parse(userData) : null;
+        return TokenManager.getUserData();
     };
 
     /**
      * Check if user is authenticated
      */
     isAuthenticated = (): boolean => {
-        const token = this.getToken();
-        const expiresAt = localStorage.getItem('auth_expires_at');
-        
-        if (!token || !expiresAt) {
-            return false;
-        }
-
-        // Check if token is expired
-        const expiryDate = new Date(expiresAt);
-        const now = new Date();
-        
-        if (now >= expiryDate) {
-            // Token expired, clear storage
-            this.logout();
-            return false;
-        }
-
-        return true;
+        return TokenManager.isAuthenticated();
     };
 
     /**
      * Get authorization header for API requests
      */
     getAuthHeaders = (): Record<string, string> => {
-        const token = this.getToken();
-        return token ? { Authorization: `Bearer ${token}` } : {};
+        return TokenManager.getAuthHeaders();
     };
 }
 

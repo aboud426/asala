@@ -23,10 +23,13 @@ import {
   Navigation,
   Map,
   PieChart,
+  LogOut,
+  User,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useDirection } from '@/contexts/DirectionContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -165,6 +168,21 @@ const navigationItems = [
 export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
   const location = useLocation();
   const { isRTL } = useDirection();
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+  };
+
+  // Get user initials for avatar
+  const getUserInitials = (name?: string) => {
+    if (!name) return 'U';
+    return name
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase())
+      .slice(0, 2)
+      .join('');
+  };
 
   return (
     <aside
@@ -221,23 +239,59 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
         </div>
       </nav>
 
-      {/* Footer */}
+      {/* Footer - User Info */}
       <div className="p-4 border-t border-sidebar-border">
         <div className={cn('flex items-center gap-3', isCollapsed && 'justify-center')}>
           <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
-            <span className="text-xs font-medium text-primary-foreground">A</span>
+            {user ? (
+              <span className="text-xs font-medium text-primary-foreground">
+                {getUserInitials(user.name)}
+              </span>
+            ) : (
+              <User className="w-4 h-4 text-primary-foreground" />
+            )}
           </div>
           {!isCollapsed && (
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-sidebar-foreground truncate">
-                Admin User
+                {user?.name || 'Loading...'}
               </p>
               <p className="text-xs text-muted-foreground truncate">
-                admin@asala.com
+                {user?.email || '...'}
               </p>
             </div>
           )}
         </div>
+
+        {/* Logout Button */}
+        {!isCollapsed && (
+          <div className="mt-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLogout}
+              className="w-full justify-start gap-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            >
+              <LogOut className="h-4 w-4" />
+              <span>{isRTL ? 'تسجيل الخروج' : 'Sign Out'}</span>
+            </Button>
+          </div>
+        )}
+
+        {/* Collapsed Logout Button */}
+        {isCollapsed && (
+          <div className="mt-3 flex justify-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLogout}
+              className="p-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              title={isRTL ? 'تسجيل الخروج' : 'Sign Out'}
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </div>
     </aside>
   );

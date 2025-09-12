@@ -14,6 +14,7 @@ import {
 import { useForm } from 'react-hook-form';
 import { useDirection } from '@/contexts/DirectionContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { employeeAuthService } from '@/services/employeeAuthService';
@@ -46,6 +47,7 @@ const Login: React.FC = () => {
     const navigate = useNavigate();
     const { isRTL } = useDirection();
     const { colorTheme } = useTheme();
+    const { login } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     /**
@@ -73,6 +75,9 @@ const Login: React.FC = () => {
                 password: data.password
             });
 
+            // Use the AuthContext login method to save to cookies and update state
+            login(authResponse);
+
             // Show success message
             toast.success(isRTL ? 'تم تسجيل الدخول بنجاح' : 'Login successful');
 
@@ -84,12 +89,12 @@ const Login: React.FC = () => {
 
         } catch (error) {
             console.error('Login error:', error);
-            
+
             // Show error message from API or generic message
-            const errorMessage = error instanceof Error 
-                ? error.message 
+            const errorMessage = error instanceof Error
+                ? error.message
                 : (isRTL ? 'خطأ في تسجيل الدخول' : 'Login failed');
-                
+
             toast.error(errorMessage);
         } finally {
             setIsLoading(false);
@@ -338,16 +343,16 @@ const Login: React.FC = () => {
                             {/* Note: Make sure the font you're using supports all the variable properties. 
                                 React Bits does not take responsibility for the fonts used */}
                             <div>
-                                <TextType 
-                                    text={isRTL ? 
-                                        ["أصالة", "منصة إدارية شاملة", "مرحباً بك!"] : 
+                                <TextType
+                                    text={isRTL ?
+                                        ["أصالة", "منصة إدارية شاملة", "مرحباً بك!"] :
                                         ["Asala", "Admin Platform", "Welcome!"]}
                                     typingSpeed={75}
                                     pauseDuration={1500}
                                     showCursor={true}
                                     cursorCharacter="|"
                                 />
-                            </div>  
+                            </div>
                             <AnimatedSvgs />
                             {/* <div className="mt-8 space-y-4">
                                 <h2 className="text-2xl font-bold text-primary-foreground">

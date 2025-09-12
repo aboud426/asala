@@ -1,6 +1,8 @@
 // Post API Service
 // Based on the PostController API endpoints
 
+import TokenManager from '@/utils/tokenManager';
+
 export interface PostLocalizedDto {
     id: number;
     postId: number;
@@ -103,6 +105,7 @@ class PostService {
         const defaultOptions: RequestInit = {
             headers: {
                 'Content-Type': 'application/json',
+                ...TokenManager.getAuthHeaders(), // Add authentication headers
                 ...options.headers,
             },
             ...options,

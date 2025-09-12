@@ -6,6 +6,8 @@ import { HashRouter as BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { DirectionProvider } from "@/contexts/DirectionContext";
 import { LoadingProvider } from "@/contexts/LoadingContext";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute, PublicRoute } from "@/components/auth/ProtectedRoute";
 import { RouteChangeLoader } from "@/components/ui/RouteChangeLoader";
 import Index from "./pages/Index";
 import Orders from "./pages/Orders";
@@ -57,48 +59,58 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
-              <RouteChangeLoader />
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/" element={<Index />} />
-                <Route path="/orders" element={<Orders />} />
-                <Route path="/products" element={<Products />} />
-                <Route path="/products/create" element={<CreateProduct />} />
-                <Route path="/products/:id/edit" element={<EditProduct />} />
-                <Route path="/products/:id" element={<ProductDetails />} />
-                <Route path="/posts" element={<Posts />} />
-                <Route path="/posts/create" element={<CreatePost />} />
-                <Route path="/posts/:id/edit" element={<EditPost />} />
-                <Route path="/posts/:id" element={<PostDetails />} />
-                <Route path="/customers" element={<Customers />} />
-                <Route path="/providers" element={<Providers />} />
-                <Route path="/providers/create" element={<CreateProvider />} />
-                <Route path="/providers/:id/edit" element={<EditProvider />} />
-                <Route path="/providers/:id" element={<ProviderDetails />} />
-                <Route path="/analytics" element={<Analytics />} />
-                <Route path="/languages" element={<Languages />} />
-                <Route path="/categories" element={<Categories />} />
-                <Route path="/categories/tree" element={<CategoriesTree />} />
-                <Route path="/product-categories" element={<ProductCategories />} />
-                <Route path="/product-categories/tree" element={<ProductCategoriesTree />} />
-                <Route path="/messages" element={<Messages />} />
-                <Route path="/post-types" element={<PostTypes />} />
-                <Route path="/regions" element={<Regions />} />
-                <Route path="/locations" element={<Locations />} />
-                <Route path="/locations/create" element={<CreateLocation />} />
-                <Route path="/locations/:id" element={<LocationDetails />} />
-                <Route path="/locations/edit/:id" element={<EditLocation />} />
-                <Route path="/employees" element={<Employees />} />
-                <Route path="/roles" element={<Roles />} />
-                <Route path="/roles/:roleId/permissions" element={<RolePermissions />} />
-                <Route path="/permissions" element={<Permissions />} />
-                <Route path="/currencies" element={<Currencies />} />
-                <Route path="/map-selector" element={<MapSelector />} />
-                <Route path="/statistics" element={<Statistics />} />
-                <Route path="/settings" element={<Settings />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <AuthProvider>
+                <RouteChangeLoader />
+                <Routes>
+                  {/* Public routes - redirect to dashboard if authenticated */}
+                  <Route path="/login" element={
+                    <PublicRoute>
+                      <Login />
+                    </PublicRoute>
+                  } />
+                  
+                  {/* Protected routes - require authentication */}
+                  <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+                  <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
+                  <Route path="/products/create" element={<ProtectedRoute><CreateProduct /></ProtectedRoute>} />
+                  <Route path="/products/:id/edit" element={<ProtectedRoute><EditProduct /></ProtectedRoute>} />
+                  <Route path="/products/:id" element={<ProtectedRoute><ProductDetails /></ProtectedRoute>} />
+                  <Route path="/posts" element={<ProtectedRoute><Posts /></ProtectedRoute>} />
+                  <Route path="/posts/create" element={<ProtectedRoute><CreatePost /></ProtectedRoute>} />
+                  <Route path="/posts/:id/edit" element={<ProtectedRoute><EditPost /></ProtectedRoute>} />
+                  <Route path="/posts/:id" element={<ProtectedRoute><PostDetails /></ProtectedRoute>} />
+                  <Route path="/customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
+                  <Route path="/providers" element={<ProtectedRoute><Providers /></ProtectedRoute>} />
+                  <Route path="/providers/create" element={<ProtectedRoute><CreateProvider /></ProtectedRoute>} />
+                  <Route path="/providers/:id/edit" element={<ProtectedRoute><EditProvider /></ProtectedRoute>} />
+                  <Route path="/providers/:id" element={<ProtectedRoute><ProviderDetails /></ProtectedRoute>} />
+                  <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+                  <Route path="/languages" element={<ProtectedRoute><Languages /></ProtectedRoute>} />
+                  <Route path="/categories" element={<ProtectedRoute><Categories /></ProtectedRoute>} />
+                  <Route path="/categories/tree" element={<ProtectedRoute><CategoriesTree /></ProtectedRoute>} />
+                  <Route path="/product-categories" element={<ProtectedRoute><ProductCategories /></ProtectedRoute>} />
+                  <Route path="/product-categories/tree" element={<ProtectedRoute><ProductCategoriesTree /></ProtectedRoute>} />
+                  <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+                  <Route path="/post-types" element={<ProtectedRoute><PostTypes /></ProtectedRoute>} />
+                  <Route path="/regions" element={<ProtectedRoute><Regions /></ProtectedRoute>} />
+                  <Route path="/locations" element={<ProtectedRoute><Locations /></ProtectedRoute>} />
+                  <Route path="/locations/create" element={<ProtectedRoute><CreateLocation /></ProtectedRoute>} />
+                  <Route path="/locations/:id" element={<ProtectedRoute><LocationDetails /></ProtectedRoute>} />
+                  <Route path="/locations/edit/:id" element={<ProtectedRoute><EditLocation /></ProtectedRoute>} />
+                  <Route path="/employees" element={<ProtectedRoute><Employees /></ProtectedRoute>} />
+                  <Route path="/roles" element={<ProtectedRoute><Roles /></ProtectedRoute>} />
+                  <Route path="/roles/:roleId/permissions" element={<ProtectedRoute><RolePermissions /></ProtectedRoute>} />
+                  <Route path="/permissions" element={<ProtectedRoute><Permissions /></ProtectedRoute>} />
+                  <Route path="/currencies" element={<ProtectedRoute><Currencies /></ProtectedRoute>} />
+                  <Route path="/map-selector" element={<ProtectedRoute><MapSelector /></ProtectedRoute>} />
+                  <Route path="/statistics" element={<ProtectedRoute><Statistics /></ProtectedRoute>} />
+                  <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                  
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </AuthProvider>
             </BrowserRouter>
           </TooltipProvider>
         </LoadingProvider>
