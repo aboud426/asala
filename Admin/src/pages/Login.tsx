@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -53,7 +53,12 @@ const Login: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [rememberPassword, setRememberPassword] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(false);
-    const [savedCredentials, setSavedCredentials] = useState<{email: string, password: string}[]>([]);
+    const [savedCredentials, setSavedCredentials] = useState<{ email: string, password: string }[]>([]);
+    const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+
+    // Refs for managing focus and click outside detection
+    const emailInputRef = useRef<HTMLInputElement>(null);
+    const suggestionsRef = useRef<HTMLDivElement>(null);
     /**
      * Controls the short "welcome" animation that plays once the user has
      * successfully authenticated. While the animation is running we collapse
@@ -82,6 +87,88 @@ const Login: React.FC = () => {
             }
         }
     }, []);
+
+    // Handle click outside to close suggestions
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                showSuggestions &&
+                suggestionsRef.current &&
+                emailInputRef.current &&
+                !suggestionsRef.current.contains(event.target as Node) &&
+                !emailInputRef.current.contains(event.target as Node)
+            ) {
+                setShowSuggestions(false);
+                setSelectedSuggestionIndex(-1);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showSuggestions]);
+
+    // Filter credentials based on input
+    const filteredCredentials = savedCredentials.filter(cred =>
+        cred.email.toLowerCase().includes(form.watch('email').toLowerCase())
+    );
+
+    // Helper functions for credential suggestions
+    const handleSuggestionClick = useCallback((credential: { email: string, password: string }, index?: number) => {
+        form.setValue('email', credential.email);
+        form.setValue('password', credential.password);
+        setShowSuggestions(false);
+        setSelectedSuggestionIndex(-1);
+        setRememberPassword(true);
+
+        // Focus back to the email input for better UX
+        setTimeout(() => {
+            emailInputRef.current?.focus();
+        }, 100);
+    }, [form]);
+
+    // Handle keyboard navigation for suggestions
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (!showSuggestions || filteredCredentials.length === 0) return;
+
+            switch (event.key) {
+                case 'ArrowDown':
+                    event.preventDefault();
+                    setSelectedSuggestionIndex(prev =>
+                        prev < filteredCredentials.length - 1 ? prev + 1 : 0
+                    );
+                    break;
+                case 'ArrowUp':
+                    event.preventDefault();
+                    setSelectedSuggestionIndex(prev =>
+                        prev > 0 ? prev - 1 : filteredCredentials.length - 1
+                    );
+                    break;
+                case 'Enter':
+                    event.preventDefault();
+                    if (selectedSuggestionIndex >= 0 && selectedSuggestionIndex < filteredCredentials.length) {
+                        handleSuggestionClick(filteredCredentials[selectedSuggestionIndex]);
+                    }
+                    break;
+                case 'Escape':
+                    event.preventDefault();
+                    setShowSuggestions(false);
+                    setSelectedSuggestionIndex(-1);
+                    emailInputRef.current?.focus();
+                    break;
+            }
+        };
+
+        if (showSuggestions) {
+            document.addEventListener('keydown', handleKeyDown);
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [showSuggestions, selectedSuggestionIndex, filteredCredentials, handleSuggestionClick]);
 
     const onSubmit = async (data: LoginFormData) => {
         setIsLoading(true);
@@ -128,28 +215,45 @@ const Login: React.FC = () => {
         }
     };
 
-    // Helper functions for credential suggestions
-    const handleSuggestionClick = (credential: {email: string, password: string}) => {
-        form.setValue('email', credential.email);
-        form.setValue('password', credential.password);
-        setShowSuggestions(false);
-        setRememberPassword(true);
-    };
-
     const handleEmailFocus = () => {
         if (savedCredentials.length > 0) {
             setShowSuggestions(true);
+            setSelectedSuggestionIndex(-1);
         }
     };
 
     const handleEmailBlur = () => {
-        // Delay hiding suggestions to allow clicking on them
-        setTimeout(() => setShowSuggestions(false), 150);
+        // Don't hide suggestions immediately to allow clicking on them
+        // The click outside handler will take care of hiding them
     };
 
-    const filteredCredentials = savedCredentials.filter(cred => 
-        cred.email.toLowerCase().includes(form.watch('email').toLowerCase())
-    );
+    const handleEmailKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (showSuggestions && filteredCredentials.length > 0) {
+            switch (event.key) {
+                case 'ArrowDown':
+                    event.preventDefault();
+                    setSelectedSuggestionIndex(0);
+                    break;
+                case 'ArrowUp':
+                    event.preventDefault();
+                    setSelectedSuggestionIndex(filteredCredentials.length - 1);
+                    break;
+                case 'Escape':
+                    event.preventDefault();
+                    setShowSuggestions(false);
+                    setSelectedSuggestionIndex(-1);
+                    break;
+            }
+        }
+    };
+
+    const handleSuggestionMouseEnter = (index: number) => {
+        setSelectedSuggestionIndex(index);
+    };
+
+    const handleSuggestionMouseLeave = () => {
+        setSelectedSuggestionIndex(-1);
+    };
 
     // Animated SVGs Component using LogoLoop
     const AnimatedSvgs: React.FC = () => {
@@ -278,6 +382,7 @@ const Login: React.FC = () => {
                                                 <FormControl>
                                                     <div className="relative">
                                                         <Input
+                                                            ref={emailInputRef}
                                                             type="text"
                                                             autoComplete="off"
                                                             placeholder={isRTL ? 'مثال: admin@asala.com' : 'e.g., admin@asala.com'}
@@ -285,15 +390,35 @@ const Login: React.FC = () => {
                                                             className="h-11"
                                                             onFocus={handleEmailFocus}
                                                             onBlur={handleEmailBlur}
+                                                            onKeyDown={handleEmailKeyDown}
+                                                            role="combobox"
+                                                            aria-expanded={showSuggestions}
+                                                            aria-haspopup="listbox"
+                                                            aria-autocomplete="list"
+                                                            aria-describedby={showSuggestions ? "email-suggestions" : undefined}
                                                         />
                                                         {/* Suggestions Dropdown */}
                                                         {showSuggestions && filteredCredentials.length > 0 && (
-                                                            <div className="absolute top-full left-0 right-0 z-50 bg-background border border-border rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
+                                                            <div
+                                                                ref={suggestionsRef}
+                                                                id="email-suggestions"
+                                                                className="absolute top-full left-0 right-0 z-50 bg-background border border-border rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto"
+                                                                role="listbox"
+                                                                aria-label={isRTL ? "اقتراحات البريد الإلكتروني المحفوظة" : "Saved email suggestions"}
+                                                            >
                                                                 {filteredCredentials.map((credential, index) => (
                                                                     <div
-                                                                        key={index}
-                                                                        className="px-4 py-3 hover:bg-muted cursor-pointer border-b border-border last:border-b-0 transition-colors"
-                                                                        onClick={() => handleSuggestionClick(credential)}
+                                                                        key={`${credential.email}-${index}`}
+                                                                        className={`px-4 py-3 cursor-pointer border-b border-border last:border-b-0 transition-colors ${selectedSuggestionIndex === index
+                                                                                ? 'bg-accent text-accent-foreground'
+                                                                                : 'hover:bg-muted'
+                                                                            }`}
+                                                                        onClick={() => handleSuggestionClick(credential, index)}
+                                                                        onMouseEnter={() => handleSuggestionMouseEnter(index)}
+                                                                        onMouseLeave={handleSuggestionMouseLeave}
+                                                                        role="option"
+                                                                        aria-selected={selectedSuggestionIndex === index}
+                                                                        tabIndex={-1}
                                                                     >
                                                                         <div className="flex items-center justify-between">
                                                                             <div className="flex-1 min-w-0">
@@ -307,6 +432,11 @@ const Login: React.FC = () => {
                                                                             <div className="text-xs text-muted-foreground">
                                                                                 ●●●●●●
                                                                             </div>
+                                                                            {selectedSuggestionIndex === index && (
+                                                                                <div className="ml-2 text-xs text-accent-foreground">
+                                                                                    ⏎
+                                                                                </div>
+                                                                            )}
                                                                         </div>
                                                                     </div>
                                                                 ))}
