@@ -52,7 +52,8 @@ public class PostsPagesLocalizedDto
     public string NameLocalized { get; set; } = null!;
     public string DescriptionLocalized { get; set; } = null!;
     public int LanguageId { get; set; }
-    public LanguageDto Language { get; set; } = null!;
+    public string LanguageName { get; set; } = null!;
+    public string LanguageCode { get; set; } = null!;
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

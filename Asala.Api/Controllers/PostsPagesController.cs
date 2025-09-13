@@ -35,7 +35,7 @@ public class PostsPagesController : BaseController
     public async Task<IActionResult> GetPaginated(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
-        [FromQuery] bool activeOnly = true,
+        [FromQuery] bool? activeOnly = null,
         CancellationToken cancellationToken = default
     )
     {

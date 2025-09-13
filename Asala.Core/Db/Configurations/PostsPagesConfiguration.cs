@@ -24,6 +24,8 @@ public class PostsPagesConfiguration : IEntityTypeConfiguration<PostsPages>
             .WithOne(x => x.PostsPages)
             .HasForeignKey(x => x.PostsPagesId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasQueryFilter(x => !x.IsDeleted);
     }
 }
 
@@ -55,5 +57,7 @@ public class PostsPagesLocalizedConfiguration : IEntityTypeConfiguration<PostsPa
             .WithMany()
             .HasForeignKey(x => x.LanguageId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasQueryFilter(x => !x.IsDeleted);
     }
 }

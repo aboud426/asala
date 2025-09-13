@@ -28,6 +28,7 @@ import Messages from "./pages/Messages";
 import PostTypes from "./pages/PostTypes";
 import ProductsPages from "./pages/ProductsPages";
 import ProductsPageViewer from "./pages/ProductsPageViewer";
+import PostsPages from "./pages/PostsPages";
 import Regions from "./pages/Regions";
 import Locations from "./pages/Locations";
 import CreateLocation from "./pages/CreateLocation";
@@ -97,6 +98,7 @@ const App = () => (
                   <Route path="/post-types" element={<ProtectedRoute><PostTypes /></ProtectedRoute>} />
                   <Route path="/products-pages" element={<ProtectedRoute><ProductsPages /></ProtectedRoute>} />
                   <Route path="/products-pages/:id/view" element={<ProtectedRoute><ProductsPageViewer /></ProtectedRoute>} />
+                  <Route path="/posts-pages" element={<ProtectedRoute><PostsPages /></ProtectedRoute>} />
                   <Route path="/regions" element={<ProtectedRoute><Regions /></ProtectedRoute>} />
                   <Route path="/locations" element={<ProtectedRoute><Locations /></ProtectedRoute>} />
                   <Route path="/locations/create" element={<ProtectedRoute><CreateLocation /></ProtectedRoute>} />

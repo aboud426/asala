@@ -8,7 +8,7 @@ public interface IPostsPagesService
     Task<Result<PaginatedResult<PostsPagesDto>>> GetPaginatedAsync(
         int page,
         int pageSize,
-        bool activeOnly = true,
+        bool? activeOnly = null,
         CancellationToken cancellationToken = default
     );
 

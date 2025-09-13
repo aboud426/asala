@@ -123,6 +123,12 @@ const navigationItems = [
     icon: FileText,
   },
   {
+    title: 'Posts Pages',
+    titleAr: 'صفحات المنشورات',
+    href: '/posts-pages',
+    icon: FileText,
+  },
+  {
     title: 'Regions',
     titleAr: 'المناطق',
     href: '/regions',

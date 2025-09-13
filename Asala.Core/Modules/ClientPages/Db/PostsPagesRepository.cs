@@ -14,6 +14,7 @@ public class PostsPagesRepository : Repository<PostsPages, int>, IPostsPagesRepo
     {
         return await _dbSet
             .Include(x => x.Localizations)
+            .ThenInclude(l => l.Language)
             .Where(x => x.IsActive)
             .OrderBy(x => x.Name)
             .ToListAsync();
@@ -23,6 +24,7 @@ public class PostsPagesRepository : Repository<PostsPages, int>, IPostsPagesRepo
     {
         return await _dbSet
             .Include(x => x.Localizations)
+            .ThenInclude(l => l.Language)
             .FirstOrDefaultAsync(x => x.Id == id && x.IsActive);
     }
 
@@ -35,6 +37,7 @@ public class PostsPagesRepository : Repository<PostsPages, int>, IPostsPagesRepo
     {
         return await _dbSet
             .Include(x => x.Localizations)
+            .ThenInclude(l => l.Language)
             .FirstOrDefaultAsync(x => x.Key == key && x.IsActive);
     }
 
@@ -42,6 +45,7 @@ public class PostsPagesRepository : Repository<PostsPages, int>, IPostsPagesRepo
     {
         return await _dbSet
             .Include(x => x.Localizations)
+            .ThenInclude(l => l.Language)
             .Include(x => x.IncludedPostTypes)
             .ThenInclude(i => i.PostType)
             .Where(x => x.IsActive)
@@ -53,15 +57,17 @@ public class PostsPagesRepository : Repository<PostsPages, int>, IPostsPagesRepo
     {
         return await _dbSet
             .Include(x => x.Localizations)
+            .ThenInclude(l => l.Language)
             .Include(x => x.IncludedPostTypes)
             .ThenInclude(i => i.PostType)
-            .FirstOrDefaultAsync(x => x.Id == id && x.IsActive);
+            .FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public async Task<PostsPages?> GetByKeyWithLocalizationsAndIncludedTypesAsync(string key)
     {
         return await _dbSet
             .Include(x => x.Localizations)
+            .ThenInclude(l => l.Language)
             .Include(x => x.IncludedPostTypes)
             .ThenInclude(i => i.PostType)
             .FirstOrDefaultAsync(x => x.Key == key && x.IsActive);
@@ -73,6 +79,11 @@ public class PostsPagesRepository : Repository<PostsPages, int>, IPostsPagesRepo
         {
             PostsPagesId = postsPagesId,
             PostTypeId = typeId,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            DeletedAt = null,
+            IsDeleted = false,
         });
 
         await _context.Set<IncludedPostType>().AddRangeAsync(includedPostTypes);

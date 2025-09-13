@@ -154,6 +154,7 @@ public class ProductsPagesService : IProductsPagesService
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
+                DeletedAt = null,
             };
 
             await _productsPagesRepository.AddAsync(productsPages);

@@ -3,6 +3,7 @@ using Asala.Core.Common.Models;
 using Asala.Core.Modules.ClientPages.Db;
 using Asala.Core.Modules.ClientPages.DTOs;
 using Asala.Core.Modules.ClientPages.Models;
+using Asala.Core.Modules.Languages.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace Asala.UseCases.ClientPages;
@@ -31,7 +32,7 @@ public class PostsPagesService : IPostsPagesService
     public async Task<Result<PaginatedResult<PostsPagesDto>>> GetPaginatedAsync(
         int page,
         int pageSize,
-        bool activeOnly = true,
+        bool? activeOnly = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -45,13 +46,14 @@ public class PostsPagesService : IPostsPagesService
         {
             var queryable = _postsPagesRepository.GetQueryable();
 
-            if (activeOnly)
-                queryable = queryable.Where(x => x.IsActive);
+            if (activeOnly.HasValue)
+                queryable = queryable.Where(x => x.IsActive == activeOnly.Value);
 
             var totalCount = await queryable.CountAsync(cancellationToken);
 
             var postsPages = await queryable
                 .Include(x => x.Localizations.Where(l => l.IsActive))
+                .ThenInclude(l => l.Language)
                 .Include(x => x.IncludedPostTypes)
                 .ThenInclude(i => i.PostType)
                 .OrderBy(x => x.Name)
@@ -196,6 +198,7 @@ public class PostsPagesService : IPostsPagesService
         CancellationToken cancellationToken = default
     )
     {
+        // Input validation
         if (updateDto == null)
             return Result.Failure<PostsPagesDto>(MessageCodes.INVALID_INPUT);
 
@@ -207,41 +210,56 @@ public class PostsPagesService : IPostsPagesService
 
         try
         {
-            var getResult = await _postsPagesRepository.GetByIdAsync(id);
-            if (getResult.IsFailure)
-                return Result.Failure<PostsPagesDto>(getResult.MessageCode);
-
-            var postsPages = getResult.Value;
-            if (postsPages == null)
+            // Check if entity exists
+            var existingPostsPages =
+                await _postsPagesRepository.GetByIdWithLocalizationsAndIncludedTypesAsync(id);
+            if (existingPostsPages == null)
                 return Result.Failure<PostsPagesDto>(MessageCodes.POSTS_PAGES_NOT_FOUND);
 
-            // Check if key already exists (excluding current entity)
-            var existingWithKey = await _postsPagesRepository.GetByKeyAsync(updateDto.Key);
-            if (existingWithKey != null && existingWithKey.Id != id)
-                return Result.Failure<PostsPagesDto>(MessageCodes.POSTS_PAGES_KEY_ALREADY_EXISTS);
+            // Check if key is being changed and if new key already exists
+            if (existingPostsPages.Key != updateDto.Key)
+            {
+                var existingWithKey = await _postsPagesRepository.GetByKeyAsync(updateDto.Key);
+                if (existingWithKey != null)
+                    return Result.Failure<PostsPagesDto>(
+                        MessageCodes.POSTS_PAGES_KEY_ALREADY_EXISTS
+                    );
+            }
 
-            postsPages.Key = updateDto.Key;
-            postsPages.Name = updateDto.Name;
-            postsPages.Description = updateDto.Description;
-            postsPages.IsActive = updateDto.IsActive;
-            postsPages.UpdatedAt = DateTime.UtcNow;
+            // Update basic properties
+            existingPostsPages.Key = updateDto.Key;
+            existingPostsPages.Name = updateDto.Name;
+            existingPostsPages.Description = updateDto.Description;
+            existingPostsPages.IsActive = updateDto.IsActive;
+            existingPostsPages.UpdatedAt = DateTime.UtcNow;
 
-            var updateResult = _postsPagesRepository.Update(postsPages);
+            // Update the main entity
+            var updateResult = _postsPagesRepository.Update(existingPostsPages);
             if (updateResult.IsFailure)
                 return Result.Failure<PostsPagesDto>(updateResult.MessageCode);
 
-            // Update localizations
-            await UpdateLocalizationsAsync(id, updateDto.Localizations, cancellationToken);
-
-            // Update included post types
-            await _postsPagesRepository.UpdateIncludedPostTypesAsync(
-                id,
-                updateDto.IncludedPostTypeIds ?? new List<int>()
-            );
-
+            // Save changes for the main entity first
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            var result = await GetByIdAsync(postsPages.Id, cancellationToken);
+            // Update localizations if provided
+            if (updateDto.Localizations?.Any() == true)
+            {
+                await UpdateLocalizationsAsync(id, updateDto.Localizations, cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+            }
+
+            // Update included post types if provided
+            if (updateDto.IncludedPostTypeIds != null)
+            {
+                await _postsPagesRepository.UpdateIncludedPostTypesAsync(
+                    id,
+                    updateDto.IncludedPostTypeIds
+                );
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+            }
+
+            // Return the updated entity with all related data
+            var result = await GetByIdAsync(id, cancellationToken);
             return result;
         }
         catch (Exception ex)
@@ -254,15 +272,13 @@ public class PostsPagesService : IPostsPagesService
     {
         try
         {
-            var getResult = await _postsPagesRepository.GetByIdAsync(id);
-            if (getResult.IsFailure)
-                return Result.Failure(getResult.MessageCode);
-
-            var postsPages = getResult.Value;
+            var postsPages =
+                await _postsPagesRepository.GetByIdWithLocalizationsAndIncludedTypesAsync(id);
             if (postsPages == null)
                 return Result.Failure(MessageCodes.POSTS_PAGES_NOT_FOUND);
 
-            postsPages.IsActive = false;
+            postsPages.IsDeleted = true;
+            postsPages.DeletedAt = DateTime.UtcNow;
             postsPages.UpdatedAt = DateTime.UtcNow;
 
             var updateResult = _postsPagesRepository.Update(postsPages);
@@ -286,11 +302,8 @@ public class PostsPagesService : IPostsPagesService
     {
         try
         {
-            var getResult = await _postsPagesRepository.GetByIdAsync(id);
-            if (getResult.IsFailure)
-                return Result.Failure(getResult.MessageCode);
-
-            var postsPages = getResult.Value;
+            var postsPages =
+                await _postsPagesRepository.GetByIdWithLocalizationsAndIncludedTypesAsync(id);
             if (postsPages == null)
                 return Result.Failure(MessageCodes.POSTS_PAGES_NOT_FOUND);
 
@@ -351,11 +364,9 @@ public class PostsPagesService : IPostsPagesService
     {
         try
         {
-            var getResult = await _postsPagesRepository.GetByIdAsync(id);
-            if (getResult.IsFailure)
-                return Result.Failure(getResult.MessageCode);
-
-            if (getResult.Value == null)
+            var postsPages =
+                await _postsPagesRepository.GetByIdWithLocalizationsAndIncludedTypesAsync(id);
+            if (postsPages == null)
                 return Result.Failure(MessageCodes.POSTS_PAGES_NOT_FOUND);
 
             await _postsPagesRepository.UpdateIncludedPostTypesAsync(
@@ -397,7 +408,8 @@ public class PostsPagesService : IPostsPagesService
                     existing.IsActive = locDto.IsActive;
                     existing.UpdatedAt = DateTime.UtcNow;
 
-                    _postsPagesLocalizedRepository.Update(existing);
+                    var updateResult = _postsPagesLocalizedRepository.Update(existing);
+                    // Note: Error handling could be added here if needed
                 }
             }
             else
@@ -439,6 +451,8 @@ public class PostsPagesService : IPostsPagesService
                         NameLocalized = l.NameLocalized,
                         DescriptionLocalized = l.DescriptionLocalized,
                         LanguageId = l.LanguageId,
+                        LanguageName = l.Language.Name,
+                        LanguageCode = l.Language.Code,
                         IsActive = l.IsActive,
                         CreatedAt = l.CreatedAt,
                         UpdatedAt = l.UpdatedAt,

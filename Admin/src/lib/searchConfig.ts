@@ -132,6 +132,26 @@ export const searchablePages: SearchableItem[] = [
     keywordsAr: ['أنواع المنشورات', 'منشورات', 'محتوى', 'أنواع', 'تصنيف', 'فئات']
   },
   {
+    id: 'products-pages',
+    title: 'Products Pages',
+    titleAr: 'صفحات المنتجات',
+    description: 'Manage products pages, their translations and included product categories',
+    descriptionAr: 'إدارة صفحات المنتجات وترجماتها وفئات المنتجات المضمنة',
+    href: '/products-pages',
+    keywords: ['products pages', 'pages', 'products', 'categories', 'localization', 'translations'],
+    keywordsAr: ['صفحات المنتجات', 'صفحات', 'منتجات', 'فئات', 'توطين', 'ترجمات']
+  },
+  {
+    id: 'posts-pages',
+    title: 'Posts Pages',
+    titleAr: 'صفحات المنشورات',
+    description: 'Manage posts pages, their translations and included post types',
+    descriptionAr: 'إدارة صفحات المنشورات وترجماتها وأنواع المنشورات المضمنة',
+    href: '/posts-pages',
+    keywords: ['posts pages', 'pages', 'posts', 'content', 'post types', 'localization', 'translations'],
+    keywordsAr: ['صفحات المنشورات', 'صفحات', 'منشورات', 'محتوى', 'أنواع المنشورات', 'توطين', 'ترجمات']
+  },
+  {
     id: 'regions',
     title: 'Regions',
     titleAr: 'المناطق',
