@@ -17,11 +17,11 @@ export class TokenManager {
      */
     private static setCookie(name: string, value: string, expiresAt?: string): void {
         let cookieString = `${name}=${encodeURIComponent(value)}; path=/; SameSite=Strict; Secure`;
-        
+
         if (expiresAt) {
             cookieString += `; expires=${new Date(expiresAt).toUTCString()}`;
         }
-        
+
         document.cookie = cookieString;
     }
 
@@ -31,7 +31,7 @@ export class TokenManager {
     private static getCookie(name: string): string | null {
         const nameEQ = `${name}=`;
         const ca = document.cookie.split(';');
-        
+
         for (let i = 0; i < ca.length; i++) {
             let c = ca[i];
             while (c.charAt(0) === ' ') c = c.substring(1, c.length);
@@ -82,8 +82,9 @@ export class TokenManager {
      */
     static getUserData(): any | null {
         const userData = this.getCookie(this.USER_KEY);
+        console.log('userData', userData);
         if (!userData) return null;
-        
+
         try {
             return JSON.parse(userData);
         } catch (error) {
@@ -98,7 +99,7 @@ export class TokenManager {
     static isAuthenticated(): boolean {
         const token = this.getToken();
         const expiresAt = this.getTokenExpiration();
-        
+
         if (!token || !expiresAt) {
             return false;
         }
@@ -106,7 +107,7 @@ export class TokenManager {
         // Check if token is expired
         const expiryDate = new Date(expiresAt);
         const now = new Date();
-        
+
         if (now >= expiryDate) {
             // Token expired, clear cookies
             this.clearAuthData();
@@ -156,7 +157,7 @@ export class TokenManager {
 
         const expiryDate = new Date(expiresAt);
         const now = new Date();
-        
+
         return Math.max(0, expiryDate.getTime() - now.getTime());
     }
 }

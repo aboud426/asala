@@ -5,16 +5,6 @@ namespace Asala.UseCases.Users;
 
 public interface IAuthenticationService
 {
-    Task<Result<AuthResponseDto>> LoginCustomerAsync(
-        CustomerLoginDto loginDto,
-        CancellationToken cancellationToken = default
-    );
-
-    Task<Result<AuthResponseDto>> LoginProviderAsync(
-        ProviderLoginDto loginDto,
-        CancellationToken cancellationToken = default
-    );
-
     Task<Result<AuthResponseDto>> LoginEmployeeAsync(
         LoginDto loginDto,
         CancellationToken cancellationToken = default

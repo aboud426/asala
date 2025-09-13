@@ -63,69 +63,6 @@ public class ProviderController : BaseController
     }
 
     /// <summary>
-    /// Register a new provider using phone number and OTP verification
-    /// </summary>
-    /// <param name="createDto">Provider registration data including business details, phone number, and verified OTP code</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Authentication response with user details (token will be null as requested)</returns>
-    /// <response code="200">Provider registered successfully</response>
-    /// <response code="400">Invalid data, phone number already exists, or OTP verification failed</response>
-    /// <response code="500">Internal server error</response>
-    [HttpPost("register")]
-    public async Task<IActionResult> Register(
-        [FromBody] CreateProviderDto createDto,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var result = await _providerService.CreateAsync(createDto, cancellationToken);
-        if (result.IsFailure)
-        {
-            return CreateResponse(result);
-        }
-
-        // For now, return null token as requested
-        var taken = null as string;
-
-        var authResponse = new AuthResponseDto
-        {
-            Token = taken!,
-            User = new UserDto
-            {
-                Id = result.Value!.UserId,
-                Email = $"provider_{result.Value.PhoneNumber}@temp.com", // Temporary email
-                PhoneNumber = result.Value.PhoneNumber,
-                // LocationId = null, // Provider doesn't store LocationId directly in DTO
-                IsActive = result.Value.IsActive,
-                CreatedAt = result.Value.CreatedAt,
-                UpdatedAt = result.Value.UpdatedAt,
-            },
-            ExpiresAt = DateTime.UtcNow.AddHours(24),
-        };
-
-        return CreateResponse(Core.Common.Models.Result.Success(authResponse));
-    }
-
-    /// <summary>
-    /// Authenticate provider using phone number and OTP code
-    /// </summary>
-    /// <param name="loginDto">Login credentials including phone number and OTP code</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Authentication response with user details and access token</returns>
-    /// <response code="200">Login successful</response>
-    /// <response code="400">Invalid credentials or OTP verification failed</response>
-    /// <response code="401">Account is not active</response>
-    /// <response code="500">Internal server error</response>
-    [HttpPost("login")]
-    public async Task<IActionResult> Login(
-        [FromBody] ProviderLoginDto loginDto,
-        CancellationToken cancellationToken = default
-    )
-    {
-        var result = await _authenticationService.LoginProviderAsync(loginDto, cancellationToken);
-        return CreateResponse(result);
-    }
-
-    /// <summary>
     /// Logout provider (currently returns success as token handling is not implemented)
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>

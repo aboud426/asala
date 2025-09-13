@@ -38,140 +38,6 @@ public class AuthenticationService : IAuthenticationService
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
     }
 
-    public async Task<Result<AuthResponseDto>> LoginCustomerAsync(
-        CustomerLoginDto loginDto,
-        CancellationToken cancellationToken = default
-    )
-    {
-        if (loginDto == null)
-            return Result.Failure<AuthResponseDto>(MessageCodes.ENTITY_NULL);
-
-        var validationResult = ValidateCustomerLoginDto(loginDto);
-        if (validationResult.IsFailure)
-            return Result.Failure<AuthResponseDto>(validationResult.MessageCode);
-
-        // Verify OTP first
-        var otpVerifyDto = new VerifyOtpDto
-        {
-            PhoneNumber = loginDto.PhoneNumber,
-            Code = loginDto.OtpCode,
-            Purpose = "Login",
-        };
-
-        var otpResult = await _otpService.VerifyOtpAsync(otpVerifyDto, cancellationToken);
-        if (otpResult.IsFailure)
-            return Result.Failure<AuthResponseDto>(otpResult.MessageCode);
-
-        if (!otpResult.Value)
-            return Result.Failure<AuthResponseDto>("Invalid or expired OTP");
-
-        // Get user by phone number
-        var userResult = await _userRepository.GetByPhoneNumberAsync(
-            loginDto.PhoneNumber,
-            cancellationToken
-        );
-        if (userResult.IsFailure)
-            return Result.Failure<AuthResponseDto>(userResult.MessageCode);
-
-        if (userResult.Value == null)
-            return Result.Failure<AuthResponseDto>("User not found");
-
-        var user = userResult.Value;
-
-        // Check if user is active
-        if (!user.IsActive || user.IsDeleted)
-            return Result.Failure<AuthResponseDto>("Account is not active");
-
-        // Check if customer exists
-        var customerResult = await _customerRepository.GetAsync(filter: c => c.UserId == user.Id);
-
-        if (customerResult.IsFailure)
-            return Result.Failure<AuthResponseDto>(customerResult.MessageCode);
-
-        var customer = customerResult.Value?.FirstOrDefault();
-        if (customer == null)
-            return Result.Failure<AuthResponseDto>("Customer profile not found");
-
-        // For now, return null token as requested
-        var token = null as string;
-
-        var authResponse = new AuthResponseDto
-        {
-            Token = token!,
-            User = MapUserToDto(user),
-            ExpiresAt = DateTime.UtcNow.AddHours(24),
-        };
-
-        return Result.Success(authResponse);
-    }
-
-    public async Task<Result<AuthResponseDto>> LoginProviderAsync(
-        ProviderLoginDto loginDto,
-        CancellationToken cancellationToken = default
-    )
-    {
-        if (loginDto == null)
-            return Result.Failure<AuthResponseDto>(MessageCodes.ENTITY_NULL);
-
-        var validationResult = ValidateProviderLoginDto(loginDto);
-        if (validationResult.IsFailure)
-            return Result.Failure<AuthResponseDto>(validationResult.MessageCode);
-
-        // Verify OTP first
-        var otpVerifyDto = new VerifyOtpDto
-        {
-            PhoneNumber = loginDto.PhoneNumber,
-            Code = loginDto.OtpCode,
-            Purpose = "Login",
-        };
-
-        var otpResult = await _otpService.VerifyOtpAsync(otpVerifyDto, cancellationToken);
-        if (otpResult.IsFailure)
-            return Result.Failure<AuthResponseDto>(otpResult.MessageCode);
-
-        if (!otpResult.Value)
-            return Result.Failure<AuthResponseDto>("Invalid or expired OTP");
-
-        // Get user by phone number
-        var userResult = await _userRepository.GetByPhoneNumberAsync(
-            loginDto.PhoneNumber,
-            cancellationToken
-        );
-        if (userResult.IsFailure)
-            return Result.Failure<AuthResponseDto>(userResult.MessageCode);
-
-        if (userResult.Value == null)
-            return Result.Failure<AuthResponseDto>("User not found");
-
-        var user = userResult.Value;
-
-        // Check if user is active
-        if (!user.IsActive || user.IsDeleted)
-            return Result.Failure<AuthResponseDto>("Account is not active");
-
-        // Check if provider exists
-        var providerResult = await _providerRepository.GetAsync(filter: p => p.UserId == user.Id);
-
-        if (providerResult.IsFailure)
-            return Result.Failure<AuthResponseDto>(providerResult.MessageCode);
-
-        var provider = providerResult.Value?.FirstOrDefault();
-        if (provider == null)
-            return Result.Failure<AuthResponseDto>("Provider profile not found");
-
-        // For now, return null token as requested
-        var token = null as string;
-
-        var authResponse = new AuthResponseDto
-        {
-            Token = token!,
-            User = MapUserToDto(user),
-            ExpiresAt = DateTime.UtcNow.AddHours(24),
-        };
-
-        return Result.Success(authResponse);
-    }
-
     public async Task<Result<AuthResponseDto>> LoginEmployeeAsync(
         LoginDto loginDto,
         CancellationToken cancellationToken = default
@@ -218,7 +84,15 @@ public class AuthenticationService : IAuthenticationService
         var authResponse = new AuthResponseDto
         {
             Token = token!,
-            User = MapUserToDto(user),
+            User = new EmployeeUserDto
+            {
+                CreatedAt = user.CreatedAt,
+                UpdatedAt = user.UpdatedAt,
+                Email = user.Email,
+                Name = employee.EmployeeName,
+                IsActive = user.IsActive,
+                Id = user.Id,
+            },
             ExpiresAt = DateTime.UtcNow.AddHours(24),
         };
 

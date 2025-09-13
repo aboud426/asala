@@ -5,6 +5,7 @@ public class UserDto
     public int Id { get; set; }
     public string Email { get; set; } = null!;
     public string? PhoneNumber { get; set; }
+
     // public int? LocationId { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
@@ -23,6 +24,7 @@ public class UpdateUserDto
 {
     public string Email { get; set; } = null!;
     public string? PhoneNumber { get; set; }
+
     // public int? LocationId { get; set; }
     public bool IsActive { get; set; }
 }
@@ -60,6 +62,16 @@ public class ProviderLoginDto
 public class AuthResponseDto
 {
     public string Token { get; set; } = null!;
-    public UserDto User { get; set; } = null!;
+    public EmployeeUserDto User { get; set; } = null!;
     public DateTime ExpiresAt { get; set; }
+}
+
+public class EmployeeUserDto
+{
+    public int Id { get; set; }
+    public string Email { get; set; } = null!;
+    public string Name { get; set; } = null!;
+    public bool IsActive { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 }

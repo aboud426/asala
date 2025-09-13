@@ -13,9 +13,9 @@ interface ProtectedRouteProps {
  * Redirects to login page if user is not authenticated
  * Shows loading spinner while checking authentication status
  */
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
-    children, 
-    fallback = null 
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+    children,
+    fallback = null
 }) => {
     const { isAuthenticated, isLoading } = useAuth();
     const location = useLocation();
@@ -39,10 +39,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     // Redirect to login if not authenticated, preserving the intended destination
     if (!isAuthenticated) {
         return (
-            <Navigate 
-                to="/login" 
-                state={{ from: location }} 
-                replace 
+            <Navigate
+                to="/login"
+                state={{ from: location }}
+                replace
             />
         );
     }
@@ -60,9 +60,9 @@ interface PublicRouteProps {
  * PublicRoute component for routes that should redirect authenticated users
  * Useful for login/register pages
  */
-export const PublicRoute: React.FC<PublicRouteProps> = ({ 
-    children, 
-    redirectTo = '/' 
+export const PublicRoute: React.FC<PublicRouteProps> = ({
+    children,
+    redirectTo = '/'
 }) => {
     const { isAuthenticated, isLoading } = useAuth();
     const location = useLocation();

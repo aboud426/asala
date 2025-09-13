@@ -49,10 +49,11 @@ public class EmployeeController : BaseController
         var authResponse = new AuthResponseDto
         {
             Token = taken!,
-            User = new UserDto
+            User = new EmployeeUserDto
             {
                 Id = result.Value!.UserId,
                 Email = result.Value.Email,
+                Name = result.Value.Name,
                 IsActive = result.Value.IsActive,
                 CreatedAt = result.Value.CreatedAt,
                 UpdatedAt = result.Value.UpdatedAt,

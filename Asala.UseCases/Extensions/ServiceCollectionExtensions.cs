@@ -1,11 +1,4 @@
-using Asala.Core.Common.Abstractions;
-using Asala.Core.Db;
-using Asala.Core.Db.Repositories;
-using Asala.Core.Db.UnitOfWork;
-using Asala.Core.Modules;
 using Asala.Core.Modules.Categories.Db;
-using Asala.Core.Modules.Categories.Db;
-using Asala.Core.Modules.Languages;
 using Asala.Core.Modules.Languages;
 using Asala.Core.Modules.Locations.Db;
 using Asala.Core.Modules.Posts.Db;
@@ -13,7 +6,7 @@ using Asala.Core.Modules.Products.Db;
 using Asala.Core.Modules.Shopping.Db;
 using Asala.Core.Modules.Users.Db;
 using Asala.UseCases.Categories;
-using Asala.UseCases.Categories;
+using Asala.UseCases.Dashboard;
 using Asala.UseCases.Languages;
 using Asala.UseCases.Locations;
 using Asala.UseCases.Messages;
@@ -21,7 +14,6 @@ using Asala.UseCases.Posts;
 using Asala.UseCases.Products;
 using Asala.UseCases.Shopping;
 using Asala.UseCases.Users;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -123,6 +115,9 @@ public static class ServiceCollectionExtensions
 
         // Shopping services
         services.AddScoped<IOrderService, OrderService>();
+
+        // Dashboard services
+        services.AddScoped<IDashboardService, DashboardService>();
 
         return services;
     }
