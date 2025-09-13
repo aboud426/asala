@@ -54,12 +54,12 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       } catch (error) {
         console.error('Error parsing theme settings from localStorage:', error);
       }
-      
+
       // Fallback: check old theme storage and system preference
       const savedTheme = localStorage.getItem('asala-theme');
       const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       const mode = (savedTheme === 'light' || savedTheme === 'dark') ? savedTheme : systemTheme;
-      
+
       return { ...defaultThemeSettings, mode };
     }
     return defaultThemeSettings;
@@ -67,19 +67,19 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const root = window.document.documentElement;
-    
+
     // Apply theme mode
     root.classList.remove('light', 'dark');
     root.classList.add(themeSettings.mode);
-    
+
     // Apply color theme
     root.classList.remove(
       'theme-blue', 'theme-purple', 'theme-green', 'theme-orange', 'theme-red', 'theme-pink',
-      'theme-cyan', 'theme-indigo', 'theme-emerald', 'theme-amber', 'theme-rose', 
+      'theme-cyan', 'theme-indigo', 'theme-emerald', 'theme-amber', 'theme-rose',
       'theme-slate', 'theme-neutral', 'theme-stone'
     );
     root.classList.add(`theme-${themeSettings.colorTheme}`);
-    
+
     // Apply font theme
     root.classList.remove(
       'font-inter', 'font-roboto', 'font-poppins', 'font-system', 'font-nunito',
@@ -88,7 +88,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       'font-scheherazade', 'font-markazi-text', 'font-reem-kufi', 'font-changa', 'font-ibm-plex-sans-arabic'
     );
     root.classList.add(`font-${themeSettings.fontTheme}`);
-    
+
     // Save to localStorage
     localStorage.setItem('asala-theme-settings', JSON.stringify(themeSettings));
     // Keep backward compatibility

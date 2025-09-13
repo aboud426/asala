@@ -110,10 +110,12 @@ builder.Services.AddOpenApiDocument(config =>
 
 var app = builder.Build();
 
-// Seed MessageCodes on startup
+// Seed data on startup
 using (var scope = app.Services.CreateScope())
 {
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    // Seed MessageCodes
     try
     {
         logger.LogInformation("Seeding MessageCodes...");
@@ -125,6 +127,20 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         logger.LogError(ex, "Error occurred while seeding MessageCodes");
+    }
+
+    // Seed Admin Employee
+    try
+    {
+        logger.LogInformation("Seeding Admin Employee...");
+        var adminSeeder =
+            scope.ServiceProvider.GetRequiredService<Asala.UseCases.Users.AdminEmployeeSeederService>();
+        await adminSeeder.SeedAdminEmployeeAsync();
+        logger.LogInformation("Admin Employee seeding completed");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Error occurred while seeding Admin Employee");
     }
 }
 

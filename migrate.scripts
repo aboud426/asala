@@ -1,6 +1,12 @@
 # main
 
-dotnet ef migrations add EditOrder --context AsalaDbContext
+dotnet ef migrations add AddingOrder --context AsalaDbContext
 
 dotnet ef database update --context AsalaDbContext
 
+
+
+
+ FeKw08M4keuw8e9gnsQZQgwg4yDOlMZfvIwzEkSOsiU=
+ 2025-09-12 20:29:09.993
+ admin@asala.com

@@ -47,7 +47,7 @@ interface LoginFormData {
 const Login: React.FC = () => {
     const navigate = useNavigate();
     const { isRTL } = useDirection();
-    const { colorTheme } = useTheme();
+    const { theme } = useTheme();
     const { login } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -299,7 +299,6 @@ const Login: React.FC = () => {
                 title: 'Shopping Cart'
             }
         ];
-
         return (
             <div style={{ width: '100%', maxWidth: '800px' }}>
                 <LogoLoop
@@ -311,7 +310,9 @@ const Login: React.FC = () => {
                     pauseOnHover={true}
                     scaleOnHover={true}
                     fadeOut={true}
-                    className="opacity-80 hover:opacity-100 transition duration-500"
+                    className={`opacity-80 hover:opacity-100 transition duration-500 ${
+                        theme === 'light' ? '[&_img]:invert' : ''
+                    }`}
                     ariaLabel="Platform services"
                 />
             </div>
@@ -410,8 +411,8 @@ const Login: React.FC = () => {
                                                                     <div
                                                                         key={`${credential.email}-${index}`}
                                                                         className={`px-4 py-3 cursor-pointer border-b border-border last:border-b-0 transition-colors ${selectedSuggestionIndex === index
-                                                                                ? 'bg-accent text-accent-foreground'
-                                                                                : 'hover:bg-muted'
+                                                                            ? 'bg-accent text-accent-foreground'
+                                                                            : 'hover:bg-muted'
                                                                             }`}
                                                                         onClick={() => handleSuggestionClick(credential, index)}
                                                                         onMouseEnter={() => handleSuggestionMouseEnter(index)}
@@ -581,25 +582,6 @@ const Login: React.FC = () => {
                                 />
                             </div>
                             <AnimatedSvgs />
-                            {/* <div className="mt-8 space-y-4">
-                                <h2 className="text-2xl font-bold text-primary-foreground">
-                                    <SlidingText
-                                        text={isRTL ? 'لوحة تحكم أصالة' : 'Asala Admin Dashboard'}
-                                        direction="up"
-                                        delay={300}
-                                        duration="1.2s"
-                                    />
-                                </h2>
-                                <p className="text-primary-foreground/80 max-w-md mx-auto leading-relaxed">
-                                    <CharacterFade
-                                        text={isRTL
-                                            ? 'منصة إدارية شاملة لإدارة المتاجر والمنتجات والعملاء بكفاءة عالية ومرونة تامة'
-                                            : 'A comprehensive admin platform for managing stores, products, and customers with high efficiency and complete flexibility'}
-                                        delay={1000}
-                                        stagger={25}
-                                    />
-                                </p>
-                            </div> */}
                         </>
                     )}
                 </div>

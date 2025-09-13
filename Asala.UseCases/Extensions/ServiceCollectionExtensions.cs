@@ -34,6 +34,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IMessageService, MessageService>();
         services.AddScoped<MessageCodesSeederService>();
 
+        // Seeding services
+        services.AddScoped<AdminEmployeeSeederService>();
+
         // Category repositories
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ICategoryLocalizedRepository, CategoryLocalizedRepository>();

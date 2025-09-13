@@ -8,125 +8,217 @@ import {
   Activity,
   Eye,
   Clock,
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react';
 import { StatsCard } from './StatsCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useDirection } from '@/contexts/DirectionContext';
+import { useDashboard } from '@/hooks/useDashboard';
+import { DonutChart, BarChart, LineChart } from '@/components/charts';
+import type { PieChartData, BarChartData, LineChartData } from '@/components/charts';
 
-const statsData = [
+// Define static stats configuration that will be populated with dynamic data
+const statsConfig = [
   {
-    title: 'Total Revenue',
-    titleAr: 'إجمالي الإيرادات',
-    value: '$45,231.89',
-    change: '+20.1% from last month',
-    changeAr: '+20.1% من الشهر الماضي',
-    changeType: 'positive' as const,
-    icon: DollarSign,
+    key: 'totalProducts',
+    title: 'Products',
+    titleAr: 'المنتجات',
+    icon: Package,
     gradient: true,
   },
   {
-    title: 'Orders',
-    titleAr: 'الطلبات',
-    value: '2,350',
-    change: '+180 from yesterday',
-    changeAr: '+180 من الأمس',
-    changeType: 'positive' as const,
+    key: 'totalCustomers',
+    title: 'Customers',
+    titleAr: 'العملاء',
+    icon: Users,
+  },
+  {
+    key: 'totalProviders',
+    title: 'Providers',
+    titleAr: 'المقدمون',
     icon: ShoppingCart,
   },
   {
-    title: 'Products',
-    titleAr: 'المنتجات',
-    value: '1,234',
-    change: '+12 new this week',
-    changeAr: '+12 جديد هذا الأسبوع',
-    changeType: 'positive' as const,
-    icon: Package,
-  },
-  {
-    title: 'Active Users',
-    titleAr: 'المستخدمون النشطون',
-    value: '573',
-    change: '+201 since last hour',
-    changeAr: '+201 منذ الساعة الماضية',
-    changeType: 'positive' as const,
-    icon: Users,
+    key: 'totalPosts',
+    title: 'Posts',
+    titleAr: 'المنشورات',
+    icon: Activity,
   },
 ];
 
-const recentOrders = [
-  {
-    id: '#ORD-001',
-    customer: 'Ahmed Hassan',
-    customerAr: 'أحمد حسن',
-    amount: '$250.00',
-    status: 'completed',
-    statusAr: 'مكتمل',
-    time: '2 min ago',
-    timeAr: 'منذ دقيقتين',
-  },
-  {
-    id: '#ORD-002',
-    customer: 'Sarah Johnson',
-    customerAr: 'سارة جونسون',
-    amount: '$180.50',
-    status: 'processing',
-    statusAr: 'قيد المعالجة',
-    time: '5 min ago',
-    timeAr: 'منذ 5 دقائق',
-  },
-  {
-    id: '#ORD-003',
-    customer: 'Mohammed Ali',
-    customerAr: 'محمد علي',
-    amount: '$95.30',
-    status: 'pending',
-    statusAr: 'في انتظار',
-    time: '10 min ago',
-    timeAr: 'منذ 10 دقائق',
-  },
-];
-
-const topProducts = [
-  {
-    name: 'Smartphone Pro Max',
-    nameAr: 'هاتف ذكي برو ماكس',
-    sales: 234,
-    revenue: '$58,500',
-    progress: 85,
-  },
-  {
-    name: 'Wireless Headphones',
-    nameAr: 'سماعات لاسلكية',
-    sales: 187,
-    revenue: '$37,400',
-    progress: 68,
-  },
-  {
-    name: 'Smart Watch',
-    nameAr: 'ساعة ذكية',
-    sales: 156,
-    revenue: '$31,200',
-    progress: 56,
-  },
-];
+// Helper function to get day name
+const getDayName = (dayOfWeek: number, isRTL: boolean) => {
+  const daysEn = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const daysAr = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+  return isRTL ? daysAr[dayOfWeek] : daysEn[dayOfWeek];
+};
 
 export const DashboardOverview: React.FC = () => {
   const { isRTL } = useDirection();
+  const { data, loading, error, refetch } = useDashboard();
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-success text-success-foreground';
-      case 'processing':
-        return 'bg-warning text-warning-foreground';
-      case 'pending':
-        return 'bg-muted text-muted-foreground';
-      default:
-        return 'bg-muted text-muted-foreground';
-    }
+  // Create stats data from API response
+  const getStatsData = () => {
+    if (!data?.dashboardStatsOverview) return [];
+
+    const overview = data.dashboardStatsOverview;
+    return statsConfig.map((config) => ({
+      title: isRTL ? config.titleAr : config.title,
+      value: overview[config.key as keyof typeof overview]?.toString() || '0',
+      change: '', // API doesn't provide change data yet
+      changeType: 'positive' as const,
+      icon: config.icon,
+      gradient: config.gradient,
+    }));
   };
+
+  // Handle loading state
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            {isRTL ? 'لوحة التحكم' : 'Dashboard'}
+          </h1>
+          <p className="text-muted-foreground">
+            {isRTL ? 'جاري تحميل البيانات...' : 'Loading dashboard data...'}
+          </p>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="animate-pulse">
+              <Card className="border-0 shadow-elegant">
+                <CardContent className="p-6">
+                  <div className="space-y-3">
+                    <div className="h-4 bg-muted rounded w-3/4"></div>
+                    <div className="h-8 bg-muted rounded w-1/2"></div>
+                    <div className="h-3 bg-muted rounded w-full"></div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Handle error state
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            {isRTL ? 'لوحة التحكم' : 'Dashboard'}
+          </h1>
+        </div>
+        <Card className="border-0 shadow-elegant">
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">
+              {isRTL ? 'خطأ في تحميل البيانات' : 'Error Loading Dashboard Data'}
+            </h3>
+            <p className="text-muted-foreground mb-4">{error}</p>
+            <Button onClick={refetch} variant="outline">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              {isRTL ? 'إعادة المحاولة' : 'Try Again'}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Transform products by category data for DonutChart
+  const getProductsChartData = (): PieChartData[] => {
+    if (!data?.productsChartByCategory?.length) return [];
+
+    // Define a beautiful color palette for the donut chart
+    const colorPalette = [
+      'hsl(221, 83%, 53%)',  // Blue
+      'hsl(142, 76%, 36%)',  // Green
+      'hsl(262, 83%, 58%)',  // Purple
+      'hsl(346, 77%, 49%)',  // Red/Pink
+      'hsl(32, 95%, 44%)',   // Orange
+      'hsl(191, 95%, 77%)',  // Light Blue
+      'hsl(270, 95%, 77%)',  // Light Purple
+      'hsl(43, 96%, 56%)',   // Yellow
+      'hsl(168, 76%, 42%)',  // Teal
+      'hsl(339, 82%, 52%)',  // Magenta
+      'hsl(217, 91%, 60%)',  // Light Blue
+      'hsl(119, 41%, 51%)',  // Forest Green
+    ];
+
+    return data.productsChartByCategory.map((category, index) => ({
+      name: category.categoryName,
+      value: category.productCount,
+      fill: colorPalette[index % colorPalette.length],
+    }));
+  };
+
+  // Transform posts by type data for BarChart
+  const getPostsChartData = (): BarChartData[] => {
+    if (!data?.postsChartByType?.length) return [];
+
+    return data.postsChartByType.map((postType) => ({
+      name: postType.postTypeName,
+      count: postType.count,
+    }));
+  };
+
+
+  // Transform combined daily activity data for LineChart
+  const getCombinedActivityChartData = () => {
+    if (!data?.dailyProductsCountInLast7Days?.length && !data?.dailyPostsCountInLast7Days?.length) return [];
+
+    // Get all unique days
+    const allDays = new Set<number>();
+    data?.dailyProductsCountInLast7Days?.forEach(d => allDays.add(d.day));
+    data?.dailyPostsCountInLast7Days?.forEach(d => allDays.add(d.day));
+
+    // Create combined data for each day
+    return Array.from(allDays).sort().map(dayNum => {
+      const productData = data?.dailyProductsCountInLast7Days?.find(d => d.day === dayNum);
+      const postData = data?.dailyPostsCountInLast7Days?.find(d => d.day === dayNum);
+      return {
+        day: getDayName(dayNum, isRTL),
+        products: productData?.count || 0,
+        posts: postData?.count || 0,
+      };
+    });
+  };
+
+  // Chart configurations
+  const productsChartConfig = {
+    value: {
+      label: isRTL ? "عدد المنتجات" : "Product Count",
+    },
+  };
+
+  const postsChartConfig = {
+    count: {
+      label: isRTL ? "عدد المنشورات" : "Post Count",
+      color: "hsl(var(--primary))",
+    },
+  };
+
+
+  const combinedActivityChartConfig = {
+    products: {
+      label: isRTL ? "المنتجات" : "Products",
+      color: "hsl(var(--primary))",
+    },
+    posts: {
+      label: isRTL ? "المنشورات" : "Posts", 
+      color: "hsl(var(--secondary))",
+    },
+  };
+
+
+  const statsData = getStatsData();
 
   return (
     <div className="space-y-6">
@@ -136,7 +228,7 @@ export const DashboardOverview: React.FC = () => {
           {isRTL ? 'لوحة التحكم' : 'Dashboard'}
         </h1>
         <p className="text-muted-foreground">
-          {isRTL 
+          {isRTL
             ? 'مرحبًا بك في لوحة تحكم أسالة. إليك نظرة عامة على أداء متجرك.'
             : 'Welcome to Asala Admin. Here\'s an overview of your store performance.'
           }
@@ -148,9 +240,9 @@ export const DashboardOverview: React.FC = () => {
         {statsData.map((stat, index) => (
           <StatsCard
             key={index}
-            title={isRTL ? stat.titleAr : stat.title}
+            title={stat.title}
             value={stat.value}
-            change={isRTL ? stat.changeAr : stat.change}
+            change={stat.change}
             changeType={stat.changeType}
             icon={stat.icon}
             gradient={stat.gradient}
@@ -158,85 +250,155 @@ export const DashboardOverview: React.FC = () => {
         ))}
       </div>
 
-      {/* Content Grid */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Recent Orders */}
-        <Card className="lg:col-span-2 border-0 shadow-elegant">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5 text-primary" />
-              {isRTL ? 'الطلبات الأخيرة' : 'Recent Orders'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentOrders.map((order) => (
-                <div
-                  key={order.id}
-                  className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-smooth"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full gradient-primary text-primary-foreground flex items-center justify-center font-medium">
-                      {order.customer.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="font-medium">
-                        {isRTL ? order.customerAr : order.customer}
-                      </p>
-                      <p className="text-sm text-muted-foreground flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {isRTL ? order.timeAr : order.time}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium">{order.amount}</p>
-                    <Badge className={getStatusColor(order.status)}>
-                      {isRTL ? order.statusAr : order.status}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Top Products */}
+      {/* Recent Activity */}
+      <div className="grid gap-6">
         <Card className="border-0 shadow-elegant">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-primary" />
-              {isRTL ? 'أفضل المنتجات' : 'Top Products'}
+              {isRTL ? 'النشاط اليومي (آخر 7 أيام)' : 'Daily Activity (Last 7 Days)'}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
-              {topProducts.map((product, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <p className="font-medium text-sm">
-                      {isRTL ? product.nameAr : product.name}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {product.sales} {isRTL ? 'مبيعة' : 'sold'}
-                    </p>
+            {(data?.dailyProductsCountInLast7Days?.length || data?.dailyPostsCountInLast7Days?.length) ? (
+              <div className="space-y-4">
+                <LineChart
+                  data={getCombinedActivityChartData()}
+                  config={combinedActivityChartConfig}
+                  xAxisDataKey="day"
+                  lines={[
+                    {
+                      dataKey: 'products',
+                      stroke: 'hsl(var(--primary))',
+                      strokeWidth: 3,
+                      type: 'monotone'
+                    },
+                    {
+                      dataKey: 'posts',
+                      stroke: 'hsl(var(--secondary))',
+                      strokeWidth: 3,
+                      type: 'monotone'
+                    },
+                  ]}
+                  height={60}
+                  showGrid={true}
+                  showTooltip={true}
+                  className="w-full h-60"
+                />
+                <div className="flex justify-center gap-8 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'hsl(var(--primary))' }}></div>
+                    <span>
+                      {isRTL
+                        ? `إجمالي المنتجات: ${data?.dailyProductsCountInLast7Days?.reduce((sum, d) => sum + d.count, 0) || 0}`
+                        : `Total Products: ${data?.dailyProductsCountInLast7Days?.reduce((sum, d) => sum + d.count, 0) || 0}`
+                      }
+                    </span>
                   </div>
-                  <Progress value={product.progress} className="h-2" />
-                  <p className="text-sm font-medium text-success">
-                    {product.revenue}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'hsl(var(--chart-2))' }}></div>
+                    <span>
+                      {isRTL
+                        ? `إجمالي المنشورات: ${data?.dailyPostsCountInLast7Days?.reduce((sum, d) => sum + d.count, 0) || 0}`
+                        : `Total Posts: ${data?.dailyPostsCountInLast7Days?.reduce((sum, d) => sum + d.count, 0) || 0}`
+                      }
+                    </span>
+                  </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-center py-8">
+                {isRTL ? 'لا توجد بيانات متاحة' : 'No data available'}
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
+
+      {/* Content Grid */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Products by Category */}
+        <Card className="border-0 shadow-elegant">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5 text-primary" />
+              {isRTL ? 'المنتجات حسب الفئة' : 'Products by Category'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {data?.productsChartByCategory?.length ? (
+              <div className="flex flex-col lg:flex-row gap-6 items-center">
+                <div className="flex-1 w-full">
+                  <DonutChart
+                    data={getProductsChartData()}
+                    config={productsChartConfig}
+                    height={300}
+                    showTooltip={true}
+                    showLegend={true}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-center py-8">
+                {isRTL ? 'لا توجد بيانات متاحة' : 'No data available'}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Posts by Type */}
+        <Card className="border-0 shadow-elegant ">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5 text-primary" />
+              {isRTL ? 'المنشورات حسب النوع' : 'Posts by Type'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {data?.postsChartByType?.length ? (
+              <div className="space-y-4">
+                <BarChart
+                  data={getPostsChartData()}
+                  config={postsChartConfig}
+                  xAxisDataKey="name"
+                  bars={[
+                    {
+                      dataKey: "count",
+                      fill: "hsl(var(--primary))",
+                      radius: [4, 4, 0, 0],
+                    },
+                  ]}
+                  height={280}
+                  showGrid={true}
+                  showTooltip={true}
+                  layout="vertical"
+                  className="w-full"
+                />
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">
+                    {isRTL
+                      ? `إجمالي المنشورات: ${data.postsChartByType.reduce((sum, p) => sum + p.count, 0)}`
+                      : `Total Posts: ${data.postsChartByType.reduce((sum, p) => sum + p.count, 0)}`
+                    }
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-center py-8">
+                {isRTL ? 'لا توجد بيانات متاحة' : 'No data available'}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
 
       {/* Quick Actions */}
       <Card className="border-0 shadow-elegant">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5 text-primary" />
+            <Eye className="h-5 w-5 text-primary" />
             {isRTL ? 'إجراءات سريعة' : 'Quick Actions'}
           </CardTitle>
         </CardHeader>
@@ -246,7 +408,7 @@ export const DashboardOverview: React.FC = () => {
               { icon: Package, label: isRTL ? 'إضافة منتج' : 'Add Product' },
               { icon: Users, label: isRTL ? 'إدارة العملاء' : 'Manage Customers' },
               { icon: ShoppingCart, label: isRTL ? 'عرض الطلبات' : 'View Orders' },
-              { icon: Eye, label: isRTL ? 'التحليلات' : 'Analytics' },
+              { icon: Activity, label: isRTL ? 'التحليلات' : 'Analytics' },
             ].map((action, index) => (
               <div
                 key={index}
