@@ -11,6 +11,8 @@ public class PostsPagesDto
     public DateTime UpdatedAt { get; set; }
     public List<PostsPagesLocalizedDto> Localizations { get; set; } =
         new List<PostsPagesLocalizedDto>();
+    public List<IncludedPostTypeDto> IncludedPostTypes { get; set; } =
+        new List<IncludedPostTypeDto>();
 }
 
 public class CreatePostsPagesDto
@@ -20,6 +22,7 @@ public class CreatePostsPagesDto
     public string Description { get; set; } = null!;
     public List<CreatePostsPagesLocalizedDto> Localizations { get; set; } =
         new List<CreatePostsPagesLocalizedDto>();
+    public List<int> IncludedPostTypeIds { get; set; } = new List<int>();
 }
 
 public class UpdatePostsPagesDto
@@ -30,6 +33,7 @@ public class UpdatePostsPagesDto
     public bool IsActive { get; set; }
     public List<UpdatePostsPagesLocalizedDto> Localizations { get; set; } =
         new List<UpdatePostsPagesLocalizedDto>();
+    public List<int> IncludedPostTypeIds { get; set; } = new List<int>();
 }
 
 public class PostsPagesDropdownDto
@@ -65,4 +69,25 @@ public class UpdatePostsPagesLocalizedDto
     public string DescriptionLocalized { get; set; } = null!;
     public int LanguageId { get; set; }
     public bool IsActive { get; set; }
+}
+
+public class IncludedPostTypeDto
+{
+    public int Id { get; set; }
+    public int PostsPagesId { get; set; }
+    public int PostTypeId { get; set; }
+    public PostTypeDto PostType { get; set; } = null!;
+    public bool IsActive { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+}
+
+public class PostTypeDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = null!;
+    public string Description { get; set; } = null!;
+    public bool IsActive { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 }

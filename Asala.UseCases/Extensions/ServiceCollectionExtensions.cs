@@ -1,4 +1,5 @@
 using Asala.Core.Modules.Categories.Db;
+using Asala.Core.Modules.ClientPages.Db;
 using Asala.Core.Modules.Languages;
 using Asala.Core.Modules.Locations.Db;
 using Asala.Core.Modules.Posts.Db;
@@ -6,6 +7,7 @@ using Asala.Core.Modules.Products.Db;
 using Asala.Core.Modules.Shopping.Db;
 using Asala.Core.Modules.Users.Db;
 using Asala.UseCases.Categories;
+using Asala.UseCases.ClientPages;
 using Asala.UseCases.Dashboard;
 using Asala.UseCases.Languages;
 using Asala.UseCases.Locations;
@@ -51,6 +53,16 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<IProductCategoryService, ProductCategoryService>();
         services.AddScoped<IProviderCategoryService, ProviderCategoryService>();
+
+        // ClientPages repositories
+        services.AddScoped<IPostsPagesRepository, PostsPagesRepository>();
+        services.AddScoped<IPostsPagesLocalizedRepository, PostsPagesLocalizedRepository>();
+        services.AddScoped<IProductsPagesRepository, ProductsPagesRepository>();
+        services.AddScoped<IProductsPagesLocalizedRepository, ProductsPagesLocalizedRepository>();
+
+        // ClientPages services
+        services.AddScoped<IPostsPagesService, PostsPagesService>();
+        services.AddScoped<IProductsPagesService, ProductsPagesService>();
 
         // Posts repositories
         services.AddScoped<IPostRepository, PostRepository>();
