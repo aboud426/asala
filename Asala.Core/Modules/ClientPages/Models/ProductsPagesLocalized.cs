@@ -8,6 +8,5 @@ public class ProductsPagesLocalized : BaseEntity<int>
     public string NameLocalized { get; set; } = null!;
     public string DescriptionLocalized { get; set; } = null!;
     public int LanguageId { get; set; }
-
     public virtual ProductsPages ProductsPages { get; set; } = null!;
 }

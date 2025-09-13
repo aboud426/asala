@@ -1,5 +1,6 @@
 using Asala.Core.Db.Configurations;
 using Asala.Core.Modules.Categories.Models;
+using Asala.Core.Modules.ClientPages.Models;
 using Asala.Core.Modules.Languages;
 using Asala.Core.Modules.Locations.Models;
 using Asala.Core.Modules.Messages.Models;
@@ -69,6 +70,15 @@ public class AsalaDbContext : DbContext
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<OrderActivity> OrderActivities => Set<OrderActivity>();
     public DbSet<OrderItemActivity> OrderItemActivities => Set<OrderItemActivity>();
+
+    // Client Pages module
+    public DbSet<PostsPages> PostsPages => Set<PostsPages>();
+    public DbSet<PostsPagesLocalized> PostsPagesLocalizations => Set<PostsPagesLocalized>();
+    public DbSet<IncludedPostType> IncludedPostTypes => Set<IncludedPostType>();
+    public DbSet<ProductsPages> ProductsPages => Set<ProductsPages>();
+    public DbSet<ProductsPagesLocalized> ProductsPagesLocalizations =>
+        Set<ProductsPagesLocalized>();
+    public DbSet<IncludedProductType> IncludedProductTypes => Set<IncludedProductType>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
