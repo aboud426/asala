@@ -380,6 +380,52 @@ class ProductService {
 
         return data.data;
     };
+
+    /**
+     * Get products by page with cursor-based pagination for infinite scroll
+     * GET /api/products/by-page/{productsPagesId}
+     */
+    getProductsByPageWithCursor = async (params: {
+        productsPagesId: number;
+        languageCode?: string;
+        cursor?: number;
+        pageSize?: number;
+    }): Promise<{
+        items: ProductDto[];
+        nextCursor?: number;
+        hasMore: boolean;
+    }> => {
+        const { productsPagesId, languageCode = 'en', cursor, pageSize = 10 } = params;
+        const queryParams = new URLSearchParams();
+        
+        queryParams.append('languageCode', languageCode);
+        queryParams.append('pageSize', pageSize.toString());
+        
+        if (cursor !== undefined) {
+            queryParams.append('cursor', cursor.toString());
+        }
+
+        const endpoint = `/by-page/${productsPagesId}?${queryParams.toString()}`;
+        const response = await this.request<{
+            items: ProductDto[];
+            nextCursor?: number;
+            hasMore: boolean;
+        }>(endpoint);
+
+        if (!response.success) {
+            throw new Error(response.message || 'Failed to fetch products by page');
+        }
+
+        if (!response.data) {
+            throw new Error('No data returned from server');
+        }
+
+        // Process the products in the cursor-based result
+        return {
+            ...response.data,
+            items: this.processProductDtos(response.data.items)
+        };
+    };
 }
 
 // Export singleton instance

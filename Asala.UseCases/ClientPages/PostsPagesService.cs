@@ -36,16 +36,10 @@ public class PostsPagesService : IPostsPagesService
     )
     {
         if (page < MinPage)
-            return Result.Failure<PaginatedResult<PostsPagesDto>>(
-                MessageCodes.InvalidPage,
-                $"Page must be at least {MinPage}"
-            );
+            return Result.Failure<PaginatedResult<PostsPagesDto>>(MessageCodes.INVALID_PAGE);
 
         if (pageSize < MinPageSize || pageSize > MaxPageSize)
-            return Result.Failure<PaginatedResult<PostsPagesDto>>(
-                MessageCodes.InvalidPageSize,
-                $"Page size must be between {MinPageSize} and {MaxPageSize}"
-            );
+            return Result.Failure<PaginatedResult<PostsPagesDto>>(MessageCodes.INVALID_PAGE_SIZE);
 
         try
         {
@@ -74,8 +68,8 @@ public class PostsPagesService : IPostsPagesService
         catch (Exception ex)
         {
             return Result.Failure<PaginatedResult<PostsPagesDto>>(
-                MessageCodes.InternalServerError,
-                ex.Message
+                MessageCodes.INTERNAL_SERVER_ERROR,
+                ex
             );
         }
     }
@@ -91,16 +85,13 @@ public class PostsPagesService : IPostsPagesService
                 await _postsPagesRepository.GetByIdWithLocalizationsAndIncludedTypesAsync(id);
 
             if (postsPages == null)
-                return Result.Failure<PostsPagesDto>(
-                    MessageCodes.NotFound,
-                    "PostsPages not found"
-                );
+                return Result.Failure<PostsPagesDto>(MessageCodes.POSTS_PAGES_NOT_FOUND);
 
             return Result.Success(MapToDto(postsPages));
         }
         catch (Exception ex)
         {
-            return Result.Failure<PostsPagesDto>(MessageCodes.InternalServerError, ex.Message);
+            return Result.Failure<PostsPagesDto>(MessageCodes.INTERNAL_SERVER_ERROR, ex);
         }
     }
 
@@ -110,10 +101,7 @@ public class PostsPagesService : IPostsPagesService
     )
     {
         if (string.IsNullOrWhiteSpace(key))
-            return Result.Failure<PostsPagesDto>(
-                MessageCodes.InvalidInput,
-                "Key cannot be empty"
-            );
+            return Result.Failure<PostsPagesDto>(MessageCodes.INVALID_INPUT);
 
         try
         {
@@ -121,16 +109,13 @@ public class PostsPagesService : IPostsPagesService
                 await _postsPagesRepository.GetByKeyWithLocalizationsAndIncludedTypesAsync(key);
 
             if (postsPages == null)
-                return Result.Failure<PostsPagesDto>(
-                    MessageCodes.NotFound,
-                    "PostsPages not found"
-                );
+                return Result.Failure<PostsPagesDto>(MessageCodes.POSTS_PAGES_NOT_FOUND);
 
             return Result.Success(MapToDto(postsPages));
         }
         catch (Exception ex)
         {
-            return Result.Failure<PostsPagesDto>(MessageCodes.InternalServerError, ex.Message);
+            return Result.Failure<PostsPagesDto>(MessageCodes.INTERNAL_SERVER_ERROR, ex);
         }
     }
 
@@ -140,32 +125,20 @@ public class PostsPagesService : IPostsPagesService
     )
     {
         if (createDto == null)
-            return Result.Failure<PostsPagesDto>(
-                MessageCodes.InvalidInput,
-                "Create data cannot be null"
-            );
+            return Result.Failure<PostsPagesDto>(MessageCodes.INVALID_INPUT);
 
         if (string.IsNullOrWhiteSpace(createDto.Key))
-            return Result.Failure<PostsPagesDto>(
-                MessageCodes.InvalidInput,
-                "Key cannot be empty"
-            );
+            return Result.Failure<PostsPagesDto>(MessageCodes.INVALID_INPUT);
 
         if (string.IsNullOrWhiteSpace(createDto.Name))
-            return Result.Failure<PostsPagesDto>(
-                MessageCodes.InvalidInput,
-                "Name cannot be empty"
-            );
+            return Result.Failure<PostsPagesDto>(MessageCodes.INVALID_INPUT);
 
         try
         {
             // Check if key already exists
             var existingPostsPages = await _postsPagesRepository.GetByKeyAsync(createDto.Key);
             if (existingPostsPages != null)
-                return Result.Failure<PostsPagesDto>(
-                    MessageCodes.AlreadyExists,
-                    "PostsPages with this key already exists"
-                );
+                return Result.Failure<PostsPagesDto>(MessageCodes.POSTS_PAGES_KEY_ALREADY_EXISTS);
 
             var postsPages = new PostsPages
             {
@@ -213,7 +186,7 @@ public class PostsPagesService : IPostsPagesService
         }
         catch (Exception ex)
         {
-            return Result.Failure<PostsPagesDto>(MessageCodes.InternalServerError, ex.Message);
+            return Result.Failure<PostsPagesDto>(MessageCodes.INTERNAL_SERVER_ERROR, ex);
         }
     }
 
@@ -224,39 +197,28 @@ public class PostsPagesService : IPostsPagesService
     )
     {
         if (updateDto == null)
-            return Result.Failure<PostsPagesDto>(
-                MessageCodes.InvalidInput,
-                "Update data cannot be null"
-            );
+            return Result.Failure<PostsPagesDto>(MessageCodes.INVALID_INPUT);
 
         if (string.IsNullOrWhiteSpace(updateDto.Key))
-            return Result.Failure<PostsPagesDto>(
-                MessageCodes.InvalidInput,
-                "Key cannot be empty"
-            );
+            return Result.Failure<PostsPagesDto>(MessageCodes.INVALID_INPUT);
 
         if (string.IsNullOrWhiteSpace(updateDto.Name))
-            return Result.Failure<PostsPagesDto>(
-                MessageCodes.InvalidInput,
-                "Name cannot be empty"
-            );
+            return Result.Failure<PostsPagesDto>(MessageCodes.INVALID_INPUT);
 
         try
         {
-            var postsPages = await _postsPagesRepository.GetByIdAsync(id);
+            var getResult = await _postsPagesRepository.GetByIdAsync(id);
+            if (getResult.IsFailure)
+                return Result.Failure<PostsPagesDto>(getResult.MessageCode);
+
+            var postsPages = getResult.Value;
             if (postsPages == null)
-                return Result.Failure<PostsPagesDto>(
-                    MessageCodes.NotFound,
-                    "PostsPages not found"
-                );
+                return Result.Failure<PostsPagesDto>(MessageCodes.POSTS_PAGES_NOT_FOUND);
 
             // Check if key already exists (excluding current entity)
             var existingWithKey = await _postsPagesRepository.GetByKeyAsync(updateDto.Key);
             if (existingWithKey != null && existingWithKey.Id != id)
-                return Result.Failure<PostsPagesDto>(
-                    MessageCodes.AlreadyExists,
-                    "PostsPages with this key already exists"
-                );
+                return Result.Failure<PostsPagesDto>(MessageCodes.POSTS_PAGES_KEY_ALREADY_EXISTS);
 
             postsPages.Key = updateDto.Key;
             postsPages.Name = updateDto.Name;
@@ -264,7 +226,9 @@ public class PostsPagesService : IPostsPagesService
             postsPages.IsActive = updateDto.IsActive;
             postsPages.UpdatedAt = DateTime.UtcNow;
 
-            await _postsPagesRepository.UpdateAsync(postsPages);
+            var updateResult = _postsPagesRepository.Update(postsPages);
+            if (updateResult.IsFailure)
+                return Result.Failure<PostsPagesDto>(updateResult.MessageCode);
 
             // Update localizations
             await UpdateLocalizationsAsync(id, updateDto.Localizations, cancellationToken);
@@ -282,7 +246,7 @@ public class PostsPagesService : IPostsPagesService
         }
         catch (Exception ex)
         {
-            return Result.Failure<PostsPagesDto>(MessageCodes.InternalServerError, ex.Message);
+            return Result.Failure<PostsPagesDto>(MessageCodes.INTERNAL_SERVER_ERROR, ex);
         }
     }
 
@@ -290,21 +254,28 @@ public class PostsPagesService : IPostsPagesService
     {
         try
         {
-            var postsPages = await _postsPagesRepository.GetByIdAsync(id);
+            var getResult = await _postsPagesRepository.GetByIdAsync(id);
+            if (getResult.IsFailure)
+                return Result.Failure(getResult.MessageCode);
+
+            var postsPages = getResult.Value;
             if (postsPages == null)
-                return Result.Failure(MessageCodes.NotFound, "PostsPages not found");
+                return Result.Failure(MessageCodes.POSTS_PAGES_NOT_FOUND);
 
             postsPages.IsActive = false;
             postsPages.UpdatedAt = DateTime.UtcNow;
 
-            await _postsPagesRepository.UpdateAsync(postsPages);
+            var updateResult = _postsPagesRepository.Update(postsPages);
+            if (updateResult.IsFailure)
+                return Result.Failure(updateResult.MessageCode);
+
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Result.Success();
         }
         catch (Exception ex)
         {
-            return Result.Failure(MessageCodes.InternalServerError, ex.Message);
+            return Result.Failure(MessageCodes.INTERNAL_SERVER_ERROR, ex);
         }
     }
 
@@ -315,21 +286,28 @@ public class PostsPagesService : IPostsPagesService
     {
         try
         {
-            var postsPages = await _postsPagesRepository.GetByIdAsync(id);
+            var getResult = await _postsPagesRepository.GetByIdAsync(id);
+            if (getResult.IsFailure)
+                return Result.Failure(getResult.MessageCode);
+
+            var postsPages = getResult.Value;
             if (postsPages == null)
-                return Result.Failure(MessageCodes.NotFound, "PostsPages not found");
+                return Result.Failure(MessageCodes.POSTS_PAGES_NOT_FOUND);
 
             postsPages.IsActive = !postsPages.IsActive;
             postsPages.UpdatedAt = DateTime.UtcNow;
 
-            await _postsPagesRepository.UpdateAsync(postsPages);
+            var updateResult = _postsPagesRepository.Update(postsPages);
+            if (updateResult.IsFailure)
+                return Result.Failure(updateResult.MessageCode);
+
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Result.Success();
         }
         catch (Exception ex)
         {
-            return Result.Failure(MessageCodes.InternalServerError, ex.Message);
+            return Result.Failure(MessageCodes.INTERNAL_SERVER_ERROR, ex);
         }
     }
 
@@ -339,10 +317,18 @@ public class PostsPagesService : IPostsPagesService
     {
         try
         {
-            var postsPages = await _postsPagesRepository.GetAllAsync();
-            var dropdownItems = postsPages
-                .Where(x => x.IsActive)
-                .Select(x => new PostsPagesDropdownDto { Id = x.Id, Key = x.Key, Name = x.Name })
+            var getAllResult = await _postsPagesRepository.GetAllAsync();
+            if (getAllResult.IsFailure)
+                return Result.Failure<IEnumerable<PostsPagesDropdownDto>>(getAllResult.MessageCode);
+
+            var dropdownItems = getAllResult
+                .Value.Where(x => x.IsActive)
+                .Select(x => new PostsPagesDropdownDto
+                {
+                    Id = x.Id,
+                    Key = x.Key,
+                    Name = x.Name,
+                })
                 .OrderBy(x => x.Name)
                 .ToList();
 
@@ -351,8 +337,8 @@ public class PostsPagesService : IPostsPagesService
         catch (Exception ex)
         {
             return Result.Failure<IEnumerable<PostsPagesDropdownDto>>(
-                MessageCodes.InternalServerError,
-                ex.Message
+                MessageCodes.INTERNAL_SERVER_ERROR,
+                ex
             );
         }
     }
@@ -365,9 +351,12 @@ public class PostsPagesService : IPostsPagesService
     {
         try
         {
-            var postsPages = await _postsPagesRepository.GetByIdAsync(id);
-            if (postsPages == null)
-                return Result.Failure(MessageCodes.NotFound, "PostsPages not found");
+            var getResult = await _postsPagesRepository.GetByIdAsync(id);
+            if (getResult.IsFailure)
+                return Result.Failure(getResult.MessageCode);
+
+            if (getResult.Value == null)
+                return Result.Failure(MessageCodes.POSTS_PAGES_NOT_FOUND);
 
             await _postsPagesRepository.UpdateIncludedPostTypesAsync(
                 id,
@@ -379,7 +368,7 @@ public class PostsPagesService : IPostsPagesService
         }
         catch (Exception ex)
         {
-            return Result.Failure(MessageCodes.InternalServerError, ex.Message);
+            return Result.Failure(MessageCodes.INTERNAL_SERVER_ERROR, ex);
         }
     }
 
@@ -408,7 +397,7 @@ public class PostsPagesService : IPostsPagesService
                     existing.IsActive = locDto.IsActive;
                     existing.UpdatedAt = DateTime.UtcNow;
 
-                    await _postsPagesLocalizedRepository.UpdateAsync(existing);
+                    _postsPagesLocalizedRepository.Update(existing);
                 }
             }
             else
@@ -441,39 +430,41 @@ public class PostsPagesService : IPostsPagesService
             IsActive = postsPages.IsActive,
             CreatedAt = postsPages.CreatedAt,
             UpdatedAt = postsPages.UpdatedAt,
-            Localizations = postsPages.Localizations
-                ?.Select(l => new PostsPagesLocalizedDto
-                {
-                    Id = l.Id,
-                    PostsPagesId = l.PostsPagesId,
-                    NameLocalized = l.NameLocalized,
-                    DescriptionLocalized = l.DescriptionLocalized,
-                    LanguageId = l.LanguageId,
-                    IsActive = l.IsActive,
-                    CreatedAt = l.CreatedAt,
-                    UpdatedAt = l.UpdatedAt,
-                })
-                .ToList() ?? new List<PostsPagesLocalizedDto>(),
-            IncludedPostTypes = postsPages.IncludedPostTypes
-                ?.Select(ipt => new IncludedPostTypeDto
-                {
-                    Id = ipt.Id,
-                    PostsPagesId = ipt.PostsPagesId,
-                    PostTypeId = ipt.PostTypeId,
-                    PostType = new PostTypeDto
+            Localizations =
+                postsPages
+                    .Localizations?.Select(l => new PostsPagesLocalizedDto
                     {
-                        Id = ipt.PostType.Id,
-                        Name = ipt.PostType.Name,
-                        Description = ipt.PostType.Description,
-                        IsActive = ipt.PostType.IsActive,
-                        CreatedAt = ipt.PostType.CreatedAt,
-                        UpdatedAt = ipt.PostType.UpdatedAt,
-                    },
-                    IsActive = ipt.IsActive,
-                    CreatedAt = ipt.CreatedAt,
-                    UpdatedAt = ipt.UpdatedAt,
-                })
-                .ToList() ?? new List<IncludedPostTypeDto>(),
+                        Id = l.Id,
+                        PostsPagesId = l.PostsPagesId,
+                        NameLocalized = l.NameLocalized,
+                        DescriptionLocalized = l.DescriptionLocalized,
+                        LanguageId = l.LanguageId,
+                        IsActive = l.IsActive,
+                        CreatedAt = l.CreatedAt,
+                        UpdatedAt = l.UpdatedAt,
+                    })
+                    .ToList() ?? new List<PostsPagesLocalizedDto>(),
+            IncludedPostTypes =
+                postsPages
+                    .IncludedPostTypes?.Select(ipt => new IncludedPostTypeDto
+                    {
+                        Id = ipt.Id,
+                        PostsPagesId = ipt.PostsPagesId,
+                        PostTypeId = ipt.PostTypeId,
+                        PostType = new PostTypeDto
+                        {
+                            Id = ipt.PostType.Id,
+                            Name = ipt.PostType.Name,
+                            Description = ipt.PostType.Description,
+                            IsActive = ipt.PostType.IsActive,
+                            CreatedAt = ipt.PostType.CreatedAt,
+                            UpdatedAt = ipt.PostType.UpdatedAt,
+                        },
+                        IsActive = ipt.IsActive,
+                        CreatedAt = ipt.CreatedAt,
+                        UpdatedAt = ipt.UpdatedAt,
+                    })
+                    .ToList() ?? new List<IncludedPostTypeDto>(),
         };
     }
 }

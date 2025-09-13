@@ -35,6 +35,26 @@ public class ProductController : BaseController
         return CreateResponse(result);
     }
 
+    [HttpGet("by-page/{productsPagesId}")]
+    public async Task<IActionResult> GetProductsByPageWithCursor(
+        [FromRoute] int productsPagesId,
+        [FromQuery] string languageCode = "en",
+        [FromQuery] int? cursor = null,
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var result = await _productService.GetProductsByPageWithCursorAsync(
+            productsPagesId,
+            languageCode,
+            cursor,
+            pageSize,
+            true,
+            cancellationToken
+        );
+        return CreateResponse(result);
+    }
+
     [HttpPost("create-product")]
     public async Task<IActionResult> Create(
         [FromBody] CreateProductWithMediaDto createDto,

@@ -1,9 +1,10 @@
-using System.Linq.Expressions;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using Asala.Core.Common.Abstractions;
 using Asala.Core.Common.Models;
 using Asala.Core.Db;
 using Asala.Core.Modules.Categories.Db;
+using Asala.Core.Modules.ClientPages.Db;
 using Asala.Core.Modules.Languages;
 using Asala.Core.Modules.Products.Db;
 using Asala.Core.Modules.Products.DTOs;
@@ -24,6 +25,7 @@ public class ProductService : IProductService
     private readonly IProviderRepository _providerRepository;
     private readonly ILanguageRepository _languageRepository;
     private readonly ICurrencyRepository _currencyRepository;
+    private readonly IProductsPagesRepository _productsPagesRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public ProductService(
@@ -34,6 +36,7 @@ public class ProductService : IProductService
         IProviderRepository providerRepository,
         ILanguageRepository languageRepository,
         ICurrencyRepository currencyRepository,
+        IProductsPagesRepository productsPagesRepository,
         IUnitOfWork unitOfWork
     )
     {
@@ -54,6 +57,9 @@ public class ProductService : IProductService
             languageRepository ?? throw new ArgumentNullException(nameof(languageRepository));
         _currencyRepository =
             currencyRepository ?? throw new ArgumentNullException(nameof(currencyRepository));
+        _productsPagesRepository =
+            productsPagesRepository
+            ?? throw new ArgumentNullException(nameof(productsPagesRepository));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
     }
 
@@ -571,14 +577,20 @@ public class ProductService : IProductService
 
                 incomingLanguageIds.Add(localizationDto.LanguageId);
 
-                if (existingLocalizationsDict.TryGetValue(localizationDto.LanguageId, out var existingLocalization))
+                if (
+                    existingLocalizationsDict.TryGetValue(
+                        localizationDto.LanguageId,
+                        out var existingLocalization
+                    )
+                )
                 {
                     // Update existing localization
                     existingLocalization.NameLocalized = localizationDto.NameLocalized.Trim();
-                    existingLocalization.DescriptionLocalized = localizationDto.DescriptionLocalized?.Trim();
+                    existingLocalization.DescriptionLocalized =
+                        localizationDto.DescriptionLocalized?.Trim();
                     existingLocalization.IsActive = localizationDto.IsActive;
                     existingLocalization.UpdatedAt = DateTime.UtcNow;
-                    
+
                     _productLocalizedRepository.Update(existingLocalization);
                 }
                 else
@@ -663,6 +675,128 @@ public class ProductService : IProductService
 
         var dto = await MapToDtoAsync(productResult, cancellationToken);
         return Result.Success<ProductDto?>(dto);
+    }
+
+    public async Task<Result<CursorPaginatedResult<ProductDto>>> GetProductsByPageWithCursorAsync(
+        int productsPagesId,
+        string languageCode,
+        int? cursor = null,
+        int pageSize = 10,
+        bool? activeOnly = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (pageSize <= 0 || pageSize > 100)
+            return Result.Failure<CursorPaginatedResult<ProductDto>>(
+                MessageCodes.PAGINATION_INVALID_PAGE_SIZE
+            );
+
+        if (string.IsNullOrWhiteSpace(languageCode))
+            return Result.Failure<CursorPaginatedResult<ProductDto>>("Language code is required");
+
+        // Get the language by code
+        var languageResult = await _languageRepository.GetFirstOrDefaultAsync(l =>
+            l.Code == languageCode && l.IsActive && !l.IsDeleted
+        );
+        if (languageResult.IsFailure || languageResult.Value == null)
+            return Result.Failure<CursorPaginatedResult<ProductDto>>(
+                MessageCodes.LANGUAGE_NOT_FOUND
+            );
+
+        var language = languageResult.Value;
+
+        // Get ProductsPages with included product types
+        var productsPagesResult =
+            await _productsPagesRepository.GetByIdWithLocalizationsAndIncludedTypesAsync(
+                productsPagesId
+            );
+        if (productsPagesResult == null)
+            return Result.Failure<CursorPaginatedResult<ProductDto>>("ProductsPages not found");
+
+        // Extract the included product category IDs
+        var includedCategoryIds = productsPagesResult
+            .IncludedProductTypes.Select(ipt => ipt.ProductCategoryId)
+            .ToHashSet();
+
+        if (!includedCategoryIds.Any())
+            return Result.Success(
+                new CursorPaginatedResult<ProductDto>([], null, null, false, false, pageSize, 0)
+            );
+
+        // Build query for products filtered by categories
+        var productsQuery = _productRepository
+            .GetQueryable()
+            .Include(p => p.ProductCategory)
+            .Include(p => p.Provider)
+            .Include(p => p.Currency)
+            .Include(p => p.ProductLocalizeds)
+            .ThenInclude(pl => pl.Language)
+            .Include(p => p.ProductMedias)
+            .Where(p => includedCategoryIds.Contains(p.CategoryId))
+            .AsQueryable();
+
+        // Apply active filter if specified
+        if (activeOnly.HasValue)
+        {
+            productsQuery = productsQuery.Where(p => p.IsActive == activeOnly.Value);
+        }
+
+        // Filter out deleted items
+        productsQuery = productsQuery.Where(p => !p.IsDeleted);
+
+        // Apply cursor pagination
+        if (cursor.HasValue)
+        {
+            productsQuery = productsQuery.Where(p => p.Id > cursor.Value);
+        }
+
+        // Order by ID for consistent cursor pagination
+        productsQuery = productsQuery.OrderBy(p => p.Id);
+
+        // Get one extra item to determine if there's a next page
+        var products = await productsQuery.Take(pageSize + 1).ToListAsync(cancellationToken);
+
+        var hasNextPage = products.Count > pageSize;
+        if (hasNextPage)
+        {
+            products = products.Take(pageSize).ToList();
+        }
+
+        var productDtos = new List<ProductDto>();
+        foreach (var product in products)
+        {
+            var dto = await MapToLocalizedDtoAsync(product, language, cancellationToken);
+            productDtos.Add(dto);
+        }
+
+        // Determine cursors
+        int? nextCursor = hasNextPage && products.Any() ? products.Last().Id : null;
+        int? previousCursor = cursor;
+        bool hasPreviousPage = cursor.HasValue;
+
+        // Get total count for included categories (optional, can be expensive for large datasets)
+        var totalCountQuery = _productRepository
+            .GetQueryable()
+            .Where(p => includedCategoryIds.Contains(p.CategoryId) && !p.IsDeleted);
+
+        if (activeOnly.HasValue)
+        {
+            totalCountQuery = totalCountQuery.Where(p => p.IsActive == activeOnly.Value);
+        }
+
+        var totalCount = await totalCountQuery.CountAsync(cancellationToken);
+
+        var cursorPaginatedResult = new CursorPaginatedResult<ProductDto>(
+            productDtos,
+            nextCursor,
+            previousCursor,
+            hasNextPage,
+            hasPreviousPage,
+            pageSize,
+            totalCount
+        );
+
+        return Result.Success(cursorPaginatedResult);
     }
 
     private Result ValidateUpdateWithMediaDto(UpdateProductWithMediaDto updateDto)

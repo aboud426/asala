@@ -18,6 +18,8 @@ public class ProductsPagesConfiguration : IEntityTypeConfiguration<ProductsPages
             .WithOne(x => x.ProductsPages)
             .HasForeignKey(x => x.ProductsPagesId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasQueryFilter(x => !x.IsDeleted);
     }
 }
 
@@ -43,5 +45,11 @@ public class ProductsPagesLocalizedConfiguration : IEntityTypeConfiguration<Prod
             .WithMany(x => x.Localizations)
             .HasForeignKey(x => x.ProductsPagesId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder
+            .HasOne(x => x.Language)
+            .WithMany()
+            .HasForeignKey(x => x.LanguageId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

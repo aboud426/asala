@@ -1,3 +1,5 @@
+using Asala.Core.Modules.Languages.DTOs;
+
 namespace Asala.Core.Modules.ClientPages.DTOs;
 
 public class ProductsPagesDto
@@ -50,6 +52,8 @@ public class ProductsPagesLocalizedDto
     public string NameLocalized { get; set; } = null!;
     public string DescriptionLocalized { get; set; } = null!;
     public int LanguageId { get; set; }
+    public string LanguageName { get; set; } = null!;
+    public string LanguageCode { get; set; } = null!;
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

@@ -25,6 +25,7 @@ import {
   PieChart,
   LogOut,
   User,
+  FileText,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -114,6 +115,12 @@ const navigationItems = [
     titleAr: 'أنواع المنشورات',
     href: '/post-types',
     icon: Tag,
+  },
+  {
+    title: 'Products Pages',
+    titleAr: 'صفحات المنتجات',
+    href: '/products-pages',
+    icon: FileText,
   },
   {
     title: 'Regions',

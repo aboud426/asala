@@ -3,6 +3,7 @@ using Asala.Core.Common.Models;
 using Asala.Core.Modules.ClientPages.Db;
 using Asala.Core.Modules.ClientPages.DTOs;
 using Asala.Core.Modules.ClientPages.Models;
+using Asala.Core.Modules.Languages.DTOs;
 using Microsoft.EntityFrameworkCore;
 
 namespace Asala.UseCases.ClientPages;
@@ -31,33 +32,30 @@ public class ProductsPagesService : IProductsPagesService
     public async Task<Result<PaginatedResult<ProductsPagesDto>>> GetPaginatedAsync(
         int page,
         int pageSize,
-        bool activeOnly = true,
+        bool? activeOnly = null,
         CancellationToken cancellationToken = default
     )
     {
         if (page < MinPage)
-            return Result.Failure<PaginatedResult<ProductsPagesDto>>(
-                MessageCodes.InvalidPage,
-                $"Page must be at least {MinPage}"
-            );
+            return Result.Failure<PaginatedResult<ProductsPagesDto>>(MessageCodes.INVALID_PAGE);
 
         if (pageSize < MinPageSize || pageSize > MaxPageSize)
             return Result.Failure<PaginatedResult<ProductsPagesDto>>(
-                MessageCodes.InvalidPageSize,
-                $"Page size must be between {MinPageSize} and {MaxPageSize}"
+                MessageCodes.INVALID_PAGE_SIZE
             );
 
         try
         {
             var queryable = _productsPagesRepository.GetQueryable();
 
-            if (activeOnly)
-                queryable = queryable.Where(x => x.IsActive);
+            if (activeOnly.HasValue)
+                queryable = queryable.Where(x => x.IsActive == activeOnly.Value);
 
             var totalCount = await queryable.CountAsync(cancellationToken);
 
             var productsPages = await queryable
                 .Include(x => x.Localizations.Where(l => l.IsActive))
+                .ThenInclude(l => l.Language)
                 .Include(x => x.IncludedProductTypes)
                 .ThenInclude(i => i.ProductCategory)
                 .OrderBy(x => x.Name)
@@ -74,8 +72,8 @@ public class ProductsPagesService : IProductsPagesService
         catch (Exception ex)
         {
             return Result.Failure<PaginatedResult<ProductsPagesDto>>(
-                MessageCodes.InternalServerError,
-                ex.Message
+                MessageCodes.INTERNAL_SERVER_ERROR,
+                ex
             );
         }
     }
@@ -91,16 +89,13 @@ public class ProductsPagesService : IProductsPagesService
                 await _productsPagesRepository.GetByIdWithLocalizationsAndIncludedTypesAsync(id);
 
             if (productsPages == null)
-                return Result.Failure<ProductsPagesDto>(
-                    MessageCodes.NotFound,
-                    "ProductsPages not found"
-                );
+                return Result.Failure<ProductsPagesDto>(MessageCodes.PRODUCTS_PAGES_NOT_FOUND);
 
             return Result.Success(MapToDto(productsPages));
         }
         catch (Exception ex)
         {
-            return Result.Failure<ProductsPagesDto>(MessageCodes.InternalServerError, ex.Message);
+            return Result.Failure<ProductsPagesDto>(MessageCodes.INTERNAL_SERVER_ERROR, ex);
         }
     }
 
@@ -110,10 +105,7 @@ public class ProductsPagesService : IProductsPagesService
     )
     {
         if (string.IsNullOrWhiteSpace(key))
-            return Result.Failure<ProductsPagesDto>(
-                MessageCodes.InvalidInput,
-                "Key cannot be empty"
-            );
+            return Result.Failure<ProductsPagesDto>(MessageCodes.INVALID_INPUT);
 
         try
         {
@@ -121,16 +113,13 @@ public class ProductsPagesService : IProductsPagesService
                 await _productsPagesRepository.GetByKeyWithLocalizationsAndIncludedTypesAsync(key);
 
             if (productsPages == null)
-                return Result.Failure<ProductsPagesDto>(
-                    MessageCodes.NotFound,
-                    "ProductsPages not found"
-                );
+                return Result.Failure<ProductsPagesDto>(MessageCodes.PRODUCTS_PAGES_NOT_FOUND);
 
             return Result.Success(MapToDto(productsPages));
         }
         catch (Exception ex)
         {
-            return Result.Failure<ProductsPagesDto>(MessageCodes.InternalServerError, ex.Message);
+            return Result.Failure<ProductsPagesDto>(MessageCodes.INTERNAL_SERVER_ERROR, ex);
         }
     }
 
@@ -140,22 +129,13 @@ public class ProductsPagesService : IProductsPagesService
     )
     {
         if (createDto == null)
-            return Result.Failure<ProductsPagesDto>(
-                MessageCodes.InvalidInput,
-                "Create data cannot be null"
-            );
+            return Result.Failure<ProductsPagesDto>(MessageCodes.INVALID_INPUT);
 
         if (string.IsNullOrWhiteSpace(createDto.Key))
-            return Result.Failure<ProductsPagesDto>(
-                MessageCodes.InvalidInput,
-                "Key cannot be empty"
-            );
+            return Result.Failure<ProductsPagesDto>(MessageCodes.INVALID_INPUT);
 
         if (string.IsNullOrWhiteSpace(createDto.Name))
-            return Result.Failure<ProductsPagesDto>(
-                MessageCodes.InvalidInput,
-                "Name cannot be empty"
-            );
+            return Result.Failure<ProductsPagesDto>(MessageCodes.INVALID_INPUT);
 
         try
         {
@@ -163,8 +143,7 @@ public class ProductsPagesService : IProductsPagesService
             var existingProductsPages = await _productsPagesRepository.GetByKeyAsync(createDto.Key);
             if (existingProductsPages != null)
                 return Result.Failure<ProductsPagesDto>(
-                    MessageCodes.AlreadyExists,
-                    "ProductsPages with this key already exists"
+                    MessageCodes.PRODUCTS_PAGES_KEY_ALREADY_EXISTS
                 );
 
             var productsPages = new ProductsPages
@@ -183,16 +162,18 @@ public class ProductsPagesService : IProductsPagesService
             // Add localizations if provided
             if (createDto.Localizations?.Any() == true)
             {
-                var localizations = createDto.Localizations.Select(locDto => new ProductsPagesLocalized
-                {
-                    ProductsPagesId = productsPages.Id,
-                    NameLocalized = locDto.NameLocalized,
-                    DescriptionLocalized = locDto.DescriptionLocalized,
-                    LanguageId = locDto.LanguageId,
-                    IsActive = true,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                });
+                var localizations = createDto.Localizations.Select(
+                    locDto => new ProductsPagesLocalized
+                    {
+                        ProductsPagesId = productsPages.Id,
+                        NameLocalized = locDto.NameLocalized,
+                        DescriptionLocalized = locDto.DescriptionLocalized,
+                        LanguageId = locDto.LanguageId,
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow,
+                    }
+                );
 
                 await _productsPagesLocalizedRepository.AddRangeAsync(localizations);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -213,7 +194,7 @@ public class ProductsPagesService : IProductsPagesService
         }
         catch (Exception ex)
         {
-            return Result.Failure<ProductsPagesDto>(MessageCodes.InternalServerError, ex.Message);
+            return Result.Failure<ProductsPagesDto>(MessageCodes.INTERNAL_SERVER_ERROR, ex);
         }
     }
 
@@ -223,66 +204,73 @@ public class ProductsPagesService : IProductsPagesService
         CancellationToken cancellationToken = default
     )
     {
+        // Input validation
         if (updateDto == null)
-            return Result.Failure<ProductsPagesDto>(
-                MessageCodes.InvalidInput,
-                "Update data cannot be null"
-            );
+            return Result.Failure<ProductsPagesDto>(MessageCodes.INVALID_INPUT);
 
         if (string.IsNullOrWhiteSpace(updateDto.Key))
-            return Result.Failure<ProductsPagesDto>(
-                MessageCodes.InvalidInput,
-                "Key cannot be empty"
-            );
+            return Result.Failure<ProductsPagesDto>(MessageCodes.INVALID_INPUT);
 
         if (string.IsNullOrWhiteSpace(updateDto.Name))
-            return Result.Failure<ProductsPagesDto>(
-                MessageCodes.InvalidInput,
-                "Name cannot be empty"
-            );
+            return Result.Failure<ProductsPagesDto>(MessageCodes.INVALID_INPUT);
 
         try
         {
-            var productsPages = await _productsPagesRepository.GetByIdAsync(id);
-            if (productsPages == null)
-                return Result.Failure<ProductsPagesDto>(
-                    MessageCodes.NotFound,
-                    "ProductsPages not found"
-                );
+            // Check if entity exists
+            var existingProductsPages =
+                await _productsPagesRepository.GetByIdWithLocalizationsAndIncludedTypesAsync(id);
+            if (existingProductsPages == null)
+                return Result.Failure<ProductsPagesDto>(MessageCodes.PRODUCTS_PAGES_NOT_FOUND);
 
-            // Check if key already exists (excluding current entity)
-            var existingWithKey = await _productsPagesRepository.GetByKeyAsync(updateDto.Key);
-            if (existingWithKey != null && existingWithKey.Id != id)
-                return Result.Failure<ProductsPagesDto>(
-                    MessageCodes.AlreadyExists,
-                    "ProductsPages with this key already exists"
-                );
+            // Check if key is being changed and if new key already exists
+            if (existingProductsPages.Key != updateDto.Key)
+            {
+                var existingWithKey = await _productsPagesRepository.GetByKeyAsync(updateDto.Key);
+                if (existingWithKey != null)
+                    return Result.Failure<ProductsPagesDto>(
+                        MessageCodes.PRODUCTS_PAGES_KEY_ALREADY_EXISTS
+                    );
+            }
 
-            productsPages.Key = updateDto.Key;
-            productsPages.Name = updateDto.Name;
-            productsPages.Description = updateDto.Description;
-            productsPages.IsActive = updateDto.IsActive;
-            productsPages.UpdatedAt = DateTime.UtcNow;
+            // Update basic properties
+            existingProductsPages.Key = updateDto.Key;
+            existingProductsPages.Name = updateDto.Name;
+            existingProductsPages.Description = updateDto.Description;
+            existingProductsPages.IsActive = updateDto.IsActive;
+            existingProductsPages.UpdatedAt = DateTime.UtcNow;
 
-            await _productsPagesRepository.UpdateAsync(productsPages);
+            // Update the main entity
+            var updateResult = _productsPagesRepository.Update(existingProductsPages);
+            if (updateResult.IsFailure)
+                return Result.Failure<ProductsPagesDto>(updateResult.MessageCode);
 
-            // Update localizations
-            await UpdateLocalizationsAsync(id, updateDto.Localizations, cancellationToken);
-
-            // Update included product categories
-            await _productsPagesRepository.UpdateIncludedProductTypesAsync(
-                id,
-                updateDto.IncludedProductCategoryIds ?? new List<int>()
-            );
-
+            // Save changes for the main entity first
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            var result = await GetByIdAsync(productsPages.Id, cancellationToken);
+            // Update localizations if provided
+            if (updateDto.Localizations?.Any() == true)
+            {
+                await UpdateLocalizationsAsync(id, updateDto.Localizations, cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+            }
+
+            // Update included product categories if provided
+            if (updateDto.IncludedProductCategoryIds != null)
+            {
+                await _productsPagesRepository.UpdateIncludedProductTypesAsync(
+                    id,
+                    updateDto.IncludedProductCategoryIds
+                );
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+            }
+
+            // Return the updated entity with all related data
+            var result = await GetByIdAsync(id, cancellationToken);
             return result;
         }
         catch (Exception ex)
         {
-            return Result.Failure<ProductsPagesDto>(MessageCodes.InternalServerError, ex.Message);
+            return Result.Failure<ProductsPagesDto>(MessageCodes.INTERNAL_SERVER_ERROR, ex);
         }
     }
 
@@ -290,21 +278,26 @@ public class ProductsPagesService : IProductsPagesService
     {
         try
         {
-            var productsPages = await _productsPagesRepository.GetByIdAsync(id);
+            var productsPages =
+                await _productsPagesRepository.GetByIdWithLocalizationsAndIncludedTypesAsync(id);
             if (productsPages == null)
-                return Result.Failure(MessageCodes.NotFound, "ProductsPages not found");
+                return Result.Failure(MessageCodes.PRODUCTS_PAGES_NOT_FOUND);
 
-            productsPages.IsActive = false;
+            productsPages.IsDeleted = true;
+            productsPages.DeletedAt = DateTime.UtcNow;
             productsPages.UpdatedAt = DateTime.UtcNow;
 
-            await _productsPagesRepository.UpdateAsync(productsPages);
+            var updateResult = _productsPagesRepository.Update(productsPages);
+            if (updateResult.IsFailure)
+                return Result.Failure(updateResult.MessageCode);
+
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Result.Success();
         }
         catch (Exception ex)
         {
-            return Result.Failure(MessageCodes.InternalServerError, ex.Message);
+            return Result.Failure(MessageCodes.INTERNAL_SERVER_ERROR, ex);
         }
     }
 
@@ -315,21 +308,25 @@ public class ProductsPagesService : IProductsPagesService
     {
         try
         {
-            var productsPages = await _productsPagesRepository.GetByIdAsync(id);
+            var productsPages =
+                await _productsPagesRepository.GetByIdWithLocalizationsAndIncludedTypesAsync(id);
             if (productsPages == null)
-                return Result.Failure(MessageCodes.NotFound, "ProductsPages not found");
+                return Result.Failure(MessageCodes.PRODUCTS_PAGES_NOT_FOUND);
 
             productsPages.IsActive = !productsPages.IsActive;
             productsPages.UpdatedAt = DateTime.UtcNow;
 
-            await _productsPagesRepository.UpdateAsync(productsPages);
+            var updateResult = _productsPagesRepository.Update(productsPages);
+            if (updateResult.IsFailure)
+                return Result.Failure(updateResult.MessageCode);
+
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Result.Success();
         }
         catch (Exception ex)
         {
-            return Result.Failure(MessageCodes.InternalServerError, ex.Message);
+            return Result.Failure(MessageCodes.INTERNAL_SERVER_ERROR, ex);
         }
     }
 
@@ -339,14 +336,19 @@ public class ProductsPagesService : IProductsPagesService
     {
         try
         {
-            var productsPages = await _productsPagesRepository.GetAllAsync();
-            var dropdownItems = productsPages
-                .Where(x => x.IsActive)
+            var getAllResult = await _productsPagesRepository.GetAllAsync();
+            if (getAllResult.IsFailure)
+                return Result.Failure<IEnumerable<ProductsPagesDropdownDto>>(
+                    getAllResult.MessageCode
+                );
+
+            var dropdownItems = getAllResult
+                .Value.Where(x => x.IsActive)
                 .Select(x => new ProductsPagesDropdownDto
                 {
                     Id = x.Id,
                     Key = x.Key,
-                    Name = x.Name
+                    Name = x.Name,
                 })
                 .OrderBy(x => x.Name)
                 .ToList();
@@ -356,8 +358,8 @@ public class ProductsPagesService : IProductsPagesService
         catch (Exception ex)
         {
             return Result.Failure<IEnumerable<ProductsPagesDropdownDto>>(
-                MessageCodes.InternalServerError,
-                ex.Message
+                MessageCodes.INTERNAL_SERVER_ERROR,
+                ex
             );
         }
     }
@@ -370,9 +372,10 @@ public class ProductsPagesService : IProductsPagesService
     {
         try
         {
-            var productsPages = await _productsPagesRepository.GetByIdAsync(id);
+            var productsPages =
+                await _productsPagesRepository.GetByIdWithLocalizationsAndIncludedTypesAsync(id);
             if (productsPages == null)
-                return Result.Failure(MessageCodes.NotFound, "ProductsPages not found");
+                return Result.Failure(MessageCodes.PRODUCTS_PAGES_NOT_FOUND);
 
             await _productsPagesRepository.UpdateIncludedProductTypesAsync(
                 id,
@@ -384,7 +387,7 @@ public class ProductsPagesService : IProductsPagesService
         }
         catch (Exception ex)
         {
-            return Result.Failure(MessageCodes.InternalServerError, ex.Message);
+            return Result.Failure(MessageCodes.INTERNAL_SERVER_ERROR, ex);
         }
     }
 
@@ -413,7 +416,8 @@ public class ProductsPagesService : IProductsPagesService
                     existing.IsActive = locDto.IsActive;
                     existing.UpdatedAt = DateTime.UtcNow;
 
-                    await _productsPagesLocalizedRepository.UpdateAsync(existing);
+                    var updateResult = _productsPagesLocalizedRepository.Update(existing);
+                    // Note: Error handling could be added here if needed
                 }
             }
             else
@@ -446,41 +450,45 @@ public class ProductsPagesService : IProductsPagesService
             IsActive = productsPages.IsActive,
             CreatedAt = productsPages.CreatedAt,
             UpdatedAt = productsPages.UpdatedAt,
-            Localizations = productsPages.Localizations
-                ?.Select(l => new ProductsPagesLocalizedDto
-                {
-                    Id = l.Id,
-                    ProductsPagesId = l.ProductsPagesId,
-                    NameLocalized = l.NameLocalized,
-                    DescriptionLocalized = l.DescriptionLocalized,
-                    LanguageId = l.LanguageId,
-                    IsActive = l.IsActive,
-                    CreatedAt = l.CreatedAt,
-                    UpdatedAt = l.UpdatedAt,
-                })
-                .ToList() ?? new List<ProductsPagesLocalizedDto>(),
-            IncludedProductTypes = productsPages.IncludedProductTypes
-                ?.Select(ipt => new IncludedProductTypeDto
-                {
-                    Id = ipt.Id,
-                    ProductsPagesId = ipt.ProductsPagesId,
-                    ProductCategoryId = ipt.ProductCategoryId,
-                    ProductCategory = new ProductCategoryDto
+            Localizations =
+                productsPages
+                    .Localizations?.Select(l => new ProductsPagesLocalizedDto
                     {
-                        Id = ipt.ProductCategory.Id,
-                        Name = ipt.ProductCategory.Name,
-                        Description = ipt.ProductCategory.Description,
-                        ParentId = ipt.ProductCategory.ParentId,
-                        ImageUrl = ipt.ProductCategory.ImageUrl,
-                        IsActive = ipt.ProductCategory.IsActive,
-                        CreatedAt = ipt.ProductCategory.CreatedAt,
-                        UpdatedAt = ipt.ProductCategory.UpdatedAt,
-                    },
-                    IsActive = ipt.IsActive,
-                    CreatedAt = ipt.CreatedAt,
-                    UpdatedAt = ipt.UpdatedAt,
-                })
-                .ToList() ?? new List<IncludedProductTypeDto>(),
+                        Id = l.Id,
+                        ProductsPagesId = l.ProductsPagesId,
+                        NameLocalized = l.NameLocalized,
+                        DescriptionLocalized = l.DescriptionLocalized,
+                        LanguageId = l.LanguageId,
+                        IsActive = l.IsActive,
+                        CreatedAt = l.CreatedAt,
+                        UpdatedAt = l.UpdatedAt,
+                        LanguageCode = l.Language?.Code ?? string.Empty,
+                        LanguageName = l.Language?.Name ?? string.Empty,
+                    })
+                    .ToList() ?? new List<ProductsPagesLocalizedDto>(),
+            IncludedProductTypes =
+                productsPages
+                    .IncludedProductTypes?.Select(ipt => new IncludedProductTypeDto
+                    {
+                        Id = ipt.Id,
+                        ProductsPagesId = ipt.ProductsPagesId,
+                        ProductCategoryId = ipt.ProductCategoryId,
+                        ProductCategory = new ProductCategoryDto
+                        {
+                            Id = ipt.ProductCategory.Id,
+                            Name = ipt.ProductCategory.Name,
+                            Description = ipt.ProductCategory.Description,
+                            ParentId = ipt.ProductCategory.ParentId,
+                            ImageUrl = ipt.ProductCategory.ImageUrl,
+                            IsActive = ipt.ProductCategory.IsActive,
+                            CreatedAt = ipt.ProductCategory.CreatedAt,
+                            UpdatedAt = ipt.ProductCategory.UpdatedAt,
+                        },
+                        IsActive = ipt.IsActive,
+                        CreatedAt = ipt.CreatedAt,
+                        UpdatedAt = ipt.UpdatedAt,
+                    })
+                    .ToList() ?? new List<IncludedProductTypeDto>(),
         };
     }
 }

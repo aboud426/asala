@@ -55,7 +55,7 @@ public class ProductsPagesRepository : Repository<ProductsPages, int>, IProducts
             .Include(x => x.Localizations)
             .Include(x => x.IncludedProductTypes)
             .ThenInclude(i => i.ProductCategory)
-            .FirstOrDefaultAsync(x => x.Id == id && x.IsActive);
+            .FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public async Task<ProductsPages?> GetByKeyWithLocalizationsAndIncludedTypesAsync(string key)
@@ -76,6 +76,11 @@ public class ProductsPagesRepository : Repository<ProductsPages, int>, IProducts
         {
             ProductsPagesId = productsPagesId,
             ProductCategoryId = categoryId,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            DeletedAt = null,
+            IsDeleted = false,
         });
 
         await _context.Set<IncludedProductType>().AddRangeAsync(includedProductTypes);

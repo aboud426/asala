@@ -29,4 +29,13 @@ public interface IProductService
         int id,
         CancellationToken cancellationToken = default
     );
+
+    Task<Result<CursorPaginatedResult<ProductDto>>> GetProductsByPageWithCursorAsync(
+        int productsPagesId,
+        string languageCode,
+        int? cursor = null,
+        int pageSize = 10,
+        bool? activeOnly = null,
+        CancellationToken cancellationToken = default
+    );
 }

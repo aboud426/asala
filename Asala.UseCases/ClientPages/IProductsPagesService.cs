@@ -8,7 +8,7 @@ public interface IProductsPagesService
     Task<Result<PaginatedResult<ProductsPagesDto>>> GetPaginatedAsync(
         int page,
         int pageSize,
-        bool activeOnly = true,
+        bool? activeOnly = null,
         CancellationToken cancellationToken = default
     );
 

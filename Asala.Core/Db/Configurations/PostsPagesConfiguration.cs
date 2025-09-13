@@ -49,5 +49,11 @@ public class PostsPagesLocalizedConfiguration : IEntityTypeConfiguration<PostsPa
             .WithMany(x => x.Localizations)
             .HasForeignKey(x => x.PostsPagesId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder
+            .HasOne(x => x.Language)
+            .WithMany()
+            .HasForeignKey(x => x.LanguageId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
