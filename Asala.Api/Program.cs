@@ -2,7 +2,9 @@ using System.Reflection;
 using System.Text;
 using Asala.Core.Common.Extensions;
 using Asala.Core.Common.Jwt;
+using Asala.UseCases;
 using Asala.UseCases.Extensions;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -13,6 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDataAccess(builder.Configuration);
 builder.Services.AddUseCases(builder.Configuration);
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<AssemblyReference>());
 
 // Add CORS
 builder.Services.AddCors(options =>

@@ -26,6 +26,7 @@ public class PostRepository : BaseRepository<Post, int>, IPostRepository
                 .ThenInclude(pl => pl.Language)
                 .Include(p => p.PostType)
                 .Include(p => p.User)
+                .Include(p => p.PostMedias)
                 .Where(p => !p.IsDeleted);
 
             if (activeOnly.HasValue)
@@ -66,6 +67,7 @@ public class PostRepository : BaseRepository<Post, int>, IPostRepository
                 .ThenInclude(pl => pl.Language)
                 .Include(p => p.PostType)
                 .Include(p => p.User)
+                .Include(p => p.PostMedias)
                 .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted, cancellationToken);
 
             return Result.Success(post);

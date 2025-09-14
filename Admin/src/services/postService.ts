@@ -113,12 +113,12 @@ class PostService {
 
         try {
             const response = await fetch(url, defaultOptions);
-            
+
             // Handle non-200 HTTP status codes (network/server errors)
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            
+
             const data: ApiResponse<T> = await response.json();
             return data;
         } catch (error) {
@@ -291,10 +291,10 @@ class PostService {
     }> => {
         const { postsPagesId, languageCode = 'en', cursor, pageSize = 10 } = params;
         const queryParams = new URLSearchParams();
-        
+
         queryParams.append('languageCode', languageCode);
         queryParams.append('pageSize', pageSize.toString());
-        
+
         if (cursor !== undefined) {
             queryParams.append('cursor', cursor.toString());
         }

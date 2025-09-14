@@ -4,6 +4,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import {
   Form,
   FormControl,
@@ -22,6 +23,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ImageUpload } from '@/components/ui/image-upload';
 import {
   Plus,
   Trash2,
@@ -34,6 +36,9 @@ import {
   Globe,
   AlertCircle,
   Loader2,
+  TrendingUp,
+  TrendingDown,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { useDirection } from '@/contexts/DirectionContext';
 import { Switch } from '@/components/ui/switch';
@@ -55,6 +60,7 @@ interface EditPostFormData {
   postTypeId: number;
   isActive: boolean;
   localizations: UpdatePostLocalizedDto[];
+  mediaUrls: { url: string }[];
 }
 
 const EditPost: React.FC = () => {
@@ -109,6 +115,7 @@ const EditPost: React.FC = () => {
       postTypeId: 0,
       isActive: true,
       localizations: [],
+      mediaUrls: [],
     },
   });
 
@@ -126,6 +133,7 @@ const EditPost: React.FC = () => {
           descriptionLocalized: loc.descriptionLocalized,
           isActive: loc.isActive,
         })),
+        mediaUrls: (post.mediaUrls || []).map(url => ({ url })),
       });
     }
   }, [post, form]);
@@ -133,6 +141,11 @@ const EditPost: React.FC = () => {
   const { fields: localizationFields, append: appendLocalization, remove: removeLocalization } = useFieldArray({
     control: form.control,
     name: 'localizations',
+  });
+
+  const { fields: mediaFields, append: appendMedia, remove: removeMedia } = useFieldArray({
+    control: form.control,
+    name: 'mediaUrls',
   });
 
   const handleUpdatePost = async (data: EditPostFormData) => {
@@ -144,6 +157,7 @@ const EditPost: React.FC = () => {
         numberOfReactions: data.numberOfReactions,
         postTypeId: data.postTypeId,
         isActive: data.isActive,
+        mediaUrls: data.mediaUrls.map(media => media.url).filter(url => url.trim() !== ''),
         localizations: data.localizations,
       };
 
@@ -159,6 +173,10 @@ const EditPost: React.FC = () => {
       descriptionLocalized: '',
       isActive: true,
     });
+  };
+
+  const addMedia = () => {
+    appendMedia({ url: '' });
   };
 
   const handleCancel = () => {
@@ -272,20 +290,63 @@ const EditPost: React.FC = () => {
             </h1>
             <p className="text-muted-foreground">
               {isRTL
-                ? `تعديل المنشور #${post.id}`
-                : `Edit post #${post.id}`}
+                ? `منشور #${post.id} - ${post.postTypeName || 'نوع المنشور'}`
+                : `Post #${post.id} - ${post.postTypeName || 'Post Type'}`}
             </p>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleCancel}
-            className="gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            {isRTL ? 'رجوع' : 'Back'}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={handleCancel} className="gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              {isRTL ? 'رجوع' : 'Back'}
+            </Button>
+          </div>
         </div>
+
+        {/* Status and Quick Info */}
+        <Card className="border-0 shadow-elegant">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center border border-border/20">
+                    <MessageCircle className="w-8 h-8 text-primary/50" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-lg">{isRTL ? 'تعديل منشور' : 'Edit Post'}</span>
+                      <Badge variant="outline">#{post.id}</Badge>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {post.postTypeName || (isRTL ? 'نوع المنشور' : 'Post Type')} • {isRTL ? 'بواسطة مستخدم' : 'by User'} #{post.userId}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <Badge variant={post.isActive ? 'default' : 'secondary'} className="flex items-center gap-1">
+                  {post.isActive ? (
+                    <TrendingUp className="w-3 h-3" />
+                  ) : (
+                    <TrendingDown className="w-3 h-3" />
+                  )}
+                  {post.isActive ? (isRTL ? 'نشط' : 'Active') : (isRTL ? 'غير نشط' : 'Inactive')}
+                </Badge>
+                <Badge variant="outline" className="gap-1">
+                  <Heart className="w-3 h-3 text-red-500" />
+                  {post.numberOfReactions} {isRTL ? 'تفاعل' : 'reactions'}
+                </Badge>
+                <Badge variant="outline" className="gap-1">
+                  <Globe className="w-3 h-3" />
+                  {post.localizations.length} {isRTL ? 'ترجمة' : 'translations'}
+                </Badge>
+                <Badge variant="outline" className="gap-1">
+                  <ImageIcon className="w-3 h-3" />
+                  {form.watch('mediaUrls')?.length || 0} {isRTL ? 'ملف وسائط' : 'media files'}
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleUpdatePost)} className="space-y-6">
@@ -297,16 +358,19 @@ const EditPost: React.FC = () => {
                   {isRTL ? 'المعلومات الأساسية' : 'Basic Information'}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
                 {/* Display User Info (Read-only) */}
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-6 md:grid-cols-2">
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                       <User className="w-4 h-4" />
                       {isRTL ? 'المستخدم' : 'User'}
                     </div>
-                    <div className="text-sm bg-muted/50 p-3 rounded-md border">
-                      {isRTL ? 'مستخدم' : 'User'} #{post.userId}
+                    <div className="text-sm bg-muted/50 p-4 rounded-lg border">
+                      <div className="flex items-center gap-2">
+                        <User className="w-4 h-4" />
+                        <span>{isRTL ? 'مستخدم' : 'User'} #{post.userId}</span>
+                      </div>
                     </div>
                   </div>
 
@@ -354,23 +418,26 @@ const EditPost: React.FC = () => {
                   rules={{ required: isRTL ? 'وصف المنشور مطلوب' : 'Post description is required' }}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{isRTL ? 'وصف المنشور' : 'Post Description'}</FormLabel>
+                      <FormLabel className="flex items-center gap-2">
+                        <FileText className="w-4 h-4" />
+                        {isRTL ? 'وصف المنشور' : 'Post Description'}
+                      </FormLabel>
                       <FormControl>
-                        <Textarea {...field} rows={4} />
+                        <Textarea {...field} rows={4} className="bg-background" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-6 md:grid-cols-2">
                   <FormField
                     control={form.control}
                     name="numberOfReactions"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2">
-                          <Heart className="w-4 h-4" />
+                          <Heart className="w-4 h-4 text-red-500" />
                           {isRTL ? 'عدد التفاعلات' : 'Number of Reactions'}
                         </FormLabel>
                         <FormControl>
@@ -378,6 +445,7 @@ const EditPost: React.FC = () => {
                             {...field} 
                             type="number" 
                             min="0"
+                            className="bg-background"
                             onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                           />
                         </FormControl>
@@ -390,9 +458,14 @@ const EditPost: React.FC = () => {
                     control={form.control}
                     name="isActive"
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-muted/20">
                         <div className="space-y-0.5">
-                          <FormLabel className="text-base">
+                          <FormLabel className="text-base flex items-center gap-2">
+                            {field.value ? (
+                              <TrendingUp className="w-4 h-4 text-green-500" />
+                            ) : (
+                              <TrendingDown className="w-4 h-4 text-muted-foreground" />
+                            )}
                             {isRTL ? 'مفعل' : 'Active'}
                           </FormLabel>
                           <p className="text-sm text-muted-foreground">
@@ -414,6 +487,82 @@ const EditPost: React.FC = () => {
               </CardContent>
             </Card>
 
+            {/* Media */}
+            <Card className="border-0 shadow-elegant">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="w-5 h-5" />
+                    {isRTL ? 'ملفات الوسائط' : 'Media Files'}
+                  </div>
+                  <Button type="button" variant="outline" size="sm" onClick={addMedia}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    {isRTL ? 'إضافة وسائط' : 'Add Media'}
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {mediaFields.length === 0 ? (
+                  <div className="text-center py-12 bg-muted/20 rounded-lg border-2 border-dashed">
+                    <ImageIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-muted-foreground mb-2">
+                      {isRTL ? 'لا توجد ملفات وسائط' : 'No Media Files'}
+                    </h3>
+                    <p className="text-muted-foreground max-w-md mx-auto">
+                      {isRTL
+                        ? 'لا توجد ملفات وسائط حتى الآن. اضغط "إضافة وسائط" لبدء إضافة الصور أو الفيديوهات.'
+                        : 'No media files added yet. Click "Add Media" to start adding images or videos.'}
+                    </p>
+                  </div>
+                ) : (
+                  mediaFields.map((field, index) => (
+                    <Card key={field.id} className="border-2 border-dashed bg-muted/10">
+                      <CardHeader className="pb-4">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium flex items-center gap-2">
+                            <ImageIcon className="w-4 h-4" />
+                            {isRTL ? 'ملف وسائط' : 'Media File'} {index + 1}
+                          </h4>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeMedia(index)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <FormField
+                          control={form.control}
+                          name={`mediaUrls.${index}.url`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex items-center gap-2">
+                                <ImageIcon className="w-4 h-4" />
+                                {isRTL ? 'رابط الملف' : 'Media URL'}
+                              </FormLabel>
+                              <FormControl>
+                                <ImageUpload
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  folder="posts"
+                                  placeholder={isRTL ? 'https://example.com/media.jpg' : 'https://example.com/media.jpg'}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+
             {/* Localizations */}
             <Card className="border-0 shadow-elegant">
               <CardHeader>
@@ -428,24 +577,31 @@ const EditPost: React.FC = () => {
                   </Button>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
                 {localizationFields.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    {isRTL
-                      ? 'لا توجد ترجمات حتى الآن. اضغط "إضافة ترجمة" لبدء إضافة المحتوى المترجم.'
-                      : 'No translations added yet. Click "Add Translation" to start adding localized content.'}
+                  <div className="text-center py-12 bg-muted/20 rounded-lg border-2 border-dashed">
+                    <Globe className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-muted-foreground mb-2">
+                      {isRTL ? 'لا توجد ترجمات' : 'No Translations'}
+                    </h3>
+                    <p className="text-muted-foreground max-w-md mx-auto">
+                      {isRTL
+                        ? 'لا توجد ترجمات حتى الآن. اضغط "إضافة ترجمة" لبدء إضافة المحتوى المترجم.'
+                        : 'No translations added yet. Click "Add Translation" to start adding localized content.'}
+                    </p>
                   </div>
                 ) : (
                   localizationFields.map((field, index) => (
-                    <Card key={field.id} className="border-2 border-dashed">
-                      <CardHeader className="pb-3">
+                    <Card key={field.id} className="border-2 border-dashed bg-muted/10">
+                      <CardHeader className="pb-4">
                         <div className="flex items-center justify-between">
-                          <h4 className="font-medium">
+                          <h4 className="font-medium flex items-center gap-2">
+                            <Globe className="w-4 h-4" />
                             {isRTL ? 'ترجمة' : 'Translation'} {index + 1}
                             {form.watch(`localizations.${index}.id`) && (
-                              <span className="ml-2 text-xs text-muted-foreground">
-                                (ID: {form.watch(`localizations.${index}.id`)})
-                              </span>
+                              <Badge variant="outline" className="text-xs">
+                                ID: {form.watch(`localizations.${index}.id`)}
+                              </Badge>
                             )}
                           </h4>
                           <Button
@@ -453,25 +609,29 @@ const EditPost: React.FC = () => {
                             variant="ghost"
                             size="sm"
                             onClick={() => removeLocalization(index)}
+                            className="text-destructive hover:text-destructive"
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
                       </CardHeader>
-                      <CardContent className="space-y-4">
+                      <CardContent className="space-y-6">
                         <FormField
                           control={form.control}
                           name={`localizations.${index}.languageId`}
                           rules={{ required: isRTL ? 'اللغة مطلوبة' : 'Language is required' }}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>{isRTL ? 'اللغة' : 'Language'}</FormLabel>
+                              <FormLabel className="flex items-center gap-2">
+                                <Globe className="w-4 h-4" />
+                                {isRTL ? 'اللغة' : 'Language'}
+                              </FormLabel>
                               <Select
                                 value={field.value?.toString() || ''}
                                 onValueChange={(value) => field.onChange(parseInt(value))}
                               >
                                 <FormControl>
-                                  <SelectTrigger>
+                                  <SelectTrigger className="bg-background">
                                     <SelectValue
                                       placeholder={isRTL ? 'اختر اللغة' : 'Select language'}
                                     />
@@ -496,9 +656,12 @@ const EditPost: React.FC = () => {
                           rules={{ required: isRTL ? 'الوصف المترجم مطلوب' : 'Localized description is required' }}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>{isRTL ? 'الوصف المترجم' : 'Localized Description'}</FormLabel>
+                              <FormLabel className="flex items-center gap-2">
+                                <FileText className="w-4 h-4" />
+                                {isRTL ? 'الوصف المترجم' : 'Localized Description'}
+                              </FormLabel>
                               <FormControl>
-                                <Textarea {...field} rows={3} />
+                                <Textarea {...field} rows={3} className="bg-background" />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -509,9 +672,14 @@ const EditPost: React.FC = () => {
                           control={form.control}
                           name={`localizations.${index}.isActive`}
                           render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-muted/30">
                               <div className="space-y-0.5">
-                                <FormLabel className="text-sm">
+                                <FormLabel className="text-sm flex items-center gap-2">
+                                  {field.value ? (
+                                    <TrendingUp className="w-4 h-4 text-green-500" />
+                                  ) : (
+                                    <TrendingDown className="w-4 h-4 text-muted-foreground" />
+                                  )}
                                   {isRTL ? 'ترجمة مفعلة' : 'Active Translation'}
                                 </FormLabel>
                               </div>
@@ -533,18 +701,28 @@ const EditPost: React.FC = () => {
 
             {/* Form Actions */}
             <Card className="border-0 shadow-elegant">
-              <CardContent className="pt-6">
+              <CardContent className="pt-8 pb-6">
                 <div className="flex items-center gap-4 justify-end">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={handleCancel}
                     disabled={updateMutation.isPending}
+                    className="gap-2"
                   >
+                    <ArrowLeft className="w-4 h-4" />
                     {isRTL ? 'إلغاء' : 'Cancel'}
                   </Button>
-                  <Button type="submit" disabled={updateMutation.isPending} className="gap-2">
-                    <Save className="w-4 h-4" />
+                  <Button 
+                    type="submit" 
+                    disabled={updateMutation.isPending} 
+                    className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                  >
+                    {updateMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Save className="w-4 h-4" />
+                    )}
                     {updateMutation.isPending
                       ? (isRTL ? 'جارٍ التحديث...' : 'Updating...')
                       : (isRTL ? 'تحديث المنشور' : 'Update Post')}

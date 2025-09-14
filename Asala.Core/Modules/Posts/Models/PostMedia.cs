@@ -5,5 +5,5 @@ namespace Asala.Core.Modules.Posts.Models;
 public class PostMedia : BaseEntity<int>
 {
     public int PostId { get; set; }
-    public int MediaId { get; set; }
+    public string Url { get; set; } = null!;
 }

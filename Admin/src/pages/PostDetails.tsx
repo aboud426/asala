@@ -20,6 +20,13 @@ import {
   Loader2,
   Calendar,
   FileText,
+  Image as ImageIcon,
+  Video,
+  Play,
+  Download,
+  ExternalLink,
+  ZoomIn,
+  X,
 } from 'lucide-react';
 import { useDirection } from '@/contexts/DirectionContext';
 import { useQuery } from '@tanstack/react-query';
@@ -29,6 +36,37 @@ const PostDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isRTL } = useDirection();
+
+  // Media viewer state
+  const [selectedMedia, setSelectedMedia] = React.useState<string | null>(null);
+  const [mediaType, setMediaType] = React.useState<'image' | 'video' | null>(null);
+
+  // Keyboard navigation for media viewer
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (selectedMedia) {
+        if (event.key === 'Escape') {
+          closeMediaViewer();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [selectedMedia]);
+
+  // Prevent body scroll when media viewer is open
+  React.useEffect(() => {
+    if (selectedMedia) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [selectedMedia]);
 
   // Fetch post details
   const {
@@ -77,6 +115,223 @@ const PostDetails: React.FC = () => {
       return arabicLocalization?.descriptionLocalized || post.description;
     }
     return post.description;
+  };
+
+  const getMediaType = (url: string): 'image' | 'video' | 'unknown' => {
+    const extension = url.split('.').pop()?.toLowerCase();
+    if (!extension) return 'unknown';
+
+    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
+    const videoExtensions = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'];
+
+    if (imageExtensions.includes(extension)) return 'image';
+    if (videoExtensions.includes(extension)) return 'video';
+    return 'unknown';
+  };
+
+  const handleMediaClick = (url: string) => {
+    const type = getMediaType(url);
+    if (type !== 'unknown') {
+      setSelectedMedia(url);
+      setMediaType(type);
+    }
+  };
+
+  const closeMediaViewer = () => {
+    setSelectedMedia(null);
+    setMediaType(null);
+  };
+
+  const downloadMedia = (url: string) => {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = url.split('/').pop() || 'media';
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Media Components
+  const MediaViewer: React.FC = () => {
+    if (!selectedMedia || !mediaType) return null;
+
+    return (
+      <div
+        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        onClick={closeMediaViewer}
+      >
+        <div
+          className="relative max-w-6xl max-h-full w-full h-full flex items-center justify-center"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={closeMediaViewer}
+            className="absolute top-4 right-4 z-10 bg-black/50 hover:bg-black/70 text-white"
+          >
+            <X className="w-4 h-4" />
+          </Button>
+
+          <div className="absolute top-4 left-4 z-10 flex gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => downloadMedia(selectedMedia)}
+              className="bg-black/50 hover:bg-black/70 text-white gap-2"
+            >
+              <Download className="w-4 h-4" />
+              {isRTL ? 'تحميل' : 'Download'}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => window.open(selectedMedia, '_blank')}
+              className="bg-black/50 hover:bg-black/70 text-white gap-2"
+            >
+              <ExternalLink className="w-4 h-4" />
+              {isRTL ? 'فتح' : 'Open'}
+            </Button>
+          </div>
+
+          {mediaType === 'image' ? (
+            <img
+              src={selectedMedia}
+              alt="Media viewer"
+              className="max-w-full max-h-full object-contain rounded-lg"
+            />
+          ) : (
+            <video
+              src={selectedMedia}
+              controls
+              className="max-w-full max-h-full rounded-lg"
+              autoPlay
+            />
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const MediaGallery: React.FC<{ mediaUrls: string[] }> = ({ mediaUrls }) => {
+    if (!mediaUrls || mediaUrls.length === 0) {
+      return (
+        <div className="text-center py-8 bg-muted/20 rounded-lg border-2 border-dashed">
+          <ImageIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-muted-foreground">
+            {isRTL ? 'لا توجد ملفات وسائط مرفقة' : 'No media files attached'}
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        {/* Media count badge */}
+        <div className="flex items-center justify-between">
+          <Badge variant="secondary" className="gap-2">
+            <ImageIcon className="w-4 h-4" />
+            {mediaUrls.length} {isRTL ? 'ملف' : 'files'}
+          </Badge>
+        </div>
+
+        {/* Grid layout for media */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {mediaUrls.map((url, index) => {
+            const type = getMediaType(url);
+            const isVideo = type === 'video';
+
+            return (
+              <Card
+                key={index}
+                className="overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-200 group border-2 border-transparent hover:border-primary/20"
+                onClick={() => handleMediaClick(url)}
+              >
+                <div className="relative aspect-square bg-muted/50">
+                  {isVideo ? (
+                    <>
+                      <video
+                        src={url}
+                        className="w-full h-full object-cover"
+                        muted
+                        preload="metadata"
+                      />
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/20 transition-colors">
+                        <div className="bg-white/90 backdrop-blur-sm rounded-full p-3">
+                          <Play className="w-6 h-6 text-primary fill-primary" />
+                        </div>
+                      </div>
+                      <Badge className="absolute top-2 right-2 gap-1">
+                        <Video className="w-3 h-3" />
+                        {isRTL ? 'فيديو' : 'Video'}
+                      </Badge>
+                    </>
+                  ) : type === 'image' ? (
+                    <>
+                      <img
+                        src={url}
+                        alt={`Media ${index + 1}`}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                        loading="lazy"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder.svg';
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute bottom-2 right-2 bg-white/90 backdrop-blur-sm rounded-full p-2">
+                          <ZoomIn className="w-4 h-4 text-primary" />
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-muted">
+                      <FileText className="w-8 h-8 text-muted-foreground" />
+                      <Badge className="absolute top-2 right-2">
+                        {isRTL ? 'ملف' : 'File'}
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+
+                <CardContent className="p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium truncate">
+                      {url.split('/').pop()?.split('.')[0] || `Media ${index + 1}`}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="w-6 h-6"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          downloadMedia(url);
+                        }}
+                      >
+                        <Download className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="w-6 h-6"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(url, '_blank');
+                        }}
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </div>
+    );
   };
 
   const InfoField: React.FC<{ label: string; value: string | React.ReactNode; icon?: React.ReactNode }> = ({
@@ -247,6 +502,10 @@ const PostDetails: React.FC = () => {
                   <LanguagesIcon className="w-3 h-3" />
                   {post.localizations.length} {isRTL ? 'ترجمة' : 'translations'}
                 </Badge>
+                <Badge variant="outline" className="gap-1">
+                  <ImageIcon className="w-3 h-3" />
+                  {post.mediaUrls?.length || 0} {isRTL ? 'ملف وسائط' : 'media files'}
+                </Badge>
               </div>
             </div>
           </CardContent>
@@ -344,6 +603,19 @@ const PostDetails: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Media Gallery */}
+        <Card className="border-0 shadow-elegant">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ImageIcon className="w-5 h-5" />
+              {isRTL ? 'ملفات الوسائط' : 'Media Files'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <MediaGallery mediaUrls={post.mediaUrls || []} />
+          </CardContent>
+        </Card>
+
         {/* Original Description */}
         <Card className="border-0 shadow-elegant">
           <CardHeader>
@@ -416,6 +688,9 @@ const PostDetails: React.FC = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Media Viewer Modal */}
+        <MediaViewer />
       </div>
     </DashboardLayout>
   );

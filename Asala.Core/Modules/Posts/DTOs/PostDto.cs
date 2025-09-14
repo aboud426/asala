@@ -29,7 +29,6 @@ public class CreatePostDto
 public class UpdatePostDto
 {
     public string Description { get; set; } = null!;
-    public int NumberOfReactions { get; set; }
     public int PostTypeId { get; set; }
     public bool IsActive { get; set; }
     public List<string> MediaUrls { get; set; } = [];

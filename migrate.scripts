@@ -1,6 +1,6 @@
 # main
 
-dotnet ef migrations add AddingPages --context AsalaDbContext
+dotnet ef migrations add AddingMediaUrl --context AsalaDbContext
 
 dotnet ef database update --context AsalaDbContext
 

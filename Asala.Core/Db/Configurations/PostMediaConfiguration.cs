@@ -14,13 +14,7 @@ public class PostMediaConfiguration : IEntityTypeConfiguration<PostMedia>
 
         builder.Property(x => x.PostId).IsRequired();
 
-        builder.Property(x => x.MediaId).IsRequired();
-
         // Indexes
         builder.HasIndex(x => x.PostId);
-        builder.HasIndex(x => x.MediaId);
-
-        // Composite unique constraint for PostId + MediaId
-        builder.HasIndex(x => new { x.PostId, x.MediaId }).IsUnique();
     }
 }

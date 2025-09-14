@@ -103,6 +103,21 @@ public class PostService : IPostService
             PostLocalizeds = CreateLocalizations(createDto.Localizations),
         };
 
+        // Create PostMedia entities for media URLs
+        if (createDto.MediaUrls.Any())
+        {
+            post.PostMedias = createDto
+                .MediaUrls.Select(url => new PostMedia
+                {
+                    Url = url,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    DeletedAt = null,
+                    IsDeleted = false,
+                })
+                .ToList();
+        }
+
         var addResult = await _postRepository.AddAsync(post, cancellationToken);
         if (addResult.IsFailure)
             return Result.Failure<PostDto>(addResult.MessageCode);
@@ -151,18 +166,12 @@ public class PostService : IPostService
 
         // Update post properties
         post.Description = updateDto.Description.Trim();
-        post.NumberOfReactions = updateDto.NumberOfReactions;
         post.PostTypeId = updateDto.PostTypeId;
         post.IsActive = updateDto.IsActive;
         post.UpdatedAt = DateTime.UtcNow;
 
-        // TODO: Handle media URLs - update PostMedia entities if implemented
-        // For now, append media URLs to description as a temporary solution
-        if (updateDto.MediaUrls.Any())
-        {
-            var mediaInfo = $"\n\nMedia URLs: {string.Join(", ", updateDto.MediaUrls)}";
-            post.Description = $"{post.Description}{mediaInfo}".Trim();
-        }
+        // Handle media URLs
+        UpdatePostMedias(post, updateDto.MediaUrls);
 
         // Handle localizations
         UpdateLocalizations(post, updateDto.Localizations);
@@ -177,6 +186,25 @@ public class PostService : IPostService
 
         var dto = MapToDto(post);
         return Result.Success<PostDto?>(dto);
+    }
+
+    private void UpdatePostMedias(Post post, List<string> mediaUrls)
+    {
+        post.PostMedias = [];
+        foreach (var mediaUrl in mediaUrls)
+        {
+            post.PostMedias.Add(
+                new PostMedia
+                {
+                    PostId = post.Id,
+                    Url = mediaUrl,
+                    IsDeleted = false,
+                    DeletedAt = null,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                }
+            );
+        }
     }
 
     public async Task<Result<PostDto?>> CreateWithMediaAsync(
@@ -202,12 +230,19 @@ public class PostService : IPostService
             PostLocalizeds = CreateLocalizations(createDto.Localizations),
         };
 
-        // TODO: Handle media URLs - for now we store them in description or separate table
-        // This would require a PostMedia table implementation
+        // Create PostMedia entities for media URLs
         if (createDto.MediaUrls.Any())
         {
-            var mediaInfo = $"\n\nMedia URLs: {string.Join(", ", createDto.MediaUrls)}";
-            post.Description = $"{post.Description}{mediaInfo}".Trim();
+            post.PostMedias = createDto
+                .MediaUrls.Select(url => new PostMedia
+                {
+                    Url = url,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    IsDeleted = false,
+                    DeletedAt = null,
+                })
+                .ToList();
         }
 
         var addResult = await _postRepository.AddAsync(post, cancellationToken);
@@ -322,6 +357,7 @@ public class PostService : IPostService
             .Include(p => p.PostType)
             .Include(p => p.PostLocalizeds)
             .ThenInclude(pl => pl.Language)
+            .Include(p => p.PostMedias)
             .Where(p => includedTypeIds.Contains(p.PostTypeId))
             .AsQueryable();
 
@@ -597,31 +633,14 @@ public class PostService : IPostService
 
     private static PostDto MapToDto(Post post)
     {
-        // Extract media URLs from description (temporary solution)
-        var mediaUrls = new List<string>();
-        var description = post.Description;
-
-        if (description.Contains("Media URLs:"))
-        {
-            var parts = description.Split(
-                new[] { "\n\nMedia URLs: " },
-                StringSplitOptions.RemoveEmptyEntries
-            );
-            if (parts.Length > 1)
-            {
-                description = parts[0].Trim();
-                var mediaUrlsString = parts[1].Trim();
-                mediaUrls = mediaUrlsString
-                    .Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries)
-                    .ToList();
-            }
-        }
+        // Get media URLs from PostMedias entities
+        var mediaUrls = post.PostMedias.Where(pm => !pm.IsDeleted).Select(pm => pm.Url).ToList();
 
         return new PostDto
         {
             Id = post.Id,
             UserId = post.UserId,
-            Description = description,
+            Description = post.Description,
             NumberOfReactions = post.NumberOfReactions,
             PostTypeId = post.PostTypeId,
             PostTypeName = post.PostType?.Name ?? string.Empty,
@@ -664,28 +683,11 @@ public class PostService : IPostService
             == true
         );
 
-        // Extract media URLs from description (temporary solution)
-        var mediaUrls = new List<string>();
-        var description = post.Description;
-
-        if (description.Contains("Media URLs:"))
-        {
-            var parts = description.Split(
-                new[] { "\n\nMedia URLs: " },
-                StringSplitOptions.RemoveEmptyEntries
-            );
-            if (parts.Length > 1)
-            {
-                description = parts[0].Trim();
-                var mediaUrlsString = parts[1].Trim();
-                mediaUrls = mediaUrlsString
-                    .Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries)
-                    .ToList();
-            }
-        }
+        // Get media URLs from PostMedias entities
+        var mediaUrls = post.PostMedias.Where(pm => !pm.IsDeleted).Select(pm => pm.Url).ToList();
 
         // If we have a preferred localization, use its description as the main description
-        var displayDescription = preferredLocalization?.DescriptionLocalized ?? description;
+        var displayDescription = preferredLocalization?.DescriptionLocalized ?? post.Description;
 
         return new PostDto
         {
