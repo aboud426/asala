@@ -71,10 +71,10 @@ const TreeNode: React.FC<TreeNodeProps> = ({
     const getStatusBadge = (isActive: boolean) => {
         return (
             <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${isActive
-                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400'
-                : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
+                ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary'
+                : 'bg-secondary/10 text-secondary-foreground dark:bg-secondary/20 dark:text-secondary-foreground'
                 }`}>
-                <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-red-500'
+                <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-primary' : 'bg-secondary'
                     }`} />
                 {isRTL ? (isActive ? 'نشط' : 'غير نشط') : (isActive ? 'Active' : 'Inactive')}
             </div>

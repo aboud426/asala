@@ -305,7 +305,7 @@ const RolePermissions: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       {allSelected ? (
-                        <CheckCircle2 className="h-5 w-5 text-green-600" />
+                        <CheckCircle2 className="h-5 w-5 text-primary" />
                       ) : someSelected ? (
                         <div className="h-5 w-5 rounded-full border-2 border-primary bg-primary/50" />
                       ) : (

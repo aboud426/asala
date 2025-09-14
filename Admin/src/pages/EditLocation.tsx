@@ -54,33 +54,33 @@ import customerAdminService, { CustomerDto } from '@/services/customerAdminServi
 // Fix for default markers in react-leaflet
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
 L.Icon.Default.mergeOptions({
-    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
 interface LocationMarkerProps {
-    position: [number, number] | null;
-    onLocationSelect: (lat: number, lng: number) => void;
+  position: [number, number] | null;
+  onLocationSelect: (lat: number, lng: number) => void;
 }
 
 interface SearchResult {
-    place_id: string;
-    display_name: string;
-    lat: string;
-    lon: string;
-    type: string;
-    importance: number;
+  place_id: string;
+  display_name: string;
+  lat: string;
+  lon: string;
+  type: string;
+  importance: number;
 }
 
 const LocationMarker: React.FC<LocationMarkerProps> = ({ position, onLocationSelect }) => {
-    useMapEvents({
-        click(e) {
-            onLocationSelect(e.latlng.lat, e.latlng.lng);
-        },
-    });
+  useMapEvents({
+    click(e) {
+      onLocationSelect(e.latlng.lat, e.latlng.lng);
+    },
+  });
 
-    return position ? <Marker position={position} /> : null;
+  return position ? <Marker position={position} /> : null;
 };
 
 const EditLocation: React.FC = () => {
@@ -89,7 +89,7 @@ const EditLocation: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
-  
+
   // Get filter parameters from URL
   const userIdFilter = searchParams.get('userId') ? parseInt(searchParams.get('userId')!) : null;
   const regionIdFilter = searchParams.get('regionId') ? parseInt(searchParams.get('regionId')!) : null;
@@ -209,7 +209,7 @@ const EditLocation: React.FC = () => {
       }
     } catch (error) {
       toast.error(
-        isRTL 
+        isRTL
           ? 'فشل البحث عن الأماكن. يرجى المحاولة مرة أخرى.'
           : 'Failed to search for places. Please try again.'
       );
@@ -235,13 +235,13 @@ const EditLocation: React.FC = () => {
       lat: lat.toFixed(6),
       lng: lng.toFixed(6)
     });
-    
+
     // Update form values
     editForm.setValue('latitude', lat);
     editForm.setValue('longitude', lng);
-    
+
     toast.success(
-      isRTL 
+      isRTL
         ? `تم تحديد الموقع - خط العرض: ${lat.toFixed(6)}, خط الطول: ${lng.toFixed(6)}`
         : `Location selected - Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`
     );
@@ -252,7 +252,7 @@ const EditLocation: React.FC = () => {
     const lat = parseFloat(result.lat);
     const lng = parseFloat(result.lon);
     const position: [number, number] = [lat, lng];
-    
+
     setSelectedPosition(position);
     setMapCenter(position);
     setMapZoom(15);
@@ -262,11 +262,11 @@ const EditLocation: React.FC = () => {
     });
     setSearchQuery(result.display_name);
     setSearchResults([]);
-    
+
     // Update form values
     editForm.setValue('latitude', lat);
     editForm.setValue('longitude', lng);
-    
+
     toast.success(
       isRTL ? 'تم اختيار المكان' : 'Place selected',
       { description: result.display_name }
@@ -325,7 +325,7 @@ const EditLocation: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['locations-all'] });
       queryClient.invalidateQueries({ queryKey: ['location', id] });
       toast.success(isRTL ? 'تم تحديث الموقع بنجاح' : 'Location updated successfully');
-      
+
       // Navigate back to locations page with preserved filters
       const params = new URLSearchParams();
       if (userIdFilter) params.set('userId', userIdFilter.toString());
@@ -416,7 +416,7 @@ const EditLocation: React.FC = () => {
               {isRTL ? 'تحرير الموقع' : 'Edit Location'}
             </h1>
             <p className="text-muted-foreground">
-              {isRTL 
+              {isRTL
                 ? `تحرير معلومات الموقع "${locationData.name}" وتحديد موقعه على الخريطة`
                 : `Edit the details for "${locationData.name}" and update its position on the map`
               }
@@ -430,7 +430,7 @@ const EditLocation: React.FC = () => {
                   </Badge>
                 )}
                 {regionIdFilter && (
-                  <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800">
+                  <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 dark:bg-primary/20 dark:text-primary dark:border-primary/40">
                     <MapPin className="h-3 w-3 mr-1" />
                     {isRTL ? `مفلتر حسب المنطقة: #${regionIdFilter}` : `Filtered by Region: #${regionIdFilter}`}
                   </Badge>
@@ -461,9 +461,9 @@ const EditLocation: React.FC = () => {
                       <FormItem>
                         <FormLabel>{isRTL ? 'اسم الموقع' : 'Location Name'}</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder={isRTL ? 'مثال: المكتب الرئيسي، المتجر الفرعي' : 'e.g., Main Office, Branch Store'} 
-                            {...field} 
+                          <Input
+                            placeholder={isRTL ? 'مثال: المكتب الرئيسي، المتجر الفرعي' : 'e.g., Main Office, Branch Store'}
+                            {...field}
                           />
                         </FormControl>
                         <FormMessage />
@@ -593,7 +593,7 @@ const EditLocation: React.FC = () => {
                         className={isRTL ? 'pr-10 pl-10' : 'pl-10 pr-10'}
                       />
                     </div>
-                    
+
                     {/* Search Results */}
                     {searchResults.length > 0 && (
                       <div className="max-h-32 overflow-y-auto border rounded-lg bg-background">
@@ -697,19 +697,19 @@ const EditLocation: React.FC = () => {
                     </h4>
                     <ul className="text-xs text-muted-foreground space-y-1">
                       <li>
-                        {isRTL 
+                        {isRTL
                           ? '• ابحث عن مكان بالاسم في خانة البحث'
                           : '• Search for places by name in the search box'
                         }
                       </li>
                       <li>
-                        {isRTL 
+                        {isRTL
                           ? '• انقر في أي مكان على الخريطة لتحديد موقع'
                           : '• Click anywhere on the map to select a location'
                         }
                       </li>
                       <li>
-                        {isRTL 
+                        {isRTL
                           ? '• أو أدخل الإحداثيات يدوياً'
                           : '• Or enter coordinates manually'
                         }
@@ -732,7 +732,7 @@ const EditLocation: React.FC = () => {
                       {isRTL ? 'إضافة ترجمة' : 'Add Translation'}
                     </Button>
                   </div>
-                  
+
                   {editLocalizations.map((field, index) => (
                     <Card key={field.id} className="p-4">
                       <div className="flex items-center justify-between mb-3">
@@ -785,9 +785,9 @@ const EditLocation: React.FC = () => {
                             <FormItem>
                               <FormLabel>{isRTL ? 'الاسم المترجم' : 'Translated Name'}</FormLabel>
                               <FormControl>
-                                <Input 
-                                  placeholder={isRTL ? 'الاسم المترجم' : 'Translated name'} 
-                                  {...field} 
+                                <Input
+                                  placeholder={isRTL ? 'الاسم المترجم' : 'Translated name'}
+                                  {...field}
                                 />
                               </FormControl>
                               <FormMessage />

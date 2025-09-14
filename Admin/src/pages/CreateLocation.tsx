@@ -359,7 +359,7 @@ const CreateLocation: React.FC = () => {
                   </Badge>
                 )}
                 {regionIdFilter && (
-                  <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800">
+                  <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 dark:bg-primary/20 dark:text-primary dark:border-primary/40">
                     <MapPin className="h-3 w-3 mr-1" />
                     {isRTL ? `مفلتر حسب المنطقة: #${regionIdFilter}` : `Pre-selected Region ID: #${regionIdFilter}`}
                   </Badge>

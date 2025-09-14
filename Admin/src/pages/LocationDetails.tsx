@@ -78,11 +78,11 @@ const LocationDetails: React.FC = () => {
   const getStatusBadge = (isActive: boolean) => {
     return (
       <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${isActive
-        ? 'bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800'
-        : 'bg-red-50 text-red-600 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800'}`}>
+        ? 'bg-primary/10 text-primary border border-primary/20 dark:bg-primary/20 dark:text-primary dark:border-primary/40'
+        : 'bg-secondary/10 text-secondary-foreground border border-secondary/20 dark:bg-secondary/20 dark:text-secondary-foreground dark:border-secondary/40'}`}>
         <div className={`w-2 h-2 rounded-full animate-pulse ${isActive
-          ? 'bg-emerald-500 shadow-sm shadow-emerald-500/50'
-          : 'bg-red-500 shadow-sm shadow-red-500/50'}`} />
+          ? 'bg-primary shadow-sm shadow-primary/50'
+          : 'bg-secondary shadow-sm shadow-secondary/50'}`} />
         <span className="font-semibold">
           {isRTL ? (isActive ? 'نشط' : 'غير نشط') : (isActive ? 'Active' : 'Inactive')}
         </span>
@@ -157,7 +157,7 @@ const LocationDetails: React.FC = () => {
                     </Badge>
                   )}
                   {regionIdFilter && (
-                    <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800">
+                    <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 dark:bg-primary/20 dark:text-primary dark:border-primary/40">
                       <MapPin className="h-3 w-3 mr-1" />
                       {isRTL ? `مفلتر حسب المنطقة: #${regionIdFilter}` : `Filtered by Region ID: #${regionIdFilter}`}
                     </Badge>
@@ -437,7 +437,7 @@ const LocationDetails: React.FC = () => {
                 </div>
               </div>
               <div className="text-center p-4 bg-muted/30 rounded-lg">
-                <div className="text-2xl font-bold text-emerald-600 mb-1">
+                <div className="text-2xl font-bold text-primary mb-1">
                   {location.localizations.filter(l => l.isActive).length}
                 </div>
                 <div className="text-xs text-muted-foreground">
@@ -445,7 +445,7 @@ const LocationDetails: React.FC = () => {
                 </div>
               </div>
               <div className="text-center p-4 bg-muted/30 rounded-lg">
-                <div className="text-2xl font-bold text-red-600 mb-1">
+                <div className="text-2xl font-bold text-secondary-foreground mb-1">
                   {location.localizations.filter(l => !l.isActive).length}
                 </div>
                 <div className="text-xs text-muted-foreground">

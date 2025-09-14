@@ -160,8 +160,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isRTL }) => {
                 {/* Price and Category */}
                 <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
                     <div className="flex items-center gap-2">
-                        <DollarSign className="h-4 w-4 text-green-600" />
-                        <span className="text-xl font-bold text-green-600">
+                        <DollarSign className="h-4 w-4 text-primary" />
+                        <span className="text-xl font-bold text-primary">
                             {formatPrice(product.price, product.currencySymbol)}
                         </span>
                     </div>
@@ -393,15 +393,15 @@ const ProductsPageViewer: React.FC = () => {
 
                 {/* Error State */}
                 {error && (
-                    <Card className="border-red-200 bg-red-50 dark:bg-red-950/20">
+                    <Card className="border-secondary/20 bg-secondary/10 dark:bg-secondary/20">
                         <CardContent className="p-6">
                             <div className="flex items-center gap-3">
-                                <AlertCircle className="h-5 w-5 text-red-500" />
+                                <AlertCircle className="h-5 w-5 text-secondary-foreground" />
                                 <div>
-                                    <h3 className="font-medium text-red-900 dark:text-red-100">
+                                    <h3 className="font-medium text-secondary-foreground dark:text-secondary-foreground">
                                         {isRTL ? 'خطأ في تحميل المنتجات' : 'Error Loading Products'}
                                     </h3>
-                                    <p className="text-sm text-red-700 dark:text-red-300">
+                                    <p className="text-sm text-secondary-foreground/80 dark:text-secondary-foreground/80">
                                         {error.message || (isRTL ? 'حدث خطأ أثناء تحميل المنتجات' : 'An error occurred while loading products')}
                                     </p>
                                 </div>

@@ -323,11 +323,11 @@ const Regions: React.FC = () => {
   const getStatusBadge = (isActive: boolean) => {
     return (
       <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${isActive
-        ? 'bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800'
-        : 'bg-red-50 text-red-600 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800'}`}>
+        ? 'bg-primary/10 text-primary border border-primary/20 dark:bg-primary/20 dark:text-primary dark:border-primary/40'
+        : 'bg-secondary/10 text-secondary-foreground border border-secondary/20 dark:bg-secondary/20 dark:text-secondary-foreground dark:border-secondary/40'}`}>
         <div className={`w-2 h-2 rounded-full animate-pulse ${isActive
-          ? 'bg-emerald-500 shadow-sm shadow-emerald-500/50'
-          : 'bg-red-500 shadow-sm shadow-red-500/50'}`} />
+          ? 'bg-primary shadow-sm shadow-primary/50'
+          : 'bg-secondary shadow-sm shadow-secondary/50'}`} />
         <span className="font-semibold">
           {isRTL ? (isActive ? 'نشط' : 'غير نشط') : (isActive ? 'Active' : 'Inactive')}
         </span>
@@ -460,9 +460,9 @@ const Regions: React.FC = () => {
                       variant="outline"
                       className="flex items-center gap-2 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200"
                     >
-                      <div className={`w-2 h-2 rounded-full ${statusFilter === 'active' ? 'bg-emerald-500' :
-                          statusFilter === 'inactive' ? 'bg-red-500' :
-                            'bg-gradient-to-r from-emerald-500 to-red-500'
+                      <div className={`w-2 h-2 rounded-full ${statusFilter === 'active' ? 'bg-primary' :
+                          statusFilter === 'inactive' ? 'bg-secondary' :
+                            'bg-gradient-to-r from-primary to-secondary'
                         }`} />
                       {isRTL ?
                         (statusFilter === 'all' ? 'جميع الحالات' : statusFilter === 'active' ? 'نشط' : 'غير نشط') :
@@ -483,14 +483,14 @@ const Regions: React.FC = () => {
                       onClick={() => setStatusFilter('active')}
                       className="flex items-center gap-2"
                     >
-                      <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                      <div className="w-2 h-2 rounded-full bg-primary" />
                       {isRTL ? 'نشط' : 'Active'}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => setStatusFilter('inactive')}
                       className="flex items-center gap-2"
                     >
-                      <div className="w-2 h-2 rounded-full bg-red-500" />
+                      <div className="w-2 h-2 rounded-full bg-secondary" />
                       {isRTL ? 'غير نشط' : 'Inactive'}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -1257,7 +1257,7 @@ const Regions: React.FC = () => {
                         </div>
                       </div>
                       <div className="text-center p-4 bg-muted/30 rounded-lg">
-                        <div className="text-2xl font-bold text-emerald-600 mb-1">
+                        <div className="text-2xl font-bold text-primary mb-1">
                           {selectedRegionForDetails.localizations.filter(l => l.isActive).length}
                         </div>
                         <div className="text-xs text-muted-foreground">
