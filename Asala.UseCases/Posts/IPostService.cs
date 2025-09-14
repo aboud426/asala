@@ -38,4 +38,13 @@ public interface IPostService
         bool? activeOnly = null,
         CancellationToken cancellationToken = default
     );
+
+    Task<Result<CursorPaginatedResult<PostDto>>> GetPostsByPageWithCursorAsync(
+        int postsPagesId,
+        string languageCode,
+        int? cursor = null,
+        int pageSize = 10,
+        bool? activeOnly = null,
+        CancellationToken cancellationToken = default
+    );
 }

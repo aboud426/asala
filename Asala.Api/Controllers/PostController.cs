@@ -157,4 +157,36 @@ public class PostController : BaseController
         );
         return CreateResponse(result);
     }
+
+    /// <summary>
+    /// Get posts by page ID with cursor-based pagination
+    /// </summary>
+    /// <param name="postsPagesId">Posts page ID</param>
+    /// <param name="languageCode">Language code for localization (default: "en")</param>
+    /// <param name="cursor">Cursor for pagination (null for first page)</param>
+    /// <param name="pageSize">Number of items per page (default: 10)</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Posts for the specified page with cursor pagination</returns>
+    /// <response code="200">Posts retrieved successfully</response>
+    /// <response code="404">Posts page not found</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("by-page/{postsPagesId}")]
+    public async Task<IActionResult> GetPostsByPageWithCursor(
+        [FromRoute] int postsPagesId,
+    [FromQuery] string languageCode = "en",
+        [FromQuery] int? cursor = null,
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var result = await _postService.GetPostsByPageWithCursorAsync(
+            postsPagesId,
+            languageCode,
+            cursor,
+            pageSize,
+            true,
+            cancellationToken
+        );
+        return CreateResponse(result);
+    }
 }

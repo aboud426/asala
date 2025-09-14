@@ -1,8 +1,11 @@
 using Asala.Core.Common.Abstractions;
 using Asala.Core.Common.Models;
+using Asala.Core.Modules.ClientPages.Db;
+using Asala.Core.Modules.Languages;
 using Asala.Core.Modules.Posts.Db;
 using Asala.Core.Modules.Posts.DTOs;
 using Asala.Core.Modules.Posts.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Asala.UseCases.Posts;
 
@@ -11,16 +14,22 @@ public class PostService : IPostService
     private readonly IPostRepository _postRepository;
     private readonly IPostLocalizedRepository _postLocalizedRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILanguageRepository _languageRepository;
+    private readonly IPostsPagesRepository _postsPagesRepository;
 
     public PostService(
         IPostRepository postRepository,
         IPostLocalizedRepository postLocalizedRepository,
-        IUnitOfWork unitOfWork
+        IUnitOfWork unitOfWork,
+        ILanguageRepository languageRepository,
+        IPostsPagesRepository postsPagesRepository
     )
     {
         _postRepository = postRepository;
         _postLocalizedRepository = postLocalizedRepository;
         _unitOfWork = unitOfWork;
+        _languageRepository = languageRepository;
+        _postsPagesRepository = postsPagesRepository;
     }
 
     public async Task<Result<PaginatedResult<PostDto>>> GetPaginatedAsync(
@@ -265,6 +274,115 @@ public class PostService : IPostService
         return Result.Success(paginatedDto);
     }
 
+    public async Task<Result<CursorPaginatedResult<PostDto>>> GetPostsByPageWithCursorAsync(
+        int postsPagesId,
+        string languageCode,
+        int? cursor = null,
+        int pageSize = 10,
+        bool? activeOnly = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (pageSize <= 0 || pageSize > 100)
+            return Result.Failure<CursorPaginatedResult<PostDto>>(
+                MessageCodes.PAGINATION_INVALID_PAGE_SIZE
+            );
+
+        if (string.IsNullOrWhiteSpace(languageCode))
+            return Result.Failure<CursorPaginatedResult<PostDto>>("Language code is required");
+
+        // Get the language by code
+        var languageResult = await _languageRepository.GetFirstOrDefaultAsync(l =>
+            l.Code == languageCode && l.IsActive && !l.IsDeleted
+        );
+        if (languageResult.IsFailure || languageResult.Value == null)
+            return Result.Failure<CursorPaginatedResult<PostDto>>(MessageCodes.LANGUAGE_NOT_FOUND);
+
+        var language = languageResult.Value;
+
+        // Get PostsPages with included post types
+        var postsPagesResult =
+            await _postsPagesRepository.GetByIdWithLocalizationsAndIncludedTypesAsync(postsPagesId);
+        if (postsPagesResult == null)
+            return Result.Failure<CursorPaginatedResult<PostDto>>("PostsPages not found");
+
+        // Extract the included post type IDs
+        var includedTypeIds = postsPagesResult
+            .IncludedPostTypes.Select(ipt => ipt.PostTypeId)
+            .ToHashSet();
+
+        if (!includedTypeIds.Any())
+            return Result.Success(
+                new CursorPaginatedResult<PostDto>([], null, null, false, false, pageSize, 0)
+            );
+
+        // Build query for posts filtered by post types
+        var postsQuery = _postRepository
+            .GetQueryable()
+            .Include(p => p.PostType)
+            .Include(p => p.PostLocalizeds)
+            .ThenInclude(pl => pl.Language)
+            .Where(p => includedTypeIds.Contains(p.PostTypeId))
+            .AsQueryable();
+
+        // Apply active filter if specified
+        if (activeOnly.HasValue)
+        {
+            postsQuery = postsQuery.Where(p => p.IsActive == activeOnly.Value);
+        }
+
+        // Filter out deleted items
+        postsQuery = postsQuery.Where(p => !p.IsDeleted);
+
+        // Apply cursor pagination
+        if (cursor.HasValue)
+        {
+            postsQuery = postsQuery.Where(p => p.Id > cursor.Value);
+        }
+
+        // Order by ID for consistent cursor pagination
+        postsQuery = postsQuery.OrderBy(p => p.Id);
+
+        // Get one extra item to determine if there's a next page
+        var posts = await postsQuery.Take(pageSize + 1).ToListAsync(cancellationToken);
+
+        var hasNextPage = posts.Count > pageSize;
+        if (hasNextPage)
+        {
+            posts = posts.Take(pageSize).ToList();
+        }
+
+        var postDtos = new List<PostDto>();
+        foreach (var post in posts)
+        {
+            var dto = MapToDtoWithPreferredLanguage(post, languageCode);
+            postDtos.Add(dto);
+        }
+
+        // Determine cursors
+        int? nextCursor = hasNextPage && posts.Any() ? posts.Last().Id : null;
+        int? previousCursor = cursor;
+        bool hasPreviousPage = cursor.HasValue;
+
+        // Get total count for included post types (optional, can be expensive for large datasets)
+        var totalCount = await _postRepository
+            .GetQueryable()
+            .Where(p => includedTypeIds.Contains(p.PostTypeId) && !p.IsDeleted)
+            .CountAsync(cancellationToken);
+
+        var result = new CursorPaginatedResult<PostDto>(
+            postDtos,
+            nextCursor,
+            previousCursor,
+            hasNextPage,
+            hasPreviousPage,
+            pageSize,
+            totalCount
+        );
+
+        return Result.Success(result);
+    }
+
     #region Private Helper Methods
 
     private static List<PostLocalized> CreateLocalizations(
@@ -395,7 +513,10 @@ public class PostService : IPostService
         return Result.Success();
     }
 
-    private static Result ValidateCreatePostWithMediaDto(CreatePostWithMediaDto createDto, int userId)
+    private static Result ValidateCreatePostWithMediaDto(
+        CreatePostWithMediaDto createDto,
+        int userId
+    )
     {
         if (createDto == null)
             return Result.Failure(MessageCodes.ENTITY_NULL);
@@ -405,7 +526,10 @@ public class PostService : IPostService
             return Result.Failure(MessageCodes.POST_USER_ID_REQUIRED);
 
         // Description is optional for media posts, but if provided, validate length
-        if (!string.IsNullOrWhiteSpace(createDto.Description) && createDto.Description.Length > 2000)
+        if (
+            !string.IsNullOrWhiteSpace(createDto.Description)
+            && createDto.Description.Length > 2000
+        )
             return Result.Failure(MessageCodes.POST_DESCRIPTION_TOO_LONG);
 
         // Validate PostTypeId
@@ -476,15 +600,20 @@ public class PostService : IPostService
         // Extract media URLs from description (temporary solution)
         var mediaUrls = new List<string>();
         var description = post.Description;
-        
+
         if (description.Contains("Media URLs:"))
         {
-            var parts = description.Split(new[] { "\n\nMedia URLs: " }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = description.Split(
+                new[] { "\n\nMedia URLs: " },
+                StringSplitOptions.RemoveEmptyEntries
+            );
             if (parts.Length > 1)
             {
                 description = parts[0].Trim();
                 var mediaUrlsString = parts[1].Trim();
-                mediaUrls = mediaUrlsString.Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                mediaUrls = mediaUrlsString
+                    .Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries)
+                    .ToList();
             }
         }
 
@@ -530,21 +659,28 @@ public class PostService : IPostService
             .ToList();
 
         // Try to find a localization for the preferred language
-        var preferredLocalization = activeLocalizations
-            .FirstOrDefault(l => l.Language?.Code?.Equals(preferredLanguageCode, StringComparison.OrdinalIgnoreCase) == true);
+        var preferredLocalization = activeLocalizations.FirstOrDefault(l =>
+            l.Language?.Code?.Equals(preferredLanguageCode, StringComparison.OrdinalIgnoreCase)
+            == true
+        );
 
         // Extract media URLs from description (temporary solution)
         var mediaUrls = new List<string>();
         var description = post.Description;
-        
+
         if (description.Contains("Media URLs:"))
         {
-            var parts = description.Split(new[] { "\n\nMedia URLs: " }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = description.Split(
+                new[] { "\n\nMedia URLs: " },
+                StringSplitOptions.RemoveEmptyEntries
+            );
             if (parts.Length > 1)
             {
                 description = parts[0].Trim();
                 var mediaUrlsString = parts[1].Trim();
-                mediaUrls = mediaUrlsString.Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                mediaUrls = mediaUrlsString
+                    .Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries)
+                    .ToList();
             }
         }
 
@@ -563,9 +699,7 @@ public class PostService : IPostService
             CreatedAt = post.CreatedAt,
             UpdatedAt = post.UpdatedAt,
             MediaUrls = mediaUrls,
-            Localizations = activeLocalizations
-                .Select(MapLocalizationToDto)
-                .ToList(),
+            Localizations = activeLocalizations.Select(MapLocalizationToDto).ToList(),
         };
     }
 

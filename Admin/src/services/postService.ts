@@ -274,6 +274,48 @@ class PostService {
             throw new Error(response.message || 'Failed to delete post');
         }
     };
+
+    /**
+     * Get posts by page with cursor-based pagination for infinite scroll
+     * GET /api/posts/by-page/{postsPagesId}
+     */
+    getPostsByPageWithCursor = async (params: {
+        postsPagesId: number;
+        languageCode?: string;
+        cursor?: number;
+        pageSize?: number;
+    }): Promise<{
+        items: PostDto[];
+        nextCursor?: number;
+        hasMore: boolean;
+    }> => {
+        const { postsPagesId, languageCode = 'en', cursor, pageSize = 10 } = params;
+        const queryParams = new URLSearchParams();
+        
+        queryParams.append('languageCode', languageCode);
+        queryParams.append('pageSize', pageSize.toString());
+        
+        if (cursor !== undefined) {
+            queryParams.append('cursor', cursor.toString());
+        }
+
+        const endpoint = `/by-page/${postsPagesId}?${queryParams.toString()}`;
+        const response = await this.request<{
+            items: PostDto[];
+            nextCursor?: number;
+            hasMore: boolean;
+        }>(endpoint);
+
+        if (!response.success) {
+            throw new Error(response.message || 'Failed to fetch posts by page');
+        }
+
+        if (!response.data) {
+            throw new Error('No data returned from server');
+        }
+
+        return response.data;
+    };
 }
 
 // Export singleton instance
