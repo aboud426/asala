@@ -73,13 +73,13 @@ export const searchablePages: SearchableItem[] = [
   },
   {
     id: 'categories',
-    title: 'Categories',
-    titleAr: 'الفئات',
+    title: 'Sellers Categories',
+    titleAr: 'فئات البائعين',
     description: 'Organize and manage your main business categories',
-    descriptionAr: 'تنظيم وإدارة فئات الأعمال الرئيسية',
+    descriptionAr: 'تنظيم وإدارة فئات البائعين الرئيسية',
     href: '/categories',
-    keywords: ['categories', 'groups', 'classification', 'organization', 'structure'],
-    keywordsAr: ['فئات', 'مجموعات', 'تصنيف', 'تنظيم', 'هيكل']
+    keywords: ['categories', 'groups', 'classification', 'organization', 'structure', 'sellers'],
+    keywordsAr: ['فئات', 'مجموعات', 'تصنيف', 'تنظيم', 'هيكل', 'بائعين']
   },
   {
     id: 'categories-tree',

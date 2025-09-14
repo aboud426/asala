@@ -94,7 +94,7 @@ const navigationItems = [
   },
   {
     title: 'Categories',
-    titleAr: 'الفئات',
+    titleAr: 'فئات البائعين',
     href: '/categories',
     icon: FolderTree,
   },
