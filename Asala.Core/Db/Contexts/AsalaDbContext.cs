@@ -34,6 +34,14 @@ public class AsalaDbContext : DbContext
     public DbSet<PostType> PostTypes => Set<PostType>();
     public DbSet<PostTypeLocalized> PostTypeLocalizeds => Set<PostTypeLocalized>();
 
+    // Base Posts
+    public DbSet<BasePost> BasePosts => Set<BasePost>();
+    public DbSet<BasePostLocalized> BasePostLocalizations => Set<BasePostLocalized>();
+    public DbSet<BasePostMedia> BasePostMedias => Set<BasePostMedia>();
+    public DbSet<PostComment> PostComments => Set<PostComment>();
+    public DbSet<Article> Articles => Set<Article>();
+    public DbSet<Reel> Reels => Set<Reel>();
+
     // Products module
     public DbSet<Product> Products => Set<Product>();
     public DbSet<ProductLocalized> ProductLocalizeds => Set<ProductLocalized>();

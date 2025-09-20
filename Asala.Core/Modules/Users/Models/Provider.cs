@@ -21,10 +21,10 @@ public class ProviderMedia : BaseEntity<int>
     public int ProviderId { get; set; }
     public Provider Provider { get; set; } = null!;
     public string Url { get; set; } = null!;
-    public MediaTypeEnum MediaType { get; set; } = MediaTypeEnum.Image;
+    public MediaType MediaType { get; set; } = MediaType.Image;
 }
 
-public enum MediaTypeEnum
+public enum MediaType
 {
     Image = 1,
     Video = 2,

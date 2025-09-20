@@ -8,5 +8,5 @@ public class ProductMedia : BaseEntity<int>
     public int ProductId { get; set; }
     public Product Product { get; set; } = null!;
     public string Url { get; set; } = null!;
-    public MediaTypeEnum MediaType { get; set; }
+    public MediaType MediaType { get; set; }
 }

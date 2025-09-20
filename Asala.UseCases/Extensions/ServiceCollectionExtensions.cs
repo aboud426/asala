@@ -18,6 +18,7 @@ using Asala.UseCases.Shopping;
 using Asala.UseCases.Users;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace Asala.UseCases.Extensions;
 
@@ -28,6 +29,8 @@ public static class ServiceCollectionExtensions
         IConfiguration configuration
     )
     {
+        // Register MediatR
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
         // Language repositories
         services.AddScoped<ILanguageRepository, LanguageRepository>();
 

@@ -15,7 +15,7 @@ public interface IProviderMediaRepository : IBaseRepository<ProviderMedia, int>
     /// <returns>List of provider media</returns>
     Task<Result<IEnumerable<ProviderMedia>>> GetByProviderIdAsync(
         int providerId,
-        MediaTypeEnum? mediaType = null,
+        MediaType? mediaType = null,
         CancellationToken cancellationToken = default
     );
 
@@ -54,7 +54,7 @@ public interface IProviderMediaRepository : IBaseRepository<ProviderMedia, int>
         int providerId,
         int page,
         int pageSize,
-        MediaTypeEnum? mediaType = null,
+        MediaType? mediaType = null,
         CancellationToken cancellationToken = default
     );
 

@@ -152,7 +152,7 @@ public class ProductService : IProductService
                     {
                         ProductId = createdProduct.Id,
                         Url = mediaUrl.Trim(),
-                        MediaType = MediaTypeEnum.Image, // Default to Image, could be parameterized
+                        MediaType = MediaType.Image, // Default to Image, could be parameterized
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
                         IsActive = true,
@@ -530,7 +530,7 @@ public class ProductService : IProductService
                     {
                         ProductId = id,
                         Url = mediaUrl.Trim(),
-                        MediaType = MediaTypeEnum.Image,
+                        MediaType = MediaType.Image,
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow,
                         IsActive = true,

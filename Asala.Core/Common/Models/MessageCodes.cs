@@ -217,6 +217,13 @@ public static class MessageCodes
     public const string IMAGE_UPLOAD_ERROR = "IMAGE_UPLOAD_ERROR";
     public const string IMAGE_DIRECTORY_CREATE_ERROR = "IMAGE_DIRECTORY_CREATE_ERROR";
 
+    // Video upload errors
+    public const string VIDEO_FILE_REQUIRED = "VIDEO_FILE_REQUIRED";
+    public const string VIDEO_FILE_TOO_LARGE = "VIDEO_FILE_TOO_LARGE";
+    public const string VIDEO_INVALID_FORMAT = "VIDEO_INVALID_FORMAT";
+    public const string VIDEO_UPLOAD_ERROR = "VIDEO_UPLOAD_ERROR";
+    public const string VIDEO_DIRECTORY_CREATE_ERROR = "VIDEO_DIRECTORY_CREATE_ERROR";
+
     // RolePermission-specific errors
     public const string ROLE_PERMISSION_NOT_FOUND = "ROLE_PERMISSION_NOT_FOUND";
     public const string ROLE_PERMISSION_ALREADY_EXISTS = "ROLE_PERMISSION_ALREADY_EXISTS";
@@ -224,10 +231,12 @@ public static class MessageCodes
     // General validation errors
     public const string FIELD_REQUIRED = "FIELD_REQUIRED";
     public const string INVALID_INPUT = "INVALID_INPUT";
+    public const string OPERATION_CANCELLED = "OPERATION_CANCELLED";
 
     // Success messages
     public const string WELCOME_MESSAGE = "WELCOME_MESSAGE";
     public const string IMAGE_UPLOADED_SUCCESSFULLY = "IMAGE_UPLOADED_SUCCESSFULLY";
+    public const string VIDEO_UPLOADED_SUCCESSFULLY = "VIDEO_UPLOADED_SUCCESSFULLY";
 
     public static string PERMISSION_PAGE_REQUIRED = "PERMISSION_PAGE_REQUIRED";
     public static string PERMISSION_PAGE_TOO_LONG = "PERMISSION_PAGE_TOO_LONG";

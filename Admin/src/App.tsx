@@ -47,8 +47,14 @@ import Posts from "./pages/Posts";
 import CreatePost from "./pages/CreatePost";
 import PostDetails from "./pages/PostDetails";
 import EditPost from "./pages/EditPost";
+import Reels from "./pages/Reels";
+import CreateReel from "./pages/CreateReel";
+import ReelDetails from "./pages/ReelDetails";
+import ReelPreview from "./components/ui/reel-preview";
 import MapSelector from "./pages/MapSelector";
 import Statistics from "./pages/Statistics";
+import Images from "./pages/Images";
+import Videos from "./pages/Videos";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -72,7 +78,7 @@ const App = () => (
                       <Login />
                     </PublicRoute>
                   } />
-                  
+
                   {/* Protected routes - require authentication */}
                   <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                   <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
@@ -84,6 +90,10 @@ const App = () => (
                   <Route path="/posts/create" element={<ProtectedRoute><CreatePost /></ProtectedRoute>} />
                   <Route path="/posts/:id/edit" element={<ProtectedRoute><EditPost /></ProtectedRoute>} />
                   <Route path="/posts/:id" element={<ProtectedRoute><PostDetails /></ProtectedRoute>} />
+                  <Route path="/reels" element={<ProtectedRoute><Reels /></ProtectedRoute>} />
+                  <Route path="/reels/create" element={<ProtectedRoute><CreateReel /></ProtectedRoute>} />
+                  <Route path="/reels/:id/preview" element={<ProtectedRoute><ReelPreview /></ProtectedRoute>} />
+                  <Route path="/reels/:id" element={<ProtectedRoute><ReelDetails /></ProtectedRoute>} />
                   <Route path="/customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
                   <Route path="/providers" element={<ProtectedRoute><Providers /></ProtectedRoute>} />
                   <Route path="/providers/create" element={<ProtectedRoute><CreateProvider /></ProtectedRoute>} />
@@ -111,10 +121,12 @@ const App = () => (
                   <Route path="/roles/:roleId/permissions" element={<ProtectedRoute><RolePermissions /></ProtectedRoute>} />
                   <Route path="/permissions" element={<ProtectedRoute><Permissions /></ProtectedRoute>} />
                   <Route path="/currencies" element={<ProtectedRoute><Currencies /></ProtectedRoute>} />
+                  <Route path="/images" element={<ProtectedRoute><Images /></ProtectedRoute>} />
+                  <Route path="/videos" element={<ProtectedRoute><Videos /></ProtectedRoute>} />
                   <Route path="/map-selector" element={<ProtectedRoute><MapSelector /></ProtectedRoute>} />
                   <Route path="/statistics" element={<ProtectedRoute><Statistics /></ProtectedRoute>} />
                   <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-                  
+
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

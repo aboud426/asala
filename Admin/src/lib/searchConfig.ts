@@ -42,6 +42,16 @@ export const searchablePages: SearchableItem[] = [
     keywordsAr: ['منتجات', 'عناصر', 'كتالوج', 'مخزون', 'بضائع', 'سلع']
   },
   {
+    id: 'reels',
+    title: 'Reels',
+    titleAr: 'الريلز',
+    description: 'Manage reels and short video content with engagement metrics',
+    descriptionAr: 'إدارة الريلز ومقاطع الفيديو القصيرة مع مقاييس التفاعل',
+    href: '/reels',
+    keywords: ['reels', 'videos', 'short videos', 'content', 'media', 'engagement', 'reactions'],
+    keywordsAr: ['ريلز', 'فيديوهات', 'مقاطع قصيرة', 'محتوى', 'وسائط', 'تفاعل', 'ردود فعل']
+  },
+  {
     id: 'customers',
     title: 'Customers',
     titleAr: 'العملاء',

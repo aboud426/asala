@@ -26,6 +26,8 @@ import {
   LogOut,
   User,
   FileText,
+  Image,
+  Video,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -61,6 +63,12 @@ const navigationItems = [
     titleAr: 'المنشورات',
     href: '/posts',
     icon: MessageCircle,
+  },
+  {
+    title: 'Reels',
+    titleAr: 'الريلز',
+    href: '/reels',
+    icon: Video,
   },
   {
     title: 'Customers',
@@ -115,6 +123,18 @@ const navigationItems = [
     titleAr: 'أنواع المنشورات',
     href: '/post-types',
     icon: Tag,
+  },
+  {
+    title: 'Images',
+    titleAr: 'الصور',
+    href: '/images',
+    icon: Image,
+  },
+  {
+    title: 'Videos',
+    titleAr: 'الفيديوهات',
+    href: '/videos',
+    icon: Video,
   },
   {
     title: 'Products Pages',

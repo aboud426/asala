@@ -13,7 +13,7 @@ public class ProviderMediaRepository : BaseRepository<ProviderMedia, int>, IProv
 
     public async Task<Result<IEnumerable<ProviderMedia>>> GetByProviderIdAsync(
         int providerId,
-        MediaTypeEnum? mediaType = null,
+        MediaType? mediaType = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -44,7 +44,7 @@ public class ProviderMediaRepository : BaseRepository<ProviderMedia, int>, IProv
         try
         {
             var imageUrls = await _dbSet
-                .Where(pm => pm.ProviderId == providerId && pm.MediaType == MediaTypeEnum.Image)
+                .Where(pm => pm.ProviderId == providerId && pm.MediaType == MediaType.Image)
                 .OrderBy(pm => pm.CreatedAt)
                 .Select(pm => pm.Url)
                 .ToListAsync(cancellationToken);
@@ -78,7 +78,7 @@ public class ProviderMediaRepository : BaseRepository<ProviderMedia, int>, IProv
         int providerId,
         int page,
         int pageSize,
-        MediaTypeEnum? mediaType = null,
+        MediaType? mediaType = null,
         CancellationToken cancellationToken = default
     )
     {

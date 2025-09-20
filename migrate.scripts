@@ -1,6 +1,6 @@
 # main
 
-dotnet ef migrations add AddingMediaUrl --context AsalaDbContext
+dotnet ef migrations add AddingBasePost --context AsalaDbContext
 
 dotnet ef database update --context AsalaDbContext
 

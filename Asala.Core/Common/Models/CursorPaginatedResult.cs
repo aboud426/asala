@@ -13,13 +13,14 @@ public class CursorPaginatedResult<T>
     public int TotalCount { get; set; }
 
     public CursorPaginatedResult(
-        List<T> items, 
-        int? nextCursor, 
-        int? previousCursor, 
-        bool hasNextPage, 
+        List<T> items,
+        int? nextCursor,
+        int? previousCursor,
+        bool hasNextPage,
         bool hasPreviousPage,
         int pageSize,
-        int totalCount = 0)
+        int totalCount = 0
+    )
     {
         Items = items ?? [];
         NextCursor = nextCursor;
@@ -37,15 +38,19 @@ public class CursorPaginatedResult<T>
         bool hasNextPage,
         bool hasPreviousPage,
         int pageSize,
-        int totalCount = 0)
+        int totalCount = 0
+    )
     {
-        return Result.Success(new CursorPaginatedResult<T>(
-            items, 
-            nextCursor, 
-            previousCursor, 
-            hasNextPage, 
-            hasPreviousPage,
-            pageSize,
-            totalCount));
+        return Result.Success(
+            new CursorPaginatedResult<T>(
+                items,
+                nextCursor,
+                previousCursor,
+                hasNextPage,
+                hasPreviousPage,
+                pageSize,
+                totalCount
+            )
+        );
     }
 }

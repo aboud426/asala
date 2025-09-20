@@ -32,7 +32,7 @@ public class Result
 
     public static Result<T> Failure<T>(string messageCode) => new(default!, false, messageCode);
 
-    public static Result<T> Failure<T>(string messageCode, Exception exception) =>
+    public static Result<T> Failure<T>(string messageCode, Exception? exception) =>
         new(default!, false, messageCode, exception);
 }
 

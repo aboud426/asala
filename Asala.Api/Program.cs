@@ -6,6 +6,9 @@ using Asala.UseCases;
 using Asala.UseCases.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.IIS;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -27,6 +30,29 @@ builder.Services.AddCors(options =>
             policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
         }
     );
+});
+
+// Configure request size limits for large file uploads
+builder.Services.Configure<IISServerOptions>(options =>
+{
+    options.MaxRequestBodySize = 120 * 1024 * 1024; // 120MB (slightly more than video limit)
+});
+
+builder.Services.Configure<KestrelServerOptions>(options =>
+{
+    options.Limits.MaxRequestBodySize = 120 * 1024 * 1024; // 120MB
+    options.Limits.RequestHeadersTimeout = TimeSpan.FromMinutes(2);
+    options.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(2);
+});
+
+// Configure form options for file uploads
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 120 * 1024 * 1024; // 120MB
+    options.BufferBodyLengthLimit = 120 * 1024 * 1024; // 120MB
+    options.ValueCountLimit = 1024;
+    options.ValueLengthLimit = 1024 * 1024; // 1MB
+    options.MultipartHeadersLengthLimit = 1024 * 1024; // 1MB
 });
 
 builder.Services.AddControllers();
