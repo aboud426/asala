@@ -57,7 +57,8 @@ public class EmployeeAuthController : BaseController
         var token = _jwtService.GenerateToken(
             authResponse.User.Id,
             authResponse.User.Email,
-            "Employee"
+            "Employee",
+            Guid.NewGuid().ToString()
         );
 
         // Update the response with the generated token

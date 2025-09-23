@@ -54,7 +54,7 @@ public class CustomerRepository : BaseRepository<Customer, int>, ICustomerReposi
             var totalCount = await query.CountAsync(cancellationToken);
 
             var customers = await query
-                .OrderBy(c => c.Name)
+                .OrderByDescending(c => c.UserId)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(cancellationToken);

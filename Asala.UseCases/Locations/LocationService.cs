@@ -669,7 +669,7 @@ public class LocationService : ILocationService
             UserId = location.UserId,
             UserEmail = location.User?.Email,
             UserName =
-                location.User?.Customer?.Name
+                location.User?.Name
                 ?? location.User?.Employee?.EmployeeName
                 ?? location.User?.Provider?.BusinessName
                 ?? "UnKnown",

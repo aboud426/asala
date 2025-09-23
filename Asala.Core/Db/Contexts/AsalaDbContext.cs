@@ -88,6 +88,11 @@ public class AsalaDbContext : DbContext
         Set<ProductsPagesLocalized>();
     public DbSet<IncludedProductType> IncludedProductTypes => Set<IncludedProductType>();
 
+    // Users module
+    public DbSet<UserOtps> UserOtps => Set<UserOtps>();
+    public DbSet<UserFailedLoginAttempts> UserFailedLoginAttempts => Set<UserFailedLoginAttempts>();
+    public DbSet<UserTokens> UserTokens => Set<UserTokens>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(BaseEntityConfiguration).Assembly);

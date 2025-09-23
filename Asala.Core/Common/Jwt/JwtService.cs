@@ -15,7 +15,7 @@ public class JwtService
         _jwtSettings = jwtSettings.Value;
     }
 
-    public string GenerateToken(int userId, string userName, string role)
+    public string GenerateToken(int userId, string userName, string role, string tokenId)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(_jwtSettings.Secret);
@@ -25,12 +25,13 @@ public class JwtService
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
             new Claim(ClaimTypes.Name, userName),
             new Claim(ClaimTypes.Role, role),
+            new Claim(ClaimTypes.Sid, tokenId),
         };
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiryMinutes),
+            Expires = DateTime.UtcNow.AddMinutes(SystemSettings.JwtExpiryMinutes),
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(key),
                 SecurityAlgorithms.HmacSha256Signature

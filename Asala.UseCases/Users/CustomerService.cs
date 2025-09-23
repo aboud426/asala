@@ -131,6 +131,7 @@ public class CustomerService : ICustomerService
                 IsActive = createDto.IsActive,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
+                Name = createDto.Name.Trim(),
             };
 
             var addUserResult = await _userRepository.AddAsync(user, cancellationToken);
@@ -148,11 +149,7 @@ public class CustomerService : ICustomerService
             }
 
             // Create Customer
-            var customer = new Customer
-            {
-                UserId = addUserResult.Value.Id,
-                Name = createDto.Name.Trim(),
-            };
+            var customer = new Customer { UserId = addUserResult.Value.Id };
 
             var addCustomerResult = await _customerRepository.AddAsync(customer, cancellationToken);
             if (addCustomerResult.IsFailure)
@@ -241,9 +238,6 @@ public class CustomerService : ICustomerService
         }
         user.IsActive = updateDto.IsActive;
         user.UpdatedAt = DateTime.UtcNow;
-
-        // Update Customer
-        customer.Name = updateDto.Name.Trim();
 
         var updateUserResult = _userRepository.Update(user);
         if (updateUserResult.IsFailure)
@@ -444,7 +438,7 @@ public class CustomerService : ICustomerService
         return new CustomerDto
         {
             UserId = customer.UserId,
-            Name = customer.Name,
+            Name = customer.User.Name,
             PhoneNumber = user?.PhoneNumber,
             IsActive = user?.IsActive ?? false,
             CreatedAt = user?.CreatedAt ?? DateTime.MinValue,
@@ -457,7 +451,7 @@ public class CustomerService : ICustomerService
         return new CustomerDto
         {
             UserId = customer.UserId,
-            Name = customer.Name,
+            Name = customer.User.Name,
             PhoneNumber = null, // Will be populated by service methods when User data is available
             IsActive = true, // Will be populated by service methods when User data is available
             CreatedAt = DateTime.MinValue, // Will be populated by service methods when User data is available
@@ -470,7 +464,7 @@ public class CustomerService : ICustomerService
         return new CustomerDropdownDto
         {
             UserId = customer.UserId,
-            Name = customer.Name,
+            Name = customer.User.Name,
             Email = "", // Will be populated by service methods when User data is available
         };
     }

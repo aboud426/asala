@@ -318,7 +318,7 @@ public class OrderService : IOrderService
                         Email = order.User.Email,
                         PhoneNumber = order.User.PhoneNumber,
                         ProviderBusinessName = order.User.Provider?.BusinessName,
-                        CustomerName = order.User.Customer?.Name,
+                        CustomerName = order.User.Name,
                     },
 
             // Map Shipping Address Information
