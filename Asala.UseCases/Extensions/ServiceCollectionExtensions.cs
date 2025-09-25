@@ -38,6 +38,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ILanguageService, LanguageService>();
         services.AddScoped<IMessageService, MessageService>();
         services.AddScoped<MessageCodesSeederService>();
+        services.AddScoped<LanguageSeederService>();
 
         // Seeding services
         services.AddScoped<AdminEmployeeSeederService>();

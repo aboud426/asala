@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Asala.Api.Migrations
 {
     [DbContext(typeof(AsalaDbContext))]
-    [Migration("20250920113251_Init")]
-    partial class Init
+    [Migration("20250925122108_AddCommentsAndLikesForThePost")]
+    partial class AddCommentsAndLikesForThePost
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -892,6 +892,11 @@ namespace Asala.Api.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<int>("NumberOfComments")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
                     b.Property<int>("NumberOfReactions")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -925,6 +930,9 @@ namespace Asala.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<long?>("BasePostId")
+                        .HasColumnType("bigint");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime");
 
@@ -952,6 +960,8 @@ namespace Asala.Api.Migrations
                         .HasColumnType("datetime");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BasePostId");
 
                     b.HasIndex("LanguageId");
 
@@ -1009,6 +1019,112 @@ namespace Asala.Api.Migrations
                     b.ToTable("BasePostMedias", (string)null);
                 });
 
+            modelBuilder.Entity("Asala.Core.Modules.Posts.Models.Comment", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("BasePostId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("BasePostId1")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<long?>("ParentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BasePostId");
+
+                    b.HasIndex("BasePostId1");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("ParentId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("BasePostId", "CreatedAt");
+
+                    b.ToTable("Comments", (string)null);
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Posts.Models.Like", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("BasePostId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("BasePostId1")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BasePostId");
+
+                    b.HasIndex("BasePostId1");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("BasePostId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Likes_BasePostId_UserId_Unique");
+
+                    b.ToTable("Likes", (string)null);
+                });
+
             modelBuilder.Entity("Asala.Core.Modules.Posts.Models.Post", b =>
                 {
                     b.Property<int>("Id")
@@ -1032,6 +1148,11 @@ namespace Asala.Api.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<int>("NumberOfComments")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<int>("NumberOfReactions")
                         .ValueGeneratedOnAdd()
@@ -1262,6 +1383,16 @@ namespace Asala.Api.Migrations
                     b.HasIndex("PostTypeId");
 
                     b.ToTable("PostTypeLocalizeds");
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Posts.Models.Reel", b =>
+                {
+                    b.Property<long>("PostId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("PostId");
+
+                    b.ToTable("Reels", (string)null);
                 });
 
             modelBuilder.Entity("Asala.Core.Modules.Products.Models.Product", b =>
@@ -1861,14 +1992,7 @@ namespace Asala.Api.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.HasKey("UserId");
-
-                    b.HasIndex("Name");
 
                     b.ToTable("Customer", (string)null);
                 });
@@ -2388,6 +2512,9 @@ namespace Asala.Api.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(100)");
 
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -2398,6 +2525,10 @@ namespace Asala.Api.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PasswordHash")
                         .HasMaxLength(200)
                         .IsUnicode(false)
@@ -2407,6 +2538,9 @@ namespace Asala.Api.Migrations
                         .HasMaxLength(20)
                         .IsUnicode(false)
                         .HasColumnType("varchar(20)");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime");
@@ -2426,6 +2560,94 @@ namespace Asala.Api.Migrations
                     b.HasIndex("IsActive", "IsDeleted");
 
                     b.ToTable("User", (string)null);
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Users.Models.UserFailedLoginAttempts", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AttemptTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("LoginType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserFailedLoginAttempts", (string)null);
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Users.Models.UserOtps", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime>("ExpirationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Otp")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Purpose")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserOtps", (string)null);
                 });
 
             modelBuilder.Entity("Asala.Core.Modules.Users.Models.UserRole", b =>
@@ -2474,6 +2696,49 @@ namespace Asala.Api.Migrations
                         .IsUnique();
 
                     b.ToTable("UserRole", (string)null);
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Users.Models.UserTokens", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TokenId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserTokens");
                 });
 
             modelBuilder.Entity("Asala.Core.Modules.Categories.Models.ProviderCategory", b =>
@@ -2675,13 +2940,25 @@ namespace Asala.Api.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Asala.Core.Modules.Users.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Article");
 
                     b.Navigation("PostType");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Asala.Core.Modules.Posts.Models.BasePostLocalized", b =>
                 {
+                    b.HasOne("Asala.Core.Modules.Posts.Models.BasePost", null)
+                        .WithMany("Localizations")
+                        .HasForeignKey("BasePostId");
+
                     b.HasOne("Asala.Core.Modules.Languages.Language", "Language")
                         .WithMany()
                         .HasForeignKey("LanguageId")
@@ -2708,6 +2985,59 @@ namespace Asala.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("BasePost");
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Posts.Models.Comment", b =>
+                {
+                    b.HasOne("Asala.Core.Modules.Posts.Models.BasePost", "BasePost")
+                        .WithMany()
+                        .HasForeignKey("BasePostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Asala.Core.Modules.Posts.Models.BasePost", null)
+                        .WithMany("Comments")
+                        .HasForeignKey("BasePostId1");
+
+                    b.HasOne("Asala.Core.Modules.Posts.Models.Comment", "Parent")
+                        .WithMany("Replies")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Asala.Core.Modules.Users.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("BasePost");
+
+                    b.Navigation("Parent");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Posts.Models.Like", b =>
+                {
+                    b.HasOne("Asala.Core.Modules.Posts.Models.BasePost", "BasePost")
+                        .WithMany()
+                        .HasForeignKey("BasePostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Asala.Core.Modules.Posts.Models.BasePost", null)
+                        .WithMany("Likes")
+                        .HasForeignKey("BasePostId1");
+
+                    b.HasOne("Asala.Core.Modules.Users.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("BasePost");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Asala.Core.Modules.Posts.Models.Post", b =>
@@ -2793,6 +3123,17 @@ namespace Asala.Api.Migrations
                     b.Navigation("Language");
 
                     b.Navigation("PostType");
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Posts.Models.Reel", b =>
+                {
+                    b.HasOne("Asala.Core.Modules.Posts.Models.BasePost", "BasePost")
+                        .WithOne("Reel")
+                        .HasForeignKey("Asala.Core.Modules.Posts.Models.Reel", "PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BasePost");
                 });
 
             modelBuilder.Entity("Asala.Core.Modules.Products.Models.Product", b =>
@@ -3115,6 +3456,28 @@ namespace Asala.Api.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Asala.Core.Modules.Users.Models.UserFailedLoginAttempts", b =>
+                {
+                    b.HasOne("Asala.Core.Modules.Users.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Users.Models.UserOtps", b =>
+                {
+                    b.HasOne("Asala.Core.Modules.Users.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Asala.Core.Modules.Users.Models.UserRole", b =>
                 {
                     b.HasOne("Asala.Core.Modules.Users.Models.Role", null)
@@ -3128,6 +3491,17 @@ namespace Asala.Api.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Users.Models.UserTokens", b =>
+                {
+                    b.HasOne("Asala.Core.Modules.Users.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Asala.Core.Modules.ClientPages.Models.PostsPages", b =>
@@ -3167,9 +3541,22 @@ namespace Asala.Api.Migrations
 
             modelBuilder.Entity("Asala.Core.Modules.Posts.Models.BasePost", b =>
                 {
+                    b.Navigation("Comments");
+
+                    b.Navigation("Likes");
+
+                    b.Navigation("Localizations");
+
                     b.Navigation("PostComments");
 
                     b.Navigation("PostMedias");
+
+                    b.Navigation("Reel");
+                });
+
+            modelBuilder.Entity("Asala.Core.Modules.Posts.Models.Comment", b =>
+                {
+                    b.Navigation("Replies");
                 });
 
             modelBuilder.Entity("Asala.Core.Modules.Posts.Models.Post", b =>

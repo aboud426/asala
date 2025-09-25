@@ -71,8 +71,11 @@ public class AdminEmployeeSeederService
             // Create admin user
             var adminUser = new User
             {
+                Name = ADMIN_NAME,
                 Email = ADMIN_EMAIL,
                 PasswordHash = HashPassword(ADMIN_PASSWORD),
+                EmailConfirmed = true,
+                PhoneNumberConfirmed = true,
                 IsActive = true,
                 IsDeleted = false,
                 CreatedAt = DateTime.UtcNow,

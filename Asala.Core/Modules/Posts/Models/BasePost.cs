@@ -10,10 +10,13 @@ public class BasePost : BaseEntity<long>
     public User User { get; set; } = null!;
     public string Description { get; set; } = string.Empty;
     public int NumberOfReactions { get; set; } = 0;
+    public int NumberOfComments { get; set; } = 0;
     public int PostTypeId { get; set; }
     public PostType PostType { get; set; } = null!;
     public List<BasePostMedia> PostMedias { get; set; } = [];
     public List<PostComment> PostComments { get; set; } = [];
+    public List<Comment> Comments { get; set; } = [];
+    public List<Like> Likes { get; set; } = [];
     public List<BasePostLocalized> Localizations { get; set; } = [];
 
     public virtual Article? Article { get; set; }

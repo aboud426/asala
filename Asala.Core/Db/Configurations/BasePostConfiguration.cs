@@ -12,6 +12,7 @@ public class BasePostConfiguration : IEntityTypeConfiguration<BasePost>
         builder.ToTable("BasePosts");
         builder.Property(e => e.Description).HasMaxLength(5000);
         builder.Property(e => e.NumberOfReactions).HasDefaultValue(0);
+        builder.Property(e => e.NumberOfComments).HasDefaultValue(0);
 
         // Relationships
         builder
@@ -30,6 +31,18 @@ public class BasePostConfiguration : IEntityTypeConfiguration<BasePost>
             .HasMany(e => e.PostComments)
             .WithOne(e => e.BasePost)
             .HasForeignKey(e => e.PostId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder
+            .HasMany(e => e.Comments)
+            .WithOne(e => e.BasePost)
+            .HasForeignKey(e => e.BasePostId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder
+            .HasMany(e => e.Likes)
+            .WithOne(e => e.BasePost)
+            .HasForeignKey(e => e.BasePostId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder

@@ -178,6 +178,7 @@ public class GetReelsQueryHandler : IRequestHandler<GetReelsQuery, Result<Pagina
             UserId = basePost.UserId,
             Description = basePost.Description,
             NumberOfReactions = basePost.NumberOfReactions,
+            NumberOfComments = basePost.NumberOfComments,
             PostTypeId = basePost.PostTypeId,
             IsActive = basePost.IsActive,
             CreatedAt = basePost.CreatedAt,

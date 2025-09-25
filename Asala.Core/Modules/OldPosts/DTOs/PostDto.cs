@@ -6,6 +6,7 @@ public class PostDto
     public int UserId { get; set; }
     public string Description { get; set; } = null!;
     public int NumberOfReactions { get; set; }
+    public int NumberOfComments { get; set; }
     public int PostTypeId { get; set; }
     public string PostTypeName { get; set; } = string.Empty;
     public bool IsActive { get; set; }

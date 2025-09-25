@@ -186,6 +186,7 @@ public class CreateBasePostCommandHandler
             UserId = post.UserId,
             Description = post.Description,
             NumberOfReactions = post.NumberOfReactions,
+            NumberOfComments = post.NumberOfComments,
             PostTypeId = post.PostTypeId,
             IsActive = post.IsActive,
             CreatedAt = post.CreatedAt,

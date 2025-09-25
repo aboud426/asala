@@ -34,6 +34,7 @@ public class BasePostDto
     public int UserId { get; set; }
     public string Description { get; set; } = string.Empty;
     public int NumberOfReactions { get; set; }
+    public int NumberOfComments { get; set; }
     public int PostTypeId { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }

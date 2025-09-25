@@ -59,6 +59,7 @@ public class GetReelByIdQueryHandler : IRequestHandler<GetReelByIdQuery, Result<
             UserId = basePost.UserId,
             Description = basePost.Description,
             NumberOfReactions = basePost.NumberOfReactions,
+            NumberOfComments = basePost.NumberOfComments,
             PostTypeId = basePost.PostTypeId,
             IsActive = basePost.IsActive,
             CreatedAt = basePost.CreatedAt,

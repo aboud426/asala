@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Asala.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class initDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -324,9 +324,12 @@ namespace Asala.Api.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Email = table.Column<string>(type: "varchar(100)", unicode: false, maxLength: 100, nullable: false),
                     PhoneNumber = table.Column<string>(type: "varchar(20)", unicode: false, maxLength: 20, nullable: true),
                     PasswordHash = table.Column<string>(type: "varchar(200)", unicode: false, maxLength: 200, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false),
@@ -725,8 +728,7 @@ namespace Asala.Api.Migrations
                 name: "Customer",
                 columns: table => new
                 {
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
+                    UserId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -853,6 +855,61 @@ namespace Asala.Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserFailedLoginAttempts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    AttemptTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LoginType = table.Column<int>(type: "int", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserFailedLoginAttempts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserFailedLoginAttempts_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserOtps",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    Otp = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ExpirationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Purpose = table.Column<int>(type: "int", nullable: false),
+                    IsUsed = table.Column<bool>(type: "bit", nullable: false),
+                    IsRevoked = table.Column<bool>(type: "bit", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserOtps", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserOtps_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UserRole",
                 columns: table => new
                 {
@@ -877,6 +934,33 @@ namespace Asala.Api.Migrations
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_UserRole_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserTokens",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    TokenId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsRevoked = table.Column<bool>(type: "bit", nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserTokens", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserTokens_User_UserId",
                         column: x => x.UserId,
                         principalTable: "User",
                         principalColumn: "Id",
@@ -1386,6 +1470,12 @@ namespace Asala.Api.Migrations
                         principalTable: "PostTypes",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_BasePosts_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -1397,6 +1487,7 @@ namespace Asala.Api.Migrations
                     PostId = table.Column<long>(type: "bigint", nullable: false),
                     LanguageId = table.Column<int>(type: "int", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    BasePostId = table.Column<long>(type: "bigint", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime", nullable: false),
@@ -1406,6 +1497,11 @@ namespace Asala.Api.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_BasePostLocalized", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_BasePostLocalized_BasePosts_BasePostId",
+                        column: x => x.BasePostId,
+                        principalTable: "BasePosts",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_BasePostLocalized_BasePosts_PostId",
                         column: x => x.PostId,
@@ -1478,6 +1574,28 @@ namespace Asala.Api.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
+
+            migrationBuilder.CreateTable(
+                name: "Reels",
+                columns: table => new
+                {
+                    PostId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Reels", x => x.PostId);
+                    table.ForeignKey(
+                        name: "FK_Reels_BasePosts_PostId",
+                        column: x => x.PostId,
+                        principalTable: "BasePosts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BasePostLocalized_BasePostId",
+                table: "BasePostLocalized",
+                column: "BasePostId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_BasePostLocalized_LanguageId",
@@ -1610,11 +1728,6 @@ namespace Asala.Api.Migrations
                 name: "IX_CurrencyLocalizations_LanguageId",
                 table: "CurrencyLocalizations",
                 column: "LanguageId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Customer_Name",
-                table: "Customer",
-                column: "Name");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Employee_EmployeeName",
@@ -2202,6 +2315,16 @@ namespace Asala.Api.Migrations
                 filter: "[PhoneNumber] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_UserFailedLoginAttempts_UserId",
+                table: "UserFailedLoginAttempts",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserOtps_UserId",
+                table: "UserOtps",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserRole_Id",
                 table: "UserRole",
                 column: "Id",
@@ -2222,6 +2345,11 @@ namespace Asala.Api.Migrations
                 table: "UserRole",
                 columns: new[] { "UserId", "RoleId" },
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserTokens_UserId",
+                table: "UserTokens",
+                column: "UserId");
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Articles_BasePosts_PostId",
@@ -2327,13 +2455,25 @@ namespace Asala.Api.Migrations
                 name: "ProviderMedia");
 
             migrationBuilder.DropTable(
+                name: "Reels");
+
+            migrationBuilder.DropTable(
                 name: "Role_Permissions");
 
             migrationBuilder.DropTable(
                 name: "RoleLocalizations");
 
             migrationBuilder.DropTable(
+                name: "UserFailedLoginAttempts");
+
+            migrationBuilder.DropTable(
+                name: "UserOtps");
+
+            migrationBuilder.DropTable(
                 name: "UserRole");
+
+            migrationBuilder.DropTable(
+                name: "UserTokens");
 
             migrationBuilder.DropTable(
                 name: "Cart");
@@ -2387,9 +2527,6 @@ namespace Asala.Api.Migrations
                 name: "Region");
 
             migrationBuilder.DropTable(
-                name: "User");
-
-            migrationBuilder.DropTable(
                 name: "BasePosts");
 
             migrationBuilder.DropTable(
@@ -2397,6 +2534,9 @@ namespace Asala.Api.Migrations
 
             migrationBuilder.DropTable(
                 name: "PostTypes");
+
+            migrationBuilder.DropTable(
+                name: "User");
         }
     }
 }

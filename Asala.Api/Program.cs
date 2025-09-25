@@ -144,6 +144,20 @@ using (var scope = app.Services.CreateScope())
 {
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
+    // Seed Languages (must be first as other entities depend on languages)
+    try
+    {
+        logger.LogInformation("Seeding Languages...");
+        var languageSeeder =
+            scope.ServiceProvider.GetRequiredService<Asala.UseCases.Languages.LanguageSeederService>();
+        await languageSeeder.SeedLanguagesAsync();
+        logger.LogInformation("Languages seeding completed");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Error occurred while seeding Languages");
+    }
+
     // Seed MessageCodes
     try
     {
