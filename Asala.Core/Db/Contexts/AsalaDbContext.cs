@@ -42,6 +42,7 @@ public class AsalaDbContext : DbContext
     public DbSet<Like> Likes => Set<Like>();
     public DbSet<Article> Articles => Set<Article>();
     public DbSet<Reel> Reels => Set<Reel>();
+    public DbSet<NormalPost> NormalPosts => Set<NormalPost>();
 
     // Products module
     public DbSet<Product> Products => Set<Product>();

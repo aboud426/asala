@@ -20,6 +20,7 @@ public class BasePost : BaseEntity<long>
 
     public virtual Article? Article { get; set; }
     public virtual Reel? Reel { get; set; }
+    public virtual NormalPost? NormalPost { get; set; }
 }
 
 public class BasePostLocalized : BaseEntity<long>
