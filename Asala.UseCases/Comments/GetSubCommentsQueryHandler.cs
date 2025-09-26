@@ -70,6 +70,7 @@ public class GetSubCommentsQueryHandler : IRequestHandler<GetSubCommentsQuery, R
                 BasePostId = reply.BasePostId,
                 Content = reply.Content,
                 ParentId = reply.ParentId,
+                NumberOfReplies = reply.NumberOfReplies,
                 IsActive = reply.IsActive,
                 CreatedAt = reply.CreatedAt,
                 UpdatedAt = reply.UpdatedAt

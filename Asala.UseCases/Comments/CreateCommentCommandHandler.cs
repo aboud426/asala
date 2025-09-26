@@ -44,6 +44,12 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
             // Update BasePost's NumberOfComments
             await UpdateBasePostCommentCountAsync(request.BasePostId, cancellationToken);
 
+            // Update parent comment's NumberOfReplies if this is a reply
+            if (request.ParentId.HasValue)
+            {
+                await UpdateParentCommentReplyCountAsync(request.ParentId.Value, cancellationToken);
+            }
+
             // Save changes
             await _context.SaveChangesAsync(cancellationToken);
 
@@ -107,6 +113,18 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
         }
     }
 
+    private async Task UpdateParentCommentReplyCountAsync(long parentCommentId, CancellationToken cancellationToken)
+    {
+        var parentComment = await _context.Comments
+            .FirstOrDefaultAsync(c => c.Id == parentCommentId, cancellationToken);
+
+        if (parentComment != null)
+        {
+            parentComment.NumberOfReplies++;
+            parentComment.UpdatedAt = DateTime.UtcNow;
+        }
+    }
+
     private async Task<CommentDto> GetCommentWithUserAsync(long commentId, CancellationToken cancellationToken)
     {
         var comment = await _context.Comments
@@ -121,6 +139,7 @@ public class CreateCommentCommandHandler : IRequestHandler<CreateCommentCommand,
             BasePostId = comment.BasePostId,
             Content = comment.Content,
             ParentId = comment.ParentId,
+            NumberOfReplies = comment.NumberOfReplies,
             IsActive = comment.IsActive,
             CreatedAt = comment.CreatedAt,
             UpdatedAt = comment.UpdatedAt

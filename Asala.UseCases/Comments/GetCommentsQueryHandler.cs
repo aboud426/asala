@@ -56,6 +56,7 @@ public class GetCommentsQueryHandler : IRequestHandler<GetCommentsQuery, Result<
                 BasePostId = comment.BasePostId,
                 Content = comment.Content,
                 ParentId = comment.ParentId,
+                NumberOfReplies = comment.NumberOfReplies,
                 IsActive = comment.IsActive,
                 CreatedAt = comment.CreatedAt,
                 UpdatedAt = comment.UpdatedAt

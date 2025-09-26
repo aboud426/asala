@@ -16,6 +16,7 @@ public class CommentConfiguration : IEntityTypeConfiguration<Comment>
         builder.Property(x => x.BasePostId).IsRequired();
         builder.Property(x => x.ParentId).IsRequired(false);
         builder.Property(x => x.Content).HasMaxLength(1000).IsRequired();
+        builder.Property(x => x.NumberOfReplies).HasDefaultValue(0).IsRequired();
         builder.Property(x => x.UserId).IsRequired();
         
         // Relationships

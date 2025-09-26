@@ -19,6 +19,7 @@ public class CommentDto
     public long BasePostId { get; set; }
     public string Content { get; set; } = string.Empty;
     public long? ParentId { get; set; }
+    public int NumberOfReplies { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

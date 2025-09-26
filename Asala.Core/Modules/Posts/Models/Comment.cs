@@ -12,6 +12,7 @@ public class Comment : BaseEntity<long>
     public Comment? Parent { get; set; }
     
     public string Content { get; set; } = string.Empty;
+    public int NumberOfReplies { get; set; } = 0;
     
     public int UserId { get; set; }
     public User User { get; set; } = null!;
