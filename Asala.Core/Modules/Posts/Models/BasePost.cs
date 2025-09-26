@@ -41,12 +41,3 @@ public class BasePostMedia : BaseEntity<long>
     public int DisplayOrder { get; set; } = 0;
 }
 
-public class PostComment : BaseEntity<long>
-{
-    public long ParentCommentId { get; set; }
-    public PostComment ParentPostComment { get; set; } = null!;
-
-    public long PostId { get; set; }
-    public BasePost BasePost { get; set; } = null!;
-    public string Content { get; set; } = string.Empty;
-}
