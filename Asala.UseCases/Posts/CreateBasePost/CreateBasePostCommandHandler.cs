@@ -164,7 +164,6 @@ public class CreateBasePostCommandHandler
         var post = await _context
             .BasePosts.Include(p => p.PostMedias)
             .Include(p => p.PostType)
-            .Include(p => p.PostComments)
             .FirstOrDefaultAsync(p => p.Id == postId, cancellationToken);
 
         var localizations = await _context

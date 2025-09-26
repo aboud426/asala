@@ -27,11 +27,6 @@ public class BasePostConfiguration : IEntityTypeConfiguration<BasePost>
             .HasForeignKey(e => e.PostId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder
-            .HasMany(e => e.PostComments)
-            .WithOne(e => e.BasePost)
-            .HasForeignKey(e => e.PostId)
-            .OnDelete(DeleteBehavior.Cascade);
 
         builder
             .HasMany(e => e.Comments)
@@ -103,27 +98,3 @@ public class BasePostMediaConfiguration : IEntityTypeConfiguration<BasePostMedia
     }
 }
 
-public class PostCommentConfiguration : IEntityTypeConfiguration<PostComment>
-{
-    public void Configure(EntityTypeBuilder<PostComment> builder)
-    {
-        builder.ToTable("PostComments");
-        builder.Property(e => e.Content).HasMaxLength(1000);
-
-        // Relationships
-        builder
-            .HasOne(e => e.BasePost)
-            .WithMany(e => e.PostComments)
-            .HasForeignKey(e => e.PostId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder
-            .HasOne(e => e.ParentPostComment)
-            .WithMany()
-            .HasForeignKey(e => e.ParentCommentId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasIndex(e => e.PostId);
-        builder.HasIndex(e => e.ParentCommentId);
-    }
-}

@@ -38,7 +38,6 @@ public class AsalaDbContext : DbContext
     public DbSet<BasePost> BasePosts => Set<BasePost>();
     public DbSet<BasePostLocalized> BasePostLocalizations => Set<BasePostLocalized>();
     public DbSet<BasePostMedia> BasePostMedias => Set<BasePostMedia>();
-    public DbSet<PostComment> PostComments => Set<PostComment>();
     public DbSet<Comment> Comments => Set<Comment>();
     public DbSet<Like> Likes => Set<Like>();
     public DbSet<Article> Articles => Set<Article>();
