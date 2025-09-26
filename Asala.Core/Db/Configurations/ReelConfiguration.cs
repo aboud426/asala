@@ -10,6 +10,11 @@ public class ReelConfiguration : IEntityTypeConfiguration<Reel>
     {
         builder.ToTable("Reels");
         builder.HasKey(e => e.PostId);
+        
+        // Properties
+        builder.Property(e => e.ExpirationDate).IsRequired();
+        
+        // Relationships
         builder
             .HasOne(e => e.BasePost)
             .WithOne(e => e.Reel)

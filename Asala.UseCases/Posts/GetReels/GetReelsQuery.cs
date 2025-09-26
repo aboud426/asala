@@ -17,6 +17,9 @@ public class GetReelsQuery : IRequest<Result<PaginatedResult<ReelDto>>>
     public int? MaxReactions { get; set; }
     public string? LanguageCode { get; set; }
     public bool IncludeDeleted { get; set; } = false;
-    public string? SortBy { get; set; } = "CreatedAt"; // CreatedAt, UpdatedAt, NumberOfReactions
+    public bool? IncludeExpired { get; set; } = true; // Include expired reels by default
+    public DateTime? ExpiresAfter { get; set; } // Filter reels that expire after this date
+    public DateTime? ExpiresBefore { get; set; } // Filter reels that expire before this date
+    public string? SortBy { get; set; } = "CreatedAt"; // CreatedAt, UpdatedAt, NumberOfReactions, ExpirationDate
     public string? SortOrder { get; set; } = "desc"; // asc, desc
 }

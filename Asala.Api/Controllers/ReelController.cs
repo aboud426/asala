@@ -33,7 +33,10 @@ public class ReelController : BaseController
     /// <param name="createdBefore">Filter by creation date before this date</param>
     /// <param name="minReactions">Minimum number of reactions</param>
     /// <param name="maxReactions">Maximum number of reactions</param>
-    /// <param name="sortBy">Sort by field (CreatedAt, UpdatedAt, NumberOfReactions)</param>
+    /// <param name="includeExpired">Include expired reels (default: true)</param>
+    /// <param name="expiresAfter">Filter reels that expire after this date</param>
+    /// <param name="expiresBefore">Filter reels that expire before this date</param>
+    /// <param name="sortBy">Sort by field (CreatedAt, UpdatedAt, NumberOfReactions, ExpirationDate)</param>
     /// <param name="sortOrder">Sort order (asc, desc)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Paginated list of reels with full BasePost data</returns>
@@ -51,6 +54,9 @@ public class ReelController : BaseController
         [FromQuery] DateTime? createdBefore = null,
         [FromQuery] int? minReactions = null,
         [FromQuery] int? maxReactions = null,
+        [FromQuery] bool? includeExpired = true,
+        [FromQuery] DateTime? expiresAfter = null,
+        [FromQuery] DateTime? expiresBefore = null,
         [FromQuery] string? sortBy = "CreatedAt",
         [FromQuery] string? sortOrder = "desc",
         CancellationToken cancellationToken = default
@@ -67,6 +73,9 @@ public class ReelController : BaseController
             CreatedBefore = createdBefore,
             MinReactions = minReactions,
             MaxReactions = maxReactions,
+            IncludeExpired = includeExpired,
+            ExpiresAfter = expiresAfter,
+            ExpiresBefore = expiresBefore,
             SortBy = sortBy,
             SortOrder = sortOrder,
         };
@@ -93,12 +102,12 @@ public class ReelController : BaseController
     }
 
     /// <summary>
-    /// Create a new reel
+    /// Create a new reel with automatic expiration (24 hours from creation)
     /// </summary>
     /// <param name="command">Reel creation command</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Created reel data</returns>
-    /// <response code="201">Reel created successfully</response>
+    /// <returns>Created reel data with automatically calculated expiration date</returns>
+    /// <response code="201">Reel created successfully with expiration date set to CreatedAt + 24 hours</response>
     /// <response code="400">Invalid input data</response>
     /// <response code="500">Internal server error</response>
     [HttpPost("create")]

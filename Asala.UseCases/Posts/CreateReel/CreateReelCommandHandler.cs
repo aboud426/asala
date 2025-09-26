@@ -46,8 +46,13 @@ public class CreateReelCommandHandler : IRequestHandler<CreateReelCommand, Resul
                 );
             }
 
-            // Create the Reel entry
-            var reel = new Reel { PostId = basePostResult.Value.Id };
+            // Create the Reel entry with expiration date set to CreatedAt + 24 hours
+            var expirationDate = basePostResult.Value.CreatedAt.AddHours(24);
+            var reel = new Reel 
+            { 
+                PostId = basePostResult.Value.Id,
+                ExpirationDate = expirationDate
+            };
 
             _context.Reels.Add(reel);
             await _context.SaveChangesAsync(cancellationToken);
@@ -55,7 +60,12 @@ public class CreateReelCommandHandler : IRequestHandler<CreateReelCommand, Resul
             await transaction.CommitAsync(cancellationToken);
 
             // Return the ReelDto with the BasePost data
-            var reelDto = new ReelDto { PostId = reel.PostId, BasePost = basePostResult.Value };
+            var reelDto = new ReelDto 
+            { 
+                PostId = reel.PostId, 
+                ExpirationDate = reel.ExpirationDate,
+                BasePost = basePostResult.Value 
+            };
 
             return Result.Success(reelDto);
         }

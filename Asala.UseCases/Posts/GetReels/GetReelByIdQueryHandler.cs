@@ -87,6 +87,11 @@ public class GetReelByIdQueryHandler : IRequestHandler<GetReelByIdQuery, Result<
                 .ToList(),
         };
 
-        return new ReelDto { PostId = basePost.Id, BasePost = basePostDto };
+        return new ReelDto 
+        { 
+            PostId = basePost.Id, 
+            ExpirationDate = basePost.Reel!.ExpirationDate,
+            BasePost = basePostDto 
+        };
     }
 }

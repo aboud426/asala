@@ -130,6 +130,16 @@ public class GetReelsQueryHandler : IRequestHandler<GetReelsQuery, Result<Pagina
         if (request.MaxReactions.HasValue)
             query = query.Where(bp => bp.NumberOfReactions <= request.MaxReactions.Value);
 
+        // Filter by expiration
+        if (request.IncludeExpired.HasValue && !request.IncludeExpired.Value)
+            query = query.Where(bp => bp.Reel!.ExpirationDate > DateTime.UtcNow);
+
+        if (request.ExpiresAfter.HasValue)
+            query = query.Where(bp => bp.Reel!.ExpirationDate > request.ExpiresAfter.Value);
+
+        if (request.ExpiresBefore.HasValue)
+            query = query.Where(bp => bp.Reel!.ExpirationDate < request.ExpiresBefore.Value);
+
         // Apply sorting
         query = ApplySorting(query, request.SortBy, request.SortOrder);
 
@@ -152,6 +162,9 @@ public class GetReelsQueryHandler : IRequestHandler<GetReelsQuery, Result<Pagina
             "numberofreactions" => isAscending
                 ? query.OrderBy(bp => bp.NumberOfReactions)
                 : query.OrderByDescending(bp => bp.NumberOfReactions),
+            "expirationdate" => isAscending
+                ? query.OrderBy(bp => bp.Reel!.ExpirationDate)
+                : query.OrderByDescending(bp => bp.Reel!.ExpirationDate),
             _ => isAscending
                 ? query.OrderBy(bp => bp.CreatedAt)
                 : query.OrderByDescending(bp => bp.CreatedAt),
@@ -160,7 +173,7 @@ public class GetReelsQueryHandler : IRequestHandler<GetReelsQuery, Result<Pagina
 
     private static bool IsValidSortBy(string sortBy)
     {
-        var validSortFields = new[] { "createdat", "updatedat", "numberofreactions" };
+        var validSortFields = new[] { "createdat", "updatedat", "numberofreactions", "expirationdate" };
         return validSortFields.Contains(sortBy.ToLower());
     }
 
@@ -206,6 +219,11 @@ public class GetReelsQueryHandler : IRequestHandler<GetReelsQuery, Result<Pagina
                 .ToList(),
         };
 
-        return new ReelDto { PostId = basePost.Id, BasePost = basePostDto };
+        return new ReelDto 
+        { 
+            PostId = basePost.Id, 
+            ExpirationDate = basePost.Reel!.ExpirationDate,
+            BasePost = basePostDto 
+        };
     }
 }

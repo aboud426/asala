@@ -18,5 +18,6 @@ public class CreateReelCommand : IRequest<Result<ReelDto>>
 public class ReelDto
 {
     public long PostId { get; set; }
+    public DateTime ExpirationDate { get; set; }
     public BasePostDto BasePost { get; set; } = null!;
 }
