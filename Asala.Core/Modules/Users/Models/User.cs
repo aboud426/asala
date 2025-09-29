@@ -11,6 +11,8 @@ public class User : BaseEntity<int>
     public string PasswordHash { get; set; } = null!;
     public bool EmailConfirmed { get; set; } = false;
     public bool PhoneNumberConfirmed { get; set; } = false;
+    public int FollowersCount { get; set; } = 0;
+    public int FollowingCount { get; set; } = 0;
 
     // Navigation properties
     public Provider? Provider { get; set; }
@@ -62,4 +64,14 @@ public class UserTokens : BaseEntity<int>
     public string TokenId { get; set; } = null!;
     public bool IsRevoked { get; set; } = false;
     public DateTime ExpiresAt { get; set; }
+}
+
+public class Follower : BaseEntity<int>
+{
+    public int FollowerId { get; set; }
+    public int FollowingId { get; set; }
+    
+    // Navigation properties
+    public User FollowerUser { get; set; } = null!;
+    public User FollowingUser { get; set; } = null!;
 }

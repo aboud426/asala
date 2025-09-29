@@ -94,6 +94,7 @@ public class AsalaDbContext : DbContext
     public DbSet<UserOtps> UserOtps => Set<UserOtps>();
     public DbSet<UserFailedLoginAttempts> UserFailedLoginAttempts => Set<UserFailedLoginAttempts>();
     public DbSet<UserTokens> UserTokens => Set<UserTokens>();
+    public DbSet<Follower> Followers => Set<Follower>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

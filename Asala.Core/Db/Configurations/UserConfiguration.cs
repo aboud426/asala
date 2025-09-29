@@ -23,6 +23,14 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasMaxLength(200)
             .IsUnicode(false);
 
+        builder.Property(e => e.FollowersCount)
+            .IsRequired()
+            .HasDefaultValue(0);
+
+        builder.Property(e => e.FollowingCount)
+            .IsRequired()
+            .HasDefaultValue(0);
+
         // builder.Property(e => e.LocationId)
         //     .IsRequired(false);
 
