@@ -49,6 +49,11 @@ public class AsalaDbContext : DbContext
     public DbSet<ProductLocalized> ProductLocalizeds => Set<ProductLocalized>();
     public DbSet<ProductMedia> ProductMedias => Set<ProductMedia>();
     public DbSet<ProductsPost> ProductsPosts => Set<ProductsPost>();
+    public DbSet<ProductAttribute> ProductAttributes => Set<ProductAttribute>();
+    public DbSet<ProductAttributeLocalized> ProductAttributeLocalizeds => Set<ProductAttributeLocalized>();
+    public DbSet<ProductAttributeValue> ProductAttributeValues => Set<ProductAttributeValue>();
+    public DbSet<ProductAttributeValueLocalized> ProductAttributeValueLocalizeds => Set<ProductAttributeValueLocalized>();
+    public DbSet<ProductAttributeAssignment> ProductAttributeAssignments => Set<ProductAttributeAssignment>();
 
     // Users module
     public DbSet<User> Users => Set<User>();
