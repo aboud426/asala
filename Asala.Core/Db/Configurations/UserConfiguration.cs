@@ -31,6 +31,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired()
             .HasDefaultValue(0);
 
+        builder.Property(e => e.NumberOfLikes)
+            .IsRequired()
+            .HasDefaultValue(0);
+
         // builder.Property(e => e.LocationId)
         //     .IsRequired(false);
 

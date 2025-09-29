@@ -13,6 +13,7 @@ public class User : BaseEntity<int>
     public bool PhoneNumberConfirmed { get; set; } = false;
     public int FollowersCount { get; set; } = 0;
     public int FollowingCount { get; set; } = 0;
+    public int NumberOfLikes { get; set; } = 0;
 
     // Navigation properties
     public Provider? Provider { get; set; }
