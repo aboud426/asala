@@ -131,6 +131,16 @@ public class CreateBasePostCommandHandler
                 .ToList();
         }
 
+        // Update user post count
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Id == request.UserId, cancellationToken);
+        
+        if (user != null)
+        {
+            user.NumberOfPosts++;
+            user.UpdatedAt = DateTime.UtcNow;
+        }
+
         await _context.SaveChangesAsync(cancellationToken);
     }
 

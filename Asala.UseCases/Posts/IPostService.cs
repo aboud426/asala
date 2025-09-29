@@ -47,4 +47,6 @@ public interface IPostService
         bool? activeOnly = null,
         CancellationToken cancellationToken = default
     );
+
+    Task<Result> SoftDeleteAsync(int id, CancellationToken cancellationToken = default);
 }

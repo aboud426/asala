@@ -23,6 +23,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasMaxLength(200)
             .IsUnicode(false);
 
+        builder.Property(e => e.CoverPhotoUrl)
+            .IsRequired(false)
+            .HasMaxLength(1024);
+
         builder.Property(e => e.FollowersCount)
             .IsRequired()
             .HasDefaultValue(0);
@@ -31,7 +35,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired()
             .HasDefaultValue(0);
 
-        builder.Property(e => e.NumberOfLikes)
+        builder.Property(e => e.NumberOfPosts)
             .IsRequired()
             .HasDefaultValue(0);
 

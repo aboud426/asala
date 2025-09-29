@@ -5,6 +5,7 @@ using Asala.Core.Modules.Languages;
 using Asala.Core.Modules.Posts.Db;
 using Asala.Core.Modules.Posts.DTOs;
 using Asala.Core.Modules.Posts.Models;
+using Asala.Core.Modules.Users.Db;
 using Microsoft.EntityFrameworkCore;
 
 namespace Asala.UseCases.Posts;
@@ -16,13 +17,15 @@ public class PostService : IPostService
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILanguageRepository _languageRepository;
     private readonly IPostsPagesRepository _postsPagesRepository;
+    private readonly IUserRepository _userRepository;
 
     public PostService(
         IPostRepository postRepository,
         IPostLocalizedRepository postLocalizedRepository,
         IUnitOfWork unitOfWork,
         ILanguageRepository languageRepository,
-        IPostsPagesRepository postsPagesRepository
+        IPostsPagesRepository postsPagesRepository,
+        IUserRepository userRepository
     )
     {
         _postRepository = postRepository;
@@ -30,6 +33,7 @@ public class PostService : IPostService
         _unitOfWork = unitOfWork;
         _languageRepository = languageRepository;
         _postsPagesRepository = postsPagesRepository;
+        _userRepository = userRepository;
     }
 
     public async Task<Result<PaginatedResult<PostDto>>> GetPaginatedAsync(
@@ -121,6 +125,15 @@ public class PostService : IPostService
         var addResult = await _postRepository.AddAsync(post, cancellationToken);
         if (addResult.IsFailure)
             return Result.Failure<PostDto>(addResult.MessageCode);
+
+        // Update user post count
+        var userResult = await _userRepository.GetByIdAsync(createDto.UserId, cancellationToken);
+        if (userResult.IsSuccess && userResult.Value != null)
+        {
+            userResult.Value.NumberOfPosts++;
+            userResult.Value.UpdatedAt = DateTime.UtcNow;
+            _userRepository.Update(userResult.Value);
+        }
 
         var saveResult = await _unitOfWork.SaveChangesAsync(cancellationToken);
         if (saveResult.IsFailure)
@@ -248,6 +261,15 @@ public class PostService : IPostService
         var addResult = await _postRepository.AddAsync(post, cancellationToken);
         if (addResult.IsFailure)
             return Result.Failure<PostDto?>(addResult.MessageCode);
+
+        // Update user post count
+        var userResult = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        if (userResult.IsSuccess && userResult.Value != null)
+        {
+            userResult.Value.NumberOfPosts++;
+            userResult.Value.UpdatedAt = DateTime.UtcNow;
+            _userRepository.Update(userResult.Value);
+        }
 
         var saveResult = await _unitOfWork.SaveChangesAsync(cancellationToken);
         if (saveResult.IsFailure)
@@ -705,6 +727,47 @@ public class PostService : IPostService
             MediaUrls = mediaUrls,
             Localizations = activeLocalizations.Select(MapLocalizationToDto).ToList(),
         };
+    }
+
+    public async Task<Result> SoftDeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        // Validate ID
+        var idValidationResult = ValidateId(id);
+        if (idValidationResult.IsFailure)
+            return Result.Failure(idValidationResult.MessageCode);
+
+        // Get existing post
+        var getResult = await _postRepository.GetByIdAsync(id, cancellationToken);
+        if (getResult.IsFailure)
+            return getResult;
+
+        var post = getResult.Value;
+        if (post == null || post.IsDeleted)
+            return Result.Failure(MessageCodes.POST_NOT_FOUND);
+
+        // Get the user to update post count
+        var userResult = await _userRepository.GetByIdAsync(post.UserId, cancellationToken);
+        if (userResult.IsSuccess && userResult.Value != null)
+        {
+            // Decrement user post count
+            if (userResult.Value.NumberOfPosts > 0)
+                userResult.Value.NumberOfPosts--;
+
+            userResult.Value.UpdatedAt = DateTime.UtcNow;
+            _userRepository.Update(userResult.Value);
+        }
+
+        // Soft delete the post
+        post.IsDeleted = true;
+        post.IsActive = false;
+        post.DeletedAt = DateTime.UtcNow;
+        post.UpdatedAt = DateTime.UtcNow;
+
+        var updateResult = _postRepository.Update(post);
+        if (updateResult.IsFailure)
+            return updateResult;
+
+        return await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
     #endregion

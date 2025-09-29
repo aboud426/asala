@@ -11,9 +11,10 @@ public class User : BaseEntity<int>
     public string PasswordHash { get; set; } = null!;
     public bool EmailConfirmed { get; set; } = false;
     public bool PhoneNumberConfirmed { get; set; } = false;
+    public string? CoverPhotoUrl { get; set; }
     public int FollowersCount { get; set; } = 0;
     public int FollowingCount { get; set; } = 0;
-    public int NumberOfLikes { get; set; } = 0;
+    public int NumberOfPosts { get; set; } = 0;
 
     // Navigation properties
     public Provider? Provider { get; set; }
