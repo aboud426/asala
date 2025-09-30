@@ -148,3 +148,75 @@ public class UpdateProductAttributeAssignmentDto
     public int? Id { get; set; }
     public int ProductAttributeValueId { get; set; }
 }
+
+// Product Filter DTOs
+public class ProductFilterDto
+{
+    public int Page { get; set; } = 1;
+    public int PageSize { get; set; } = 10;
+    public string? LanguageCode { get; set; } = "en";
+    public bool? ActiveOnly { get; set; } = true;
+    public string? SearchTerm { get; set; }
+    public int? CategoryId { get; set; }
+    public decimal? MinPrice { get; set; }
+    public decimal? MaxPrice { get; set; }
+    public int? CurrencyId { get; set; }
+    public List<ProductAttributeFilterDto> AttributeFilters { get; set; } = [];
+    public ProductSortBy SortBy { get; set; } = ProductSortBy.CreatedAt;
+    public bool SortDescending { get; set; } = true;
+}
+
+public class ProductAttributeFilterDto
+{
+    public int AttributeId { get; set; }
+    public List<int> ValueIds { get; set; } = [];
+}
+
+public class ProductFilterResultDto
+{
+    public List<ProductDto> Products { get; set; } = [];
+    public int TotalCount { get; set; }
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+    public int TotalPages { get; set; }
+    public ProductFilterSummaryDto FilterSummary { get; set; } = new();
+}
+
+public class ProductFilterSummaryDto
+{
+    public List<CategoryFilterSummaryDto> AvailableCategories { get; set; } = [];
+    public List<AttributeFilterSummaryDto> AvailableAttributes { get; set; } = [];
+    public PriceRangeDto PriceRange { get; set; } = new();
+}
+
+public class CategoryFilterSummaryDto
+{
+    public int CategoryId { get; set; }
+    public string CategoryName { get; set; } = null!;
+    public string? LocalizedCategoryName { get; set; }
+    public int ProductCount { get; set; }
+}
+
+public class AttributeFilterSummaryDto
+{
+    public int AttributeId { get; set; }
+    public string AttributeName { get; set; } = null!;
+    public string? LocalizedAttributeName { get; set; }
+    public List<AttributeValueFilterSummaryDto> Values { get; set; } = [];
+}
+
+public class AttributeValueFilterSummaryDto
+{
+    public int ValueId { get; set; }
+    public string Value { get; set; } = null!;
+    public string? LocalizedValue { get; set; }
+    public int ProductCount { get; set; }
+}
+
+public class PriceRangeDto
+{
+    public decimal MinPrice { get; set; }
+    public decimal MaxPrice { get; set; }
+    public string CurrencyCode { get; set; } = null!;
+    public string CurrencySymbol { get; set; } = null!;
+}
