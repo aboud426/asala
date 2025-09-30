@@ -83,6 +83,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IProductLocalizedRepository, ProductLocalizedRepository>();
         services.AddScoped<IProductMediaRepository, ProductMediaRepository>();
         services.AddScoped<IProductsPostRepository, ProductsPostRepository>();
+        services.AddScoped<IProductAttributeAssignmentRepository, ProductAttributeAssignmentRepository>();
 
         // Products services
         services.AddScoped<IProductService, ProductService>();

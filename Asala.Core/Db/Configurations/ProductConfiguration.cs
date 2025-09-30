@@ -52,5 +52,11 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             .WithMany()
             .HasForeignKey(e => e.CurrencyId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder
+            .HasMany(e => e.ProductAttributeAssignments)
+            .WithOne(e => e.Product)
+            .HasForeignKey(e => e.ProductId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

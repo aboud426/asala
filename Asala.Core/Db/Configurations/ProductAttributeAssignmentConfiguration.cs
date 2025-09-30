@@ -25,7 +25,7 @@ public class ProductAttributeAssignmentConfiguration : IEntityTypeConfiguration<
         // Relationships
         builder
             .HasOne(e => e.Product)
-            .WithMany()
+            .WithMany(e => e.ProductAttributeAssignments)
             .HasForeignKey(e => e.ProductId)
             .OnDelete(DeleteBehavior.Cascade);
 

@@ -12,6 +12,7 @@ public class CreateProductWithMediaDto
     public List<string> MediaUrls { get; set; } = new List<string>();
     public bool IsActive { get; set; } = true;
     public List<CreateProductLocalizedDto> Localizeds { get; set; } = [];
+    public List<CreateProductAttributeAssignmentDto> AttributeAssignments { get; set; } = [];
 }
 
 public class UpdateProductWithMediaDto
@@ -26,4 +27,5 @@ public class UpdateProductWithMediaDto
     public List<string> MediaUrls { get; set; } = new List<string>();
     public bool IsActive { get; set; }
     public List<UpdateProductLocalizedDto> Localizations { get; set; } = [];
+    public List<UpdateProductAttributeAssignmentDto> AttributeAssignments { get; set; } = [];
 }

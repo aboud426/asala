@@ -26,7 +26,9 @@ public class ProductService : IProductService
     private readonly ILanguageRepository _languageRepository;
     private readonly ICurrencyRepository _currencyRepository;
     private readonly IProductsPagesRepository _productsPagesRepository;
+    private readonly IProductAttributeAssignmentRepository _productAttributeAssignmentRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly AsalaDbContext _context;
 
     public ProductService(
         IProductRepository productRepository,
@@ -37,7 +39,9 @@ public class ProductService : IProductService
         ILanguageRepository languageRepository,
         ICurrencyRepository currencyRepository,
         IProductsPagesRepository productsPagesRepository,
-        IUnitOfWork unitOfWork
+        IProductAttributeAssignmentRepository productAttributeAssignmentRepository,
+        IUnitOfWork unitOfWork,
+        AsalaDbContext context
     )
     {
         _productRepository =
@@ -60,7 +64,11 @@ public class ProductService : IProductService
         _productsPagesRepository =
             productsPagesRepository
             ?? throw new ArgumentNullException(nameof(productsPagesRepository));
+        _productAttributeAssignmentRepository =
+            productAttributeAssignmentRepository
+            ?? throw new ArgumentNullException(nameof(productAttributeAssignmentRepository));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
     public async Task<Result<ProductDto?>> CreateWithMediaAsync(
@@ -203,6 +211,37 @@ public class ProductService : IProductService
                 }
             }
 
+            // Create Product Attribute Assignments
+            foreach (var attributeAssignmentDto in createDto.AttributeAssignments)
+            {
+                // Validate that ProductAttributeValue exists and is active
+                var attributeValueExistsResult = await _context.ProductAttributeValues
+                    .AnyAsync(v => v.Id == attributeAssignmentDto.ProductAttributeValueId && 
+                                  v.IsActive && !v.IsDeleted, cancellationToken);
+                
+                if (!attributeValueExistsResult)
+                    continue; // Skip invalid attribute values rather than failing the entire operation
+
+                var productAttributeAssignment = new ProductAttributeAssignment
+                {
+                    ProductId = createdProduct.Id,
+                    ProductAttributeValueId = attributeAssignmentDto.ProductAttributeValueId,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                };
+
+                var addAttributeAssignmentResult = await _productAttributeAssignmentRepository.AddAsync(
+                    productAttributeAssignment,
+                    cancellationToken
+                );
+                if (addAttributeAssignmentResult.IsFailure)
+                {
+                    await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                    return Result.Failure<ProductDto?>(addAttributeAssignmentResult.MessageCode);
+                }
+            }
+
             var saveFinalResult = await _unitOfWork.SaveChangesAsync(cancellationToken);
             if (saveFinalResult.IsFailure)
             {
@@ -266,6 +305,15 @@ public class ProductService : IProductService
             .Include(p => p.ProductLocalizeds)
             .ThenInclude(pl => pl.Language)
             .Include(p => p.ProductMedias)
+            .Include(p => p.ProductAttributeAssignments.Where(paa => !paa.IsDeleted))
+            .ThenInclude(paa => paa.ProductAttributeValue)
+            .ThenInclude(pav => pav.ProductAttribute)
+            .ThenInclude(pa => pa.ProductAttributeLocalizeds.Where(pal => !pal.IsDeleted))
+            .ThenInclude(pal => pal.Language)
+            .Include(p => p.ProductAttributeAssignments.Where(paa => !paa.IsDeleted))
+            .ThenInclude(paa => paa.ProductAttributeValue)
+            .ThenInclude(pav => pav.ProductAttributeValueLocalizeds.Where(pavl => !pavl.IsDeleted))
+            .ThenInclude(pavl => pavl.Language)
             .AsQueryable();
 
         // Apply active filter if specified
@@ -311,10 +359,19 @@ public class ProductService : IProductService
         CancellationToken cancellationToken = default
     )
     {
+        return MapToDtoAsync(product, null, cancellationToken);
+    }
+
+    private ProductDto MapToDtoAsync(
+        Product product,
+        Language? language = null,
+        CancellationToken cancellationToken = default
+    )
+    {
         // Load related entities if not already loaded
         var productWithIncludes = product;
 
-        return new ProductDto
+        var dto = new ProductDto
         {
             Id = productWithIncludes.Id,
             Name = productWithIncludes.Name,
@@ -352,7 +409,58 @@ public class ProductService : IProductService
                 .ProductMedias.Where(pm => !pm.IsDeleted)
                 .Select(pm => new ImageUrlDto { Url = pm.Url })
                 .ToList(),
+            AttributeAssignments = productWithIncludes
+                .ProductAttributeAssignments.Where(paa => !paa.IsDeleted && paa.IsActive)
+                .Select(paa => MapAttributeAssignmentToDto(paa, language))
+                .ToList(),
         };
+
+        return dto;
+    }
+
+    private ProductAttributeAssignmentDto MapAttributeAssignmentToDto(
+        ProductAttributeAssignment assignment,
+        Language? language = null
+    )
+    {
+        var dto = new ProductAttributeAssignmentDto
+        {
+            Id = assignment.Id,
+            ProductId = assignment.ProductId,
+            ProductAttributeValueId = assignment.ProductAttributeValueId,
+            AttributeName = assignment.ProductAttributeValue.ProductAttribute.Name,
+            AttributeValue = assignment.ProductAttributeValue.Value,
+            LocalizedAttributeName = assignment.ProductAttributeValue.ProductAttribute.Name, // Default fallback
+            LocalizedAttributeValue = assignment.ProductAttributeValue.Value, // Default fallback
+            IsActive = assignment.IsActive
+        };
+
+        if (language != null)
+        {
+            // Get localized attribute name
+            var attributeLocalization = assignment.ProductAttributeValue.ProductAttribute
+                .ProductAttributeLocalizeds
+                .FirstOrDefault(pal => pal.LanguageId == language.Id && 
+                                      pal.IsActive && !pal.IsDeleted);
+
+            if (attributeLocalization != null)
+            {
+                dto.LocalizedAttributeName = attributeLocalization.Name;
+            }
+
+            // Get localized attribute value
+            var valueLocalization = assignment.ProductAttributeValue
+                .ProductAttributeValueLocalizeds
+                .FirstOrDefault(pavl => pavl.LanguageId == language.Id && 
+                                       pavl.IsActive && !pavl.IsDeleted);
+
+            if (valueLocalization != null)
+            {
+                dto.LocalizedAttributeValue = valueLocalization.Value;
+            }
+        }
+
+        return dto;
     }
 
     private async Task<ProductDto> MapToLocalizedDtoAsync(
@@ -361,7 +469,7 @@ public class ProductService : IProductService
         CancellationToken cancellationToken = default
     )
     {
-        var baseDto = await MapToDtoAsync(product, cancellationToken);
+        var baseDto = MapToDtoAsync(product, language, cancellationToken);
 
         // Find localization for the specified language
         var localization = product.ProductLocalizeds.FirstOrDefault(pl =>
@@ -421,6 +529,13 @@ public class ProductService : IProductService
 
             if (!Uri.IsWellFormedUriString(mediaUrl, UriKind.Absolute))
                 return Result.Failure(MessageCodes.MEDIA_URL_INVALID);
+        }
+
+        // Validate attribute assignments
+        foreach (var attributeAssignment in createDto.AttributeAssignments)
+        {
+            if (attributeAssignment.ProductAttributeValueId <= 0)
+                return Result.Failure("Valid product attribute value ID is required");
         }
 
         return Result.Success();
@@ -668,6 +783,15 @@ public class ProductService : IProductService
             .Include(p => p.ProductLocalizeds.Where(pl => !pl.IsDeleted))
             .ThenInclude(pl => pl.Language)
             .Include(p => p.ProductMedias.Where(pm => !pm.IsDeleted))
+            .Include(p => p.ProductAttributeAssignments.Where(paa => !paa.IsDeleted))
+            .ThenInclude(paa => paa.ProductAttributeValue)
+            .ThenInclude(pav => pav.ProductAttribute)
+            .ThenInclude(pa => pa.ProductAttributeLocalizeds.Where(pal => !pal.IsDeleted))
+            .ThenInclude(pal => pal.Language)
+            .Include(p => p.ProductAttributeAssignments.Where(paa => !paa.IsDeleted))
+            .ThenInclude(paa => paa.ProductAttributeValue)
+            .ThenInclude(pav => pav.ProductAttributeValueLocalizeds.Where(pavl => !pavl.IsDeleted))
+            .ThenInclude(pavl => pavl.Language)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (productResult == null)
@@ -732,6 +856,15 @@ public class ProductService : IProductService
             .Include(p => p.ProductLocalizeds)
             .ThenInclude(pl => pl.Language)
             .Include(p => p.ProductMedias)
+            .Include(p => p.ProductAttributeAssignments.Where(paa => !paa.IsDeleted))
+            .ThenInclude(paa => paa.ProductAttributeValue)
+            .ThenInclude(pav => pav.ProductAttribute)
+            .ThenInclude(pa => pa.ProductAttributeLocalizeds.Where(pal => !pal.IsDeleted))
+            .ThenInclude(pal => pal.Language)
+            .Include(p => p.ProductAttributeAssignments.Where(paa => !paa.IsDeleted))
+            .ThenInclude(paa => paa.ProductAttributeValue)
+            .ThenInclude(pav => pav.ProductAttributeValueLocalizeds.Where(pavl => !pavl.IsDeleted))
+            .ThenInclude(pavl => pavl.Language)
             .Where(p => includedCategoryIds.Contains(p.CategoryId))
             .AsQueryable();
 

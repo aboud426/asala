@@ -18,4 +18,5 @@ public class Product : BaseEntity<int>
     public Currency Currency { get; set; } = null!;
     public List<ProductLocalized> ProductLocalizeds { get; set; } = [];
     public List<ProductMedia> ProductMedias { get; set; } = [];
+    public List<ProductAttributeAssignment> ProductAttributeAssignments { get; set; } = [];
 }

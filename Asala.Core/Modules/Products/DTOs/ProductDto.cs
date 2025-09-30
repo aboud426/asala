@@ -31,6 +31,7 @@ public class ProductDto
     public DateTime UpdatedAt { get; set; }
     public List<ProductLocalizedDto> Localizations { get; set; } = [];
     public List<ImageUrlDto> Images { get; set; } = [];
+    public List<ProductAttributeAssignmentDto> AttributeAssignments { get; set; } = [];
 }
 
 public class CreateProductDto
@@ -44,6 +45,7 @@ public class CreateProductDto
     public string? Description { get; set; }
     public bool IsActive { get; set; } = true;
     public List<CreateProductLocalizedDto> Localizations { get; set; } = [];
+    public List<CreateProductAttributeAssignmentDto> AttributeAssignments { get; set; } = [];
 }
 
 public class UpdateProductDto
@@ -57,6 +59,7 @@ public class UpdateProductDto
     public string? Description { get; set; }
     public bool IsActive { get; set; }
     public List<UpdateProductLocalizedDto> Localizations { get; set; } = [];
+    public List<UpdateProductAttributeAssignmentDto> AttributeAssignments { get; set; } = [];
 }
 
 public class ProductDropdownDto
@@ -120,4 +123,28 @@ public class UpdateProductByAdminDto
     public bool IsActive { get; set; }
     public List<UpdateProductLocalizedDto> Localizations { get; set; } = [];
     public List<ImageUrlDto> Images { get; set; } = [];
+}
+
+// Product Attribute Assignment DTOs
+public class ProductAttributeAssignmentDto
+{
+    public int Id { get; set; }
+    public int ProductId { get; set; }
+    public int ProductAttributeValueId { get; set; }
+    public string AttributeName { get; set; } = null!;
+    public string AttributeValue { get; set; } = null!;
+    public string? LocalizedAttributeName { get; set; }
+    public string? LocalizedAttributeValue { get; set; }
+    public bool IsActive { get; set; }
+}
+
+public class CreateProductAttributeAssignmentDto
+{
+    public int ProductAttributeValueId { get; set; }
+}
+
+public class UpdateProductAttributeAssignmentDto
+{
+    public int? Id { get; set; }
+    public int ProductAttributeValueId { get; set; }
 }
