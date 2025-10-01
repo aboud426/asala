@@ -1305,7 +1305,7 @@ namespace Asala.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PostTypes");
+                    b.ToTable("PostTypes", (string)null);
                 });
 
             modelBuilder.Entity("Asala.Core.Modules.Posts.Models.PostTypeLocalized", b =>
@@ -1351,7 +1351,7 @@ namespace Asala.Api.Migrations
 
                     b.HasIndex("PostTypeId");
 
-                    b.ToTable("PostTypeLocalizeds");
+                    b.ToTable("PostTypeLocalizeds", (string)null);
                 });
 
             modelBuilder.Entity("Asala.Core.Modules.Posts.Models.Reel", b =>
@@ -1770,7 +1770,7 @@ namespace Asala.Api.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductMedias");
+                    b.ToTable("ProductMedias", (string)null);
                 });
 
             modelBuilder.Entity("Asala.Core.Modules.Products.Models.ProductsPost", b =>
@@ -3035,7 +3035,7 @@ namespace Asala.Api.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserTokens");
+                    b.ToTable("UserTokens", (string)null);
                 });
 
             modelBuilder.Entity("Asala.Core.Modules.Categories.Models.ProviderCategory", b =>

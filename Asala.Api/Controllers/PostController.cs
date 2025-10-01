@@ -1,5 +1,8 @@
 using Asala.Core.Modules.Posts.DTOs;
 using Asala.UseCases.Posts;
+using Asala.UseCases.Posts.GetPostsPaginated;
+using Asala.UseCases.Posts.GetPostById;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Asala.Api.Controllers;
@@ -12,11 +15,13 @@ namespace Asala.Api.Controllers;
 public class PostController : BaseController
 {
     private readonly IPostService _postService;
+    private readonly IMediator _mediator;
 
-    public PostController(IPostService postService)
+    public PostController(IPostService postService, IMediator mediator)
         : base()
     {
         _postService = postService;
+        _mediator = mediator;
     }
 
     /// <summary>
@@ -48,7 +53,38 @@ public class PostController : BaseController
     }
 
     /// <summary>
-    /// Get a post by ID
+    /// Get complete post information by ID with localization support
+    /// Returns all post data including type-specific information (Reel, Article, NormalPost)
+    /// </summary>
+    /// <param name="id">Post ID</param>
+    /// <param name="languageCode">Language code for localized content (default: "en")</param>
+    /// <param name="includeInactive">Include inactive posts in search (default: false)</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Complete post details with localized content and type-specific data</returns>
+    /// <response code="200">Post retrieved successfully with complete information</response>
+    /// <response code="404">Post not found</response>
+    /// <response code="400">Invalid post ID or language not found</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(
+        long id, 
+        [FromQuery] string languageCode = "en",
+        [FromQuery] bool includeInactive = false,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetPostByIdQuery
+        {
+            Id = id,
+            LanguageCode = languageCode,
+            IncludeInactive = includeInactive
+        };
+
+        var result = await _mediator.Send(query, cancellationToken);
+        return CreateResponse(result);
+    }
+
+    /// <summary>
+    /// Get a post by ID (legacy endpoint - uses PostService)
     /// </summary>
     /// <param name="id">Post ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
@@ -56,8 +92,8 @@ public class PostController : BaseController
     /// <response code="200">Post retrieved successfully</response>
     /// <response code="404">Post not found</response>
     /// <response code="500">Internal server error</response>
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken = default)
+    [HttpGet("legacy/{id}")]
+    public async Task<IActionResult> GetByIdLegacy(int id, CancellationToken cancellationToken = default)
     {
         var result = await _postService.GetByIdAsync(id, cancellationToken);
         return CreateResponse(result);
@@ -187,6 +223,46 @@ public class PostController : BaseController
             true,
             cancellationToken
         );
+        return CreateResponse(result);
+    }
+
+    /// <summary>
+    /// Get paginated posts with type filtering
+    /// </summary>
+    /// <param name="page">Page number (default: 1)</param>
+    /// <param name="pageSize">Number of items per page (default: 10, max: 100)</param>
+    /// <param name="type">Post type filter: "reel", "normal", "article", or null for all types</param>
+    /// <param name="postTypeId">Specific post type ID for filtering</param>
+    /// <param name="languageCode">Language code for localized content (default: "en")</param>
+    /// <param name="activeOnly">Filter by active posts only (default: true)</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Paginated list of posts with localized content</returns>
+    /// <response code="200">Posts retrieved successfully</response>
+    /// <response code="400">Invalid parameters</response>
+    /// <response code="404">Language not found</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("paginated")]
+    public async Task<IActionResult> GetPostsPaginated(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? type = null,
+        [FromQuery] int? postTypeId = null,
+        [FromQuery] string languageCode = "en",
+        [FromQuery] bool? activeOnly = true,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var query = new GetPostsPaginatedQuery
+        {
+            Page = page,
+            PageSize = pageSize,
+            Type = type,
+            PostTypeId = postTypeId,
+            LanguageCode = languageCode,
+            ActiveOnly = activeOnly
+        };
+
+        var result = await _mediator.Send(query, cancellationToken);
         return CreateResponse(result);
     }
 }

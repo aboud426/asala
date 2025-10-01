@@ -30,16 +30,14 @@ public class GetHomePageInfoQueryHandler : IRequestHandler<GetHomePageInfoQuery,
             if (language == null)
                 return Result.Failure<HomePageInfoDto>(MessageCodes.LANGUAGE_NOT_FOUND);
 
-            // Get top 3 posts and recent 8 products concurrently
-            var topPostsTask = GetTopArticlePostsAsync(language, cancellationToken);
-            var recentProductsTask = GetRecentProductsAsync(language, cancellationToken);
-
-            await Task.WhenAll(topPostsTask, recentProductsTask);
+            // Execute operations sequentially to avoid DbContext concurrency issues
+            var topPosts = await GetTopArticlePostsAsync(language, cancellationToken);
+            var recentProducts = await GetRecentProductsAsync(language, cancellationToken);
 
             var result = new HomePageInfoDto
             {
-                TopPosts = await topPostsTask,
-                RecentProducts = await recentProductsTask
+                TopPosts = topPosts,
+                RecentProducts = recentProducts
             };
 
             return Result.Success(result);
@@ -137,6 +135,7 @@ public class GetHomePageInfoQueryHandler : IRequestHandler<GetHomePageInfoQuery,
     {
         const int recentProductsCount = 8;
         
+        // Execute queries sequentially to avoid DbContext concurrency issues
         var products = await QueryRecentProductsAsync(language, recentProductsCount, cancellationToken);
         var categoryLocalizations = await QueryProductCategoryLocalizationsAsync(products, language, cancellationToken);
         
@@ -218,7 +217,7 @@ public class GetHomePageInfoQueryHandler : IRequestHandler<GetHomePageInfoQuery,
     private static string GetLocalizedCategoryName(Product product, List<ProductCategoryLocalized> categoryLocalizations)
     {
         var categoryLocalization = categoryLocalizations.FirstOrDefault(cl => cl.CategoryId == product.CategoryId);
-        return categoryLocalization?.NameLocalized ?? product.ProductCategory.Name;
+        return categoryLocalization?.NameLocalized ?? product.ProductCategory?.Name ?? string.Empty;
     }
 
     #endregion
