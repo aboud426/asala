@@ -28,6 +28,7 @@ import {
   FileText,
   Image,
   Video,
+  Type,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -189,6 +190,12 @@ const navigationItems = [
     titleAr: 'الصلاحيات',
     href: '/permissions',
     icon: Key,
+  },
+  {
+    title: 'Rich Text Editor',
+    titleAr: 'محرر النصوص',
+    href: '/rich-text-editor',
+    icon: Type,
   },
   {
     title: 'Settings',

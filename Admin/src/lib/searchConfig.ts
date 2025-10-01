@@ -212,6 +212,16 @@ export const searchablePages: SearchableItem[] = [
     keywordsAr: ['صلاحيات', 'وصول', 'تخويل', 'أمان', 'حقوق', 'امتيازات', 'تحكم']
   },
   {
+    id: 'rich-text-editor',
+    title: 'Rich Text Editor',
+    titleAr: 'محرر النصوص',
+    description: 'Create and format content with powerful rich text editing tools',
+    descriptionAr: 'إنشاء وتنسيق المحتوى باستخدام أدوات تحرير نصوص قوية',
+    href: '/rich-text-editor',
+    keywords: ['editor', 'text', 'rich text', 'formatting', 'content', 'html', 'wysiwyg', 'writing', 'bold', 'italic'],
+    keywordsAr: ['محرر', 'نص', 'نصوص', 'تنسيق', 'محتوى', 'كتابة', 'عريض', 'مائل']
+  },
+  {
     id: 'settings',
     title: 'Settings',
     titleAr: 'الإعدادات',
