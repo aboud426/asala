@@ -55,6 +55,7 @@ import MapSelector from "./pages/MapSelector";
 import Statistics from "./pages/Statistics";
 import Images from "./pages/Images";
 import Videos from "./pages/Videos";
+import RichTextEditor from "./pages/RichTextEditor";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -123,6 +124,7 @@ const App = () => (
                   <Route path="/currencies" element={<ProtectedRoute><Currencies /></ProtectedRoute>} />
                   <Route path="/images" element={<ProtectedRoute><Images /></ProtectedRoute>} />
                   <Route path="/videos" element={<ProtectedRoute><Videos /></ProtectedRoute>} />
+                  <Route path="/rich-text-editor" element={<ProtectedRoute><RichTextEditor /></ProtectedRoute>} />
                   <Route path="/map-selector" element={<ProtectedRoute><MapSelector /></ProtectedRoute>} />
                   <Route path="/statistics" element={<ProtectedRoute><Statistics /></ProtectedRoute>} />
                   <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
