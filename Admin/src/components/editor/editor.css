@@ -1,0 +1,242 @@
+/* Basic editor styles */
+.ProseMirror {
+  padding: 1rem;
+  outline: none;
+}
+
+.ProseMirror > * + * {
+  margin-top: 0.75em;
+}
+
+/* Placeholder */
+.ProseMirror p.is-editor-empty:first-child::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Headings */
+.ProseMirror h1 {
+  font-size: 2em;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.ProseMirror h2 {
+  font-size: 1.5em;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.ProseMirror h3 {
+  font-size: 1.25em;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+/* Lists */
+.ProseMirror ul,
+.ProseMirror ol {
+  padding: 0 1rem;
+  margin: 1.25rem 1rem 1.25rem 0.4rem;
+}
+
+.ProseMirror ul li,
+.ProseMirror ol li {
+  margin-bottom: 0.5rem;
+}
+
+.ProseMirror ul li p,
+.ProseMirror ol li p {
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+}
+
+/* Task list */
+.ProseMirror ul[data-type='taskList'] {
+  list-style: none;
+  padding: 0;
+  margin-left: 0;
+}
+
+.ProseMirror ul[data-type='taskList'] li {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.ProseMirror ul[data-type='taskList'] li > label {
+  flex: 0 0 auto;
+  margin-right: 0.5rem;
+  user-select: none;
+}
+
+.ProseMirror ul[data-type='taskList'] li > div {
+  flex: 1 1 auto;
+}
+
+.ProseMirror ul[data-type='taskList'] input[type='checkbox'] {
+  cursor: pointer;
+  width: 1.2em;
+  height: 1.2em;
+}
+
+.ProseMirror ul[data-type='taskList'] li[data-checked='true'] > div {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+/* Blockquote */
+.ProseMirror blockquote {
+  border-left: 3px solid #e2e8f0;
+  padding-left: 1rem;
+  margin-left: 0;
+  margin-right: 0;
+  font-style: italic;
+  color: #64748b;
+}
+
+/* Code */
+.ProseMirror code {
+  background-color: #f1f5f9;
+  border-radius: 0.25rem;
+  color: #e11d48;
+  font-size: 0.9em;
+  padding: 0.2em 0.4em;
+}
+
+.ProseMirror pre {
+  background: #1e293b;
+  border-radius: 0.5rem;
+  color: #f8fafc;
+  font-family: 'JetBrainsMono', monospace;
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+}
+
+.ProseMirror pre code {
+  background: none;
+  color: inherit;
+  font-size: 0.8rem;
+  padding: 0;
+}
+
+/* Horizontal rule */
+.ProseMirror hr {
+  border: none;
+  border-top: 2px solid #e2e8f0;
+  margin: 2rem 0;
+}
+
+/* Link */
+.ProseMirror a {
+  color: #3b82f6;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.ProseMirror a:hover {
+  color: #2563eb;
+}
+
+/* Image */
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+
+/* Table */
+.ProseMirror table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 1rem 0;
+  overflow: hidden;
+}
+
+.ProseMirror table td,
+.ProseMirror table th {
+  border: 2px solid #e2e8f0;
+  box-sizing: border-box;
+  min-width: 1em;
+  padding: 0.5rem;
+  position: relative;
+  vertical-align: top;
+}
+
+.ProseMirror table th {
+  background-color: #f8fafc;
+  font-weight: 600;
+  text-align: left;
+}
+
+.ProseMirror table .selectedCell:after {
+  background: rgba(59, 130, 246, 0.1);
+  content: '';
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
+
+.ProseMirror table .column-resize-handle {
+  background-color: #3b82f6;
+  bottom: -2px;
+  position: absolute;
+  right: -2px;
+  pointer-events: none;
+  top: 0;
+  width: 4px;
+}
+
+/* Highlight */
+.ProseMirror mark {
+  background-color: #fef08a;
+  border-radius: 0.2em;
+  box-decoration-break: clone;
+  padding: 0.1em 0.2em;
+}
+
+/* Focus */
+.ProseMirror:focus {
+  outline: none;
+}
+
+/* Selection */
+.ProseMirror ::selection {
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .ProseMirror code {
+    background-color: #334155;
+    color: #f472b6;
+  }
+
+  .ProseMirror blockquote {
+    border-left-color: #475569;
+    color: #94a3b8;
+  }
+
+  .ProseMirror table td,
+  .ProseMirror table th {
+    border-color: #475569;
+  }
+
+  .ProseMirror table th {
+    background-color: #1e293b;
+  }
+
+  .ProseMirror hr {
+    border-top-color: #475569;
+  }
+}
+

@@ -57,6 +57,7 @@ import Images from "./pages/Images";
 import Videos from "./pages/Videos";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import RichTextEditorPage from "./pages/RichTextEditor";
 
 const queryClient = new QueryClient();
 
@@ -126,6 +127,7 @@ const App = () => (
                   <Route path="/map-selector" element={<ProtectedRoute><MapSelector /></ProtectedRoute>} />
                   <Route path="/statistics" element={<ProtectedRoute><Statistics /></ProtectedRoute>} />
                   <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                  <Route path="/rich-text-editor" element={<ProtectedRoute><RichTextEditorPage /></ProtectedRoute>} />
 
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
