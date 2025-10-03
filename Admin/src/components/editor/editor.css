@@ -8,6 +8,19 @@
   margin-top: 0.75em;
 }
 
+/* RTL Support */
+.ProseMirror[dir='rtl'] {
+  text-align: right;
+}
+
+.ProseMirror[dir='ltr'] {
+  text-align: left;
+}
+
+.rtl-editor {
+  direction: rtl;
+}
+
 /* Placeholder */
 .ProseMirror p.is-editor-empty:first-child::before {
   color: #adb5bd;
@@ -15,6 +28,10 @@
   float: left;
   height: 0;
   pointer-events: none;
+}
+
+.ProseMirror[dir='rtl'] p.is-editor-empty:first-child::before {
+  float: right;
 }
 
 /* Headings */
@@ -43,6 +60,12 @@
   margin: 1.25rem 1rem 1.25rem 0.4rem;
 }
 
+.ProseMirror[dir='rtl'] ul,
+.ProseMirror[dir='rtl'] ol {
+  padding: 0 1rem 0 0;
+  margin: 1.25rem 0.4rem 1.25rem 1rem;
+}
+
 .ProseMirror ul li,
 .ProseMirror ol li {
   margin-bottom: 0.5rem;
@@ -61,6 +84,11 @@
   margin-left: 0;
 }
 
+.ProseMirror[dir='rtl'] ul[data-type='taskList'] {
+  margin-right: 0;
+  margin-left: 0;
+}
+
 .ProseMirror ul[data-type='taskList'] li {
   display: flex;
   align-items: flex-start;
@@ -71,6 +99,11 @@
   flex: 0 0 auto;
   margin-right: 0.5rem;
   user-select: none;
+}
+
+.ProseMirror[dir='rtl'] ul[data-type='taskList'] li > label {
+  margin-right: 0;
+  margin-left: 0.5rem;
 }
 
 .ProseMirror ul[data-type='taskList'] li > div {
@@ -96,6 +129,13 @@
   margin-right: 0;
   font-style: italic;
   color: #64748b;
+}
+
+.ProseMirror[dir='rtl'] blockquote {
+  border-left: none;
+  border-right: 3px solid #e2e8f0;
+  padding-left: 0;
+  padding-right: 1rem;
 }
 
 /* Code */
@@ -141,12 +181,102 @@
   color: #2563eb;
 }
 
-/* Image */
+/* Image - Resizable */
 .ProseMirror img {
   max-width: 100%;
   height: auto;
   border-radius: 0.5rem;
+  cursor: grab;
+  transition: all 0.2s;
+}
+
+.ProseMirror img:active {
+  cursor: grabbing;
+}
+
+.ProseMirror img.ProseMirror-selectednode {
+  outline: 3px solid #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  border-radius: 0.5rem;
+  cursor: default;
+}
+
+/* Dragging state */
+.ProseMirror-dragging .image-wrapper {
+  opacity: 0.5;
+  cursor: grabbing !important;
+}
+
+.ProseMirror .ProseMirror-selectednode[data-drag-handle] {
+  cursor: default;
+}
+
+/* Image resize wrapper */
+.ProseMirror .image-wrapper {
+  display: block;
+  position: relative;
+  max-width: 100%;
   margin: 1rem 0;
+  line-height: 0;
+}
+
+.ProseMirror .image-wrapper img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 0;
+}
+
+.ProseMirror .image-wrapper[data-resizing="true"] {
+  user-select: none;
+}
+
+.ProseMirror .image-wrapper[data-resizing="true"] img {
+  pointer-events: none;
+  cursor: nwse-resize !important;
+}
+
+/* When resizing, disable dragging */
+.ProseMirror .image-wrapper[data-resizing="true"] img[data-drag-handle] {
+  cursor: nwse-resize !important;
+}
+
+/* Resize handle */
+.ProseMirror .resize-handle {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 20px;
+  height: 20px;
+  background: #3b82f6;
+  border: 3px solid white;
+  border-radius: 50%;
+  cursor: nwse-resize;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+}
+
+.ProseMirror .resize-handle:hover {
+  background: #2563eb;
+  transform: scale(1.1);
+}
+
+.ProseMirror .resize-handle:active {
+  background: #1d4ed8;
+  cursor: nwse-resize;
+}
+
+/* RTL support for resize handle */
+.ProseMirror[dir='rtl'] .resize-handle {
+  right: auto;
+  left: -4px;
+  cursor: nesw-resize;
+}
+
+.ProseMirror[dir='rtl'] .resize-handle:active {
+  cursor: nesw-resize;
 }
 
 /* Table */
@@ -214,6 +344,14 @@
   background-color: rgba(59, 130, 246, 0.2);
 }
 
+/* Arabic font support */
+.ProseMirror[dir='rtl'] {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    'Tajawal', 'Cairo', 'Amiri', 'Scheherazade', sans-serif;
+  line-height: 1.8;
+}
+
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .ProseMirror code {
@@ -224,6 +362,11 @@
   .ProseMirror blockquote {
     border-left-color: #475569;
     color: #94a3b8;
+  }
+
+  .ProseMirror[dir='rtl'] blockquote {
+    border-left-color: transparent;
+    border-right-color: #475569;
   }
 
   .ProseMirror table td,

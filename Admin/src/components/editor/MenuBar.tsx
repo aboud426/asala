@@ -26,6 +26,7 @@ import {
   Code2,
   Minus,
   MoreHorizontal,
+  Languages,
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -35,12 +36,25 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useCallback } from 'react';
+import { cn } from '@/lib/utils';
+import { useDirection } from '@/contexts/DirectionContext';
 
 interface MenuBarProps {
   editor: Editor;
+  direction?: 'ltr' | 'rtl';
 }
 
-export const MenuBar = ({ editor }: MenuBarProps) => {
+export const MenuBar = ({ editor, direction = 'ltr' }: MenuBarProps) => {
+  const { setDirection, isRTL } = useDirection();
+  
+  // Check if an image is currently selected
+  const isImageSelected = editor.isActive('image');
+  
+  const toggleDirection = useCallback(() => {
+    const newDir = isRTL ? 'ltr' : 'rtl';
+    setDirection(newDir);
+  }, [isRTL, setDirection]);
+
   const setLink = useCallback(() => {
     const previousUrl = editor.getAttributes('link').href;
     const url = window.prompt('URL', previousUrl);
@@ -72,12 +86,73 @@ export const MenuBar = ({ editor }: MenuBarProps) => {
     editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
   }, [editor]);
 
+  const alignImageLeft = useCallback(() => {
+    editor.chain().focus().setImageAlign('left').run();
+  }, [editor]);
+
+  const alignImageCenter = useCallback(() => {
+    editor.chain().focus().setImageAlign('center').run();
+  }, [editor]);
+
+  const alignImageRight = useCallback(() => {
+    editor.chain().focus().setImageAlign('right').run();
+  }, [editor]);
+
   if (!editor) {
     return null;
   }
 
   return (
-    <div className="border-b p-2 flex flex-wrap gap-1 items-center sticky top-0 bg-background z-10">
+    <div className={cn(
+      "border-b p-2 flex flex-wrap gap-1 items-center sticky top-0 bg-background z-10",
+      direction === 'rtl' && 'flex-row-reverse'
+    )}>
+      {/* Image Alignment - Only show when image is selected */}
+      {isImageSelected && (
+        <>
+          <div className="flex items-center gap-1 px-2 py-1 bg-primary/10 rounded-md">
+            <span className="text-xs font-medium mr-1">Image:</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={alignImageLeft}
+              title="Align Left"
+            >
+              <AlignLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={alignImageCenter}
+              title="Align Center"
+            >
+              <AlignCenter className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={alignImageRight}
+              title="Align Right"
+            >
+              <AlignRight className="h-4 w-4" />
+            </Button>
+          </div>
+          <Separator orientation="vertical" className="mx-1 h-6" />
+        </>
+      )}
+
+      {/* Direction Toggle */}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={toggleDirection}
+        title={isRTL ? 'Switch to LTR' : 'Switch to RTL'}
+      >
+        <Languages className="h-4 w-4" />
+      </Button>
+
+      <Separator orientation="vertical" className="mx-1 h-6" />
+
       {/* Undo/Redo */}
       <Button
         variant="ghost"
