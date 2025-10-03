@@ -114,8 +114,10 @@ export default function RichTextEditor() {
     if (selection.isCollapsed()) {
       setCurrentFontSize(size);
       toast({
-        title: "Font size set",
-        description: `Font size ${size}px will be applied to new text`,
+        title: isRTL ? "تم تعيين حجم الخط" : "Font size set",
+        description: isRTL 
+          ? `سيتم تطبيق حجم الخط ${size}بكسل على النص الجديد`
+          : `Font size ${size}px will be applied to new text`,
       });
       return;
     }
@@ -143,10 +145,12 @@ export default function RichTextEditor() {
     setCurrentFontSize(size);
     
     toast({
-      title: "Font size applied",
-      description: `Text size changed to ${size}px`,
+      title: isRTL ? "تم تطبيق حجم الخط" : "Font size applied",
+      description: isRTL 
+        ? `تم تغيير حجم النص إلى ${size}بكسل`
+        : `Text size changed to ${size}px`,
     });
-  }, [editorState]);
+  }, [editorState, isRTL]);
 
   // Handle undo
   const handleUndo = useCallback(() => {
@@ -163,8 +167,10 @@ export default function RichTextEditor() {
     // Check file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast({
-        title: "Error",
-        description: "Image size must be less than 5MB",
+        title: isRTL ? "خطأ" : "Error",
+        description: isRTL 
+          ? "يجب أن يكون حجم الصورة أقل من 5 ميجابايت"
+          : "Image size must be less than 5MB",
         variant: "destructive",
       });
       return;
@@ -173,8 +179,10 @@ export default function RichTextEditor() {
     // Check file type
     if (!file.type.startsWith("image/")) {
       toast({
-        title: "Error",
-        description: "Please upload a valid image file",
+        title: isRTL ? "خطأ" : "Error",
+        description: isRTL 
+          ? "الرجاء تحميل ملف صورة صالح"
+          : "Please upload a valid image file",
         variant: "destructive",
       });
       return;
@@ -199,21 +207,21 @@ export default function RichTextEditor() {
       setEditorState(newEditorState);
       
       toast({
-        title: "Success",
-        description: "Image added successfully",
+        title: isRTL ? "نجح" : "Success",
+        description: isRTL ? "تمت إضافة الصورة بنجاح" : "Image added successfully",
       });
     };
     
     reader.onerror = () => {
       toast({
-        title: "Error",
-        description: "Failed to read image file",
+        title: isRTL ? "خطأ" : "Error",
+        description: isRTL ? "فشل في قراءة ملف الصورة" : "Failed to read image file",
         variant: "destructive",
       });
     };
     
     reader.readAsDataURL(file);
-  }, [editorState]);
+  }, [editorState, isRTL]);
 
   // Block renderer for images
   const mediaBlockRenderer = useCallback((block: ContentBlock) => {
@@ -242,8 +250,10 @@ export default function RichTextEditor() {
     
     if (!contentState.hasText()) {
       toast({
-        title: "Warning",
-        description: "Editor is empty. Please add some content first.",
+        title: isRTL ? "تحذير" : "Warning",
+        description: isRTL 
+          ? "المحرر فارغ. الرجاء إضافة بعض المحتوى أولاً."
+          : "Editor is empty. Please add some content first.",
         variant: "destructive",
       });
       return;
@@ -293,23 +303,29 @@ export default function RichTextEditor() {
     
     setExportedHTML(html);
     toast({
-      title: "Success",
-      description: "Content exported to HTML successfully",
+      title: isRTL ? "نجح" : "Success",
+      description: isRTL 
+        ? "تم تصدير المحتوى إلى HTML بنجاح"
+        : "Content exported to HTML successfully",
     });
-  }, [editorState]);
+  }, [editorState, isRTL]);
 
   // Clear editor
   const clearEditor = useCallback(() => {
-    if (window.confirm("Are you sure you want to clear all content?")) {
+    const confirmMessage = isRTL 
+      ? "هل أنت متأكد من أنك تريد مسح كل المحتوى؟"
+      : "Are you sure you want to clear all content?";
+    
+    if (window.confirm(confirmMessage)) {
       setEditorState(EditorState.createEmpty());
       setExportedHTML("");
       setCurrentFontSize("16");
       toast({
-        title: "Cleared",
-        description: "Editor content cleared",
+        title: isRTL ? "تم المسح" : "Cleared",
+        description: isRTL ? "تم مسح محتوى المحرر" : "Editor content cleared",
       });
     }
-  }, []);
+  }, [isRTL]);
 
   // Custom style function
   const customStyleFn = useCallback((styles: any) => {
@@ -340,33 +356,43 @@ export default function RichTextEditor() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-6" dir={isRTL ? "rtl" : "ltr"}>
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Rich Text Editor</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {isRTL ? "محرر النصوص المنسقة" : "Rich Text Editor"}
+          </h1>
           <p className="text-muted-foreground mt-2">
-            Create and format content with our powerful rich text editor. 
-            Use keyboard shortcuts: Ctrl+B (Bold), Ctrl+I (Italic), Ctrl+U (Underline), Ctrl+Z (Undo), Ctrl+Y (Redo)
+            {isRTL 
+              ? "قم بإنشاء وتنسيق المحتوى باستخدام محرر النصوص القوي. استخدم اختصارات لوحة المفاتيح: Ctrl+B (عريض), Ctrl+I (مائل), Ctrl+U (تحته خط), Ctrl+Z (تراجع), Ctrl+Y (إعادة)"
+              : "Create and format content with our powerful rich text editor. Use keyboard shortcuts: Ctrl+B (Bold), Ctrl+I (Italic), Ctrl+U (Underline), Ctrl+Z (Undo), Ctrl+Y (Redo)"
+            }
           </p>
         </div>
 
         {/* Editor Card */}
         <Card>
           <CardHeader>
-            <CardTitle>Content Editor</CardTitle>
+            <CardTitle>{isRTL ? "محرر المحتوى" : "Content Editor"}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Toolbar */}
-            <div className="flex flex-wrap gap-2 p-4 bg-muted/50 rounded-lg border">
+            <div className={cn(
+              "flex flex-wrap gap-2 p-4 bg-muted/50 rounded-lg border",
+              isRTL && "flex-row-reverse"
+            )}>
               {/* Undo/Redo */}
-              <div className="flex gap-1 border-r pr-2">
+              <div className={cn(
+                "flex gap-1",
+                isRTL ? "border-l pl-2" : "border-r pr-2"
+              )}>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={handleUndo}
                   className="h-9 w-9 p-0"
-                  title="Undo (Ctrl+Z)"
+                  title={isRTL ? "تراجع (Ctrl+Z)" : "Undo (Ctrl+Z)"}
                   disabled={editorState.getUndoStack().isEmpty()}
                 >
                   <Undo className="h-4 w-4" />
@@ -377,7 +403,7 @@ export default function RichTextEditor() {
                   size="sm"
                   onClick={handleRedo}
                   className="h-9 w-9 p-0"
-                  title="Redo (Ctrl+Y)"
+                  title={isRTL ? "إعادة (Ctrl+Y)" : "Redo (Ctrl+Y)"}
                   disabled={editorState.getRedoStack().isEmpty()}
                 >
                   <Redo className="h-4 w-4" />
@@ -385,14 +411,17 @@ export default function RichTextEditor() {
               </div>
 
               {/* Text Styles */}
-              <div className="flex gap-1 border-r pr-2">
+              <div className={cn(
+                "flex gap-1",
+                isRTL ? "border-l pl-2" : "border-r pr-2"
+              )}>
                 <Button
                   type="button"
                   variant={isStyleActive("BOLD") ? "default" : "outline"}
                   size="sm"
                   onClick={() => toggleInlineStyle("BOLD")}
                   className="h-9 w-9 p-0"
-                  title="Bold (Ctrl+B)"
+                  title={isRTL ? "عريض (Ctrl+B)" : "Bold (Ctrl+B)"}
                 >
                   <Bold className="h-4 w-4" />
                 </Button>
@@ -402,7 +431,7 @@ export default function RichTextEditor() {
                   size="sm"
                   onClick={() => toggleInlineStyle("ITALIC")}
                   className="h-9 w-9 p-0"
-                  title="Italic (Ctrl+I)"
+                  title={isRTL ? "مائل (Ctrl+I)" : "Italic (Ctrl+I)"}
                 >
                   <Italic className="h-4 w-4" />
                 </Button>
@@ -412,7 +441,7 @@ export default function RichTextEditor() {
                   size="sm"
                   onClick={() => toggleInlineStyle("UNDERLINE")}
                   className="h-9 w-9 p-0"
-                  title="Underline (Ctrl+U)"
+                  title={isRTL ? "تحته خط (Ctrl+U)" : "Underline (Ctrl+U)"}
                 >
                   <Underline className="h-4 w-4" />
                 </Button>
@@ -422,7 +451,7 @@ export default function RichTextEditor() {
                   size="sm"
                   onClick={() => toggleInlineStyle("STRIKETHROUGH")}
                   className="h-9 w-9 p-0"
-                  title="Strikethrough"
+                  title={isRTL ? "يتوسطه خط" : "Strikethrough"}
                 >
                   <Strikethrough className="h-4 w-4" />
                 </Button>
@@ -432,20 +461,23 @@ export default function RichTextEditor() {
                   size="sm"
                   onClick={() => toggleInlineStyle("CODE")}
                   className="h-9 w-9 p-0"
-                  title="Code"
+                  title={isRTL ? "كود" : "Code"}
                 >
                   <Code className="h-4 w-4" />
                 </Button>
               </div>
 
               {/* Block Types */}
-              <div className="flex gap-1 border-r pr-2">
+              <div className={cn(
+                "flex gap-1",
+                isRTL ? "border-l pl-2" : "border-r pr-2"
+              )}>
                 <Button
                   type="button"
                   variant={isBlockTypeActive("header-one") ? "default" : "outline"}
                   size="sm"
                   onClick={() => toggleBlockType("header-one")}
-                  title="Heading 1"
+                  title={isRTL ? "عنوان 1" : "Heading 1"}
                   className="h-9"
                 >
                   H1
@@ -455,7 +487,7 @@ export default function RichTextEditor() {
                   variant={isBlockTypeActive("header-two") ? "default" : "outline"}
                   size="sm"
                   onClick={() => toggleBlockType("header-two")}
-                  title="Heading 2"
+                  title={isRTL ? "عنوان 2" : "Heading 2"}
                   className="h-9"
                 >
                   H2
@@ -465,7 +497,7 @@ export default function RichTextEditor() {
                   variant={isBlockTypeActive("header-three") ? "default" : "outline"}
                   size="sm"
                   onClick={() => toggleBlockType("header-three")}
-                  title="Heading 3"
+                  title={isRTL ? "عنوان 3" : "Heading 3"}
                   className="h-9"
                 >
                   H3
@@ -476,21 +508,24 @@ export default function RichTextEditor() {
                   size="sm"
                   onClick={() => toggleBlockType("blockquote")}
                   className="h-9 w-9 p-0"
-                  title="Blockquote"
+                  title={isRTL ? "اقتباس" : "Blockquote"}
                 >
                   <Quote className="h-4 w-4" />
                 </Button>
               </div>
 
               {/* Lists */}
-              <div className="flex gap-1 border-r pr-2">
+              <div className={cn(
+                "flex gap-1",
+                isRTL ? "border-l pl-2" : "border-r pr-2"
+              )}>
                 <Button
                   type="button"
                   variant={isBlockTypeActive("unordered-list-item") ? "default" : "outline"}
                   size="sm"
                   onClick={() => toggleBlockType("unordered-list-item")}
                   className="h-9 w-9 p-0"
-                  title="Bullet List"
+                  title={isRTL ? "قائمة نقطية" : "Bullet List"}
                 >
                   <List className="h-4 w-4" />
                 </Button>
@@ -500,21 +535,24 @@ export default function RichTextEditor() {
                   size="sm"
                   onClick={() => toggleBlockType("ordered-list-item")}
                   className="h-9 w-9 p-0"
-                  title="Numbered List"
+                  title={isRTL ? "قائمة مرقمة" : "Numbered List"}
                 >
                   <ListOrdered className="h-4 w-4" />
                 </Button>
               </div>
 
               {/* Text Alignment */}
-              <div className="flex gap-1 border-r pr-2">
+              <div className={cn(
+                "flex gap-1",
+                isRTL ? "border-l pl-2" : "border-r pr-2"
+              )}>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => applyAlignment("left")}
                   className="h-9 w-9 p-0"
-                  title="Align Left"
+                  title={isRTL ? "محاذاة لليسار" : "Align Left"}
                 >
                   <AlignLeft className="h-4 w-4" />
                 </Button>
@@ -524,7 +562,7 @@ export default function RichTextEditor() {
                   size="sm"
                   onClick={() => applyAlignment("center")}
                   className="h-9 w-9 p-0"
-                  title="Align Center"
+                  title={isRTL ? "محاذاة للوسط" : "Align Center"}
                 >
                   <AlignCenter className="h-4 w-4" />
                 </Button>
@@ -534,18 +572,21 @@ export default function RichTextEditor() {
                   size="sm"
                   onClick={() => applyAlignment("right")}
                   className="h-9 w-9 p-0"
-                  title="Align Right"
+                  title={isRTL ? "محاذاة لليمين" : "Align Right"}
                 >
                   <AlignRight className="h-4 w-4" />
                 </Button>
               </div>
 
               {/* Font Size */}
-              <div className="flex gap-1 border-r pr-2">
+              <div className={cn(
+                "flex gap-1",
+                isRTL ? "border-l pl-2" : "border-r pr-2"
+              )}>
                 <Select onValueChange={toggleFontSize} value={currentFontSize}>
                   <SelectTrigger className="h-9 w-[110px]">
-                    <Type className="h-4 w-4 mr-2" />
-                    <SelectValue placeholder="Size" />
+                    <Type className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
+                    <SelectValue placeholder={isRTL ? "الحجم" : "Size"} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="12">12px</SelectItem>
@@ -563,17 +604,29 @@ export default function RichTextEditor() {
               </div>
 
               {/* Image Upload */}
-              <div className="flex gap-1 border-r pr-2">
+              <div className={cn(
+                "flex gap-1",
+                isRTL ? "border-l pl-2" : "border-r pr-2"
+              )}>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => document.getElementById("image-upload")?.click()}
                   className="h-9"
-                  title="Upload Image (max 5MB)"
+                  title={isRTL ? "تحميل صورة (حد أقصى 5 ميجابايت)" : "Upload Image (max 5MB)"}
                 >
-                  <ImageIcon className="h-4 w-4 mr-2" />
-                  Image
+                  {isRTL ? (
+                    <>
+                      صورة
+                      <ImageIcon className="h-4 w-4 mr-2" />
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon className="h-4 w-4 mr-2" />
+                      Image
+                    </>
+                  )}
                 </Button>
                 <input
                   id="image-upload"
@@ -590,27 +643,45 @@ export default function RichTextEditor() {
               </div>
 
               {/* Actions */}
-              <div className="flex gap-1 ml-auto">
+              <div className={cn("flex gap-1", isRTL ? "ml-auto" : "ml-auto")}>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={clearEditor}
                   className="h-9"
-                  title="Clear all content"
+                  title={isRTL ? "مسح كل المحتوى" : "Clear all content"}
                 >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Clear
+                  {isRTL ? (
+                    <>
+                      مسح
+                      <Trash2 className="h-4 w-4 mr-2" />
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Clear
+                    </>
+                  )}
                 </Button>
                 <Button
                   type="button"
                   size="sm"
                   onClick={exportHTML}
                   className="h-9"
-                  title="Export to HTML"
+                  title={isRTL ? "تصدير إلى HTML" : "Export to HTML"}
                 >
-                  <Download className="h-4 w-4 mr-2" />
-                  Export HTML
+                  {isRTL ? (
+                    <>
+                      تصدير HTML
+                      <Download className="h-4 w-4 mr-2" />
+                    </>
+                  ) : (
+                    <>
+                      <Download className="h-4 w-4 mr-2" />
+                      Export HTML
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
@@ -635,7 +706,7 @@ export default function RichTextEditor() {
                 blockStyleFn={blockStyleFn}
                 customStyleFn={customStyleFn}
                 handleKeyCommand={handleKeyCommand}
-                placeholder="Start typing your content here..."
+                placeholder={isRTL ? "ابدأ بكتابة المحتوى هنا..." : "Start typing your content here..."}
               />
             </div>
           </CardContent>
@@ -646,25 +717,28 @@ export default function RichTextEditor() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>Exported HTML</CardTitle>
+                <CardTitle>{isRTL ? "HTML المُصدّر" : "Exported HTML"}</CardTitle>
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
                   onClick={() => setExportedHTML("")}
                 >
-                  Close
+                  {isRTL ? "إغلاق" : "Close"}
                 </Button>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* HTML Code */}
               <div>
-                <label className="text-sm font-medium mb-2 block">HTML Code</label>
+                <label className="text-sm font-medium mb-2 block">
+                  {isRTL ? "كود HTML" : "HTML Code"}
+                </label>
                 <Textarea
                   value={exportedHTML}
                   readOnly
                   className="font-mono text-xs min-h-[200px]"
+                  dir="ltr"
                   onClick={(e) => {
                     (e.target as HTMLTextAreaElement).select();
                   }}
@@ -673,7 +747,9 @@ export default function RichTextEditor() {
 
               {/* Preview */}
               <div>
-                <label className="text-sm font-medium mb-2 block">Preview</label>
+                <label className="text-sm font-medium mb-2 block">
+                  {isRTL ? "معاينة" : "Preview"}
+                </label>
                 <div
                   className="p-4 border rounded-lg bg-muted/50 min-h-[200px] prose prose-sm max-w-none dark:prose-invert"
                   dangerouslySetInnerHTML={{ __html: exportedHTML }}
@@ -687,13 +763,13 @@ export default function RichTextEditor() {
                 onClick={() => {
                   navigator.clipboard.writeText(exportedHTML);
                   toast({
-                    title: "Success",
-                    description: "HTML copied to clipboard",
+                    title: isRTL ? "نجح" : "Success",
+                    description: isRTL ? "تم نسخ HTML إلى الحافظة" : "HTML copied to clipboard",
                   });
                 }}
                 className="w-full"
               >
-                Copy HTML to Clipboard
+                {isRTL ? "نسخ HTML إلى الحافظة" : "Copy HTML to Clipboard"}
               </Button>
             </CardContent>
           </Card>
@@ -729,11 +805,20 @@ export default function RichTextEditor() {
           opacity: 0.5;
         }
         
-        /* Blockquote styling */
-        .public-DraftStyleDefault-blockquote {
+        /* Blockquote styling - LTR */
+        [dir="ltr"] .public-DraftStyleDefault-blockquote {
           border-left: 4px solid hsl(var(--primary));
           padding-left: 1rem;
           margin-left: 0;
+          font-style: italic;
+          color: hsl(var(--muted-foreground));
+        }
+        
+        /* Blockquote styling - RTL */
+        [dir="rtl"] .public-DraftStyleDefault-blockquote {
+          border-right: 4px solid hsl(var(--primary));
+          padding-right: 1rem;
+          margin-right: 0;
           font-style: italic;
           color: hsl(var(--muted-foreground));
         }
@@ -747,10 +832,20 @@ export default function RichTextEditor() {
           font-family: 'Courier New', monospace;
         }
         
-        /* List styling */
-        .public-DraftStyleDefault-ul,
-        .public-DraftStyleDefault-ol {
+        /* List styling - LTR */
+        [dir="ltr"] .public-DraftStyleDefault-ul,
+        [dir="ltr"] .public-DraftStyleDefault-ol {
           margin-left: 1.5rem;
+          margin-right: 0;
+          margin-top: 0.5rem;
+          margin-bottom: 0.5rem;
+        }
+        
+        /* List styling - RTL */
+        [dir="rtl"] .public-DraftStyleDefault-ul,
+        [dir="rtl"] .public-DraftStyleDefault-ol {
+          margin-right: 1.5rem;
+          margin-left: 0;
           margin-top: 0.5rem;
           margin-bottom: 0.5rem;
         }
