@@ -141,16 +141,6 @@ export const MenuBar = ({ editor, direction = 'ltr' }: MenuBarProps) => {
         </>
       )}
 
-      {/* Direction Toggle */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={toggleDirection}
-        title={isRTL ? 'Switch to LTR' : 'Switch to RTL'}
-      >
-        <Languages className="h-4 w-4" />
-      </Button>
-
       <Separator orientation="vertical" className="mx-1 h-6" />
 
       {/* Undo/Redo */}
@@ -198,31 +188,6 @@ export const MenuBar = ({ editor, direction = 'ltr' }: MenuBarProps) => {
       >
         <UnderlineIcon className="h-4 w-4" />
       </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => editor.chain().focus().toggleStrike().run()}
-        className={editor.isActive('strike') ? 'bg-accent' : ''}
-      >
-        <Strikethrough className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => editor.chain().focus().toggleCode().run()}
-        className={editor.isActive('code') ? 'bg-accent' : ''}
-      >
-        <Code className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => editor.chain().focus().toggleHighlight().run()}
-        className={editor.isActive('highlight') ? 'bg-accent' : ''}
-      >
-        <Highlighter className="h-4 w-4" />
-      </Button>
-
       <Separator orientation="vertical" className="mx-1 h-6" />
 
       {/* Headings */}
@@ -270,15 +235,6 @@ export const MenuBar = ({ editor, direction = 'ltr' }: MenuBarProps) => {
       >
         <ListOrdered className="h-4 w-4" />
       </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => editor.chain().focus().toggleTaskList().run()}
-        className={editor.isActive('taskList') ? 'bg-accent' : ''}
-      >
-        <CheckSquare className="h-4 w-4" />
-      </Button>
-
       <Separator orientation="vertical" className="mx-1 h-6" />
 
       {/* Alignment */}
@@ -329,14 +285,6 @@ export const MenuBar = ({ editor, direction = 'ltr' }: MenuBarProps) => {
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-        className={editor.isActive('codeBlock') ? 'bg-accent' : ''}
-      >
-        <Code2 className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
         onClick={() => editor.chain().focus().setHorizontalRule().run()}
       >
         <Minus className="h-4 w-4" />
@@ -358,7 +306,7 @@ export const MenuBar = ({ editor, direction = 'ltr' }: MenuBarProps) => {
       <Separator orientation="vertical" className="mx-1 h-6" />
 
       {/* More dropdown */}
-      <DropdownMenu>
+      {/* <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm">
             <MoreHorizontal className="h-4 w-4" />
@@ -375,7 +323,7 @@ export const MenuBar = ({ editor, direction = 'ltr' }: MenuBarProps) => {
             Clear Marks
           </DropdownMenuItem>
         </DropdownMenuContent>
-      </DropdownMenu>
+      </DropdownMenu> */}
     </div>
   );
 };

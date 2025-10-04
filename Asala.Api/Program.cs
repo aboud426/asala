@@ -164,7 +164,7 @@ using (var scope = app.Services.CreateScope())
         logger.LogInformation("Seeding MessageCodes...");
         var messageCodesSeeder =
             scope.ServiceProvider.GetRequiredService<Asala.UseCases.Messages.MessageCodesSeederService>();
-        await messageCodesSeeder.SeedMessageCodesAsync();
+        // await messageCodesSeeder.SeedMessageCodesAsync();
         logger.LogInformation("MessageCodes seeding completed");
     }
     catch (Exception ex)

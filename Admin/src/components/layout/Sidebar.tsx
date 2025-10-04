@@ -28,6 +28,7 @@ import {
   FileText,
   Image,
   Video,
+  FileEdit,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -147,6 +148,12 @@ const navigationItems = [
     titleAr: 'صفحات المنشورات',
     href: '/posts-pages',
     icon: FileText,
+  },
+  {
+    title: 'Rich Text Editor',
+    titleAr: 'محرر النصوص',
+    href: '/rich-text-editor',
+    icon: FileEdit,
   },
   {
     title: 'Regions',

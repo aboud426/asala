@@ -19,31 +19,6 @@ const RichTextEditorPage = () => {
   const { toast } = useToast();
   const editorRef = useRef<RichTextEditorRef>(null);
   const [content, setContent] = useState<string>(`
-    <h1>Welcome to the Rich Text Editor - مرحباً بك في محرر النصوص</h1>
-    <p>This is a powerful <strong>Notion-like editor</strong> built with <em>Tiptap</em>.</p>
-    <p>هذا محرر نصوص <strong>قوي يشبه Notion</strong> مبني باستخدام <em>Tiptap</em>.</p>
-    
-    <h2>Features - المميزات</h2>
-    <ul>
-      <li>Rich text formatting - تنسيق نص متقدم</li>
-      <li>Multiple heading levels - مستويات عناوين متعددة</li>
-      <li>Lists (bullet, ordered, and task lists) - قوائم (نقطية، مرقمة، ومهام)</li>
-      <li>Tables with resizable columns - جداول بأعمدة قابلة لتغيير الحجم</li>
-      <li>Bilingual support (English & Arabic) - دعم ثنائي اللغة (عربي وإنجليزي)</li>
-      <li>RTL/LTR automatic switching - تبديل تلقائي بين اليمين واليسار</li>
-    </ul>
-
-    <h3>Try the Task List - جرب قائمة المهام</h3>
-    <ul data-type="taskList">
-      <li data-type="taskItem" data-checked="true">Create the editor - إنشاء المحرر</li>
-      <li data-type="taskItem" data-checked="true">Add bilingual support - إضافة الدعم ثنائي اللغة</li>
-      <li data-type="taskItem" data-checked="false">Use it in your project - استخدامه في مشروعك</li>
-    </ul>
-
-    <blockquote>
-      <p>Click the 🌐 button in the toolbar to switch between English (LTR) and Arabic (RTL)!</p>
-      <p>انقر على زر 🌐 في شريط الأدوات للتبديل بين الإنجليزية والعربية!</p>
-    </blockquote>
   `);
 
   const [showPreview, setShowPreview] = useState(false);
@@ -182,13 +157,13 @@ const RichTextEditorPage = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            
+
             <Button variant="outline" onClick={handleClear} size="sm">
               Clear
             </Button>
-            <Button variant="outline" onClick={handleLoadSample} size="sm">
+            {/* <Button variant="outline" onClick={handleLoadSample} size="sm">
               Load Sample (AR/EN)
-            </Button>
+            </Button> */}
             <Button
               variant="outline"
               onClick={() => setShowPreview(!showPreview)}
@@ -205,7 +180,7 @@ const RichTextEditorPage = () => {
             <TabsTrigger value="editor">Editor</TabsTrigger>
             <TabsTrigger value="html">HTML Output</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="editor" className="mt-4">
             <Card>
               <CardHeader>
@@ -217,7 +192,7 @@ const RichTextEditorPage = () => {
               <CardContent>
                 {showPreview ? (
                   <ScrollArea className="h-[600px] w-full rounded-md border p-4">
-                    <div 
+                    <div
                       className="prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto"
                       dangerouslySetInnerHTML={{ __html: editorRef.current?.getHTML() || content }}
                     />
@@ -234,7 +209,7 @@ const RichTextEditorPage = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="html" className="mt-4">
             <Card>
               <CardHeader>
@@ -253,62 +228,6 @@ const RichTextEditorPage = () => {
             </Card>
           </TabsContent>
         </Tabs>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Usage Instructions</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <h3 className="font-semibold mb-2">📥 Export Options</h3>
-              <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                <li><strong>Export Full HTML</strong> - Complete HTML document with embedded styles, ready to use standalone</li>
-                <li><strong>Export Content Only</strong> - Just the HTML content without styles, for embedding in other pages</li>
-                <li><strong>Copy Full HTML</strong> - Copy complete HTML with styles to clipboard</li>
-                <li><strong>Copy Content HTML</strong> - Copy just the content HTML to clipboard</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-2">🌐 Language & Direction Support</h3>
-              <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                <li>Click the <Languages className="inline h-3 w-3" /> button in the toolbar to toggle between LTR (English) and RTL (Arabic)</li>
-                <li>The editor automatically adapts layout, alignment, and styling for Arabic text</li>
-                <li>Supports mixed content with both English and Arabic</li>
-                <li>Arabic fonts are automatically applied when in RTL mode</li>
-                <li>Exported HTML includes RTL/LTR styles automatically</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-2">Toolbar Features</h3>
-              <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                <li>Use the toolbar buttons to format text, add headings, lists, and more</li>
-                <li>Click the table icon to insert a 3x3 table</li>
-                <li>Click the image icon to add an image by URL</li>
-                <li><strong>Move images:</strong> Click and drag any image to reposition it in your document</li>
-                <li><strong>Image alignment:</strong> When you click an image, alignment buttons appear (left, center, right)</li>
-                <li>Click the link icon to add hyperlinks to selected text</li>
-                <li><strong>Resize images:</strong> Click an image to select it, then drag the blue handle to resize</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-2">Text Selection</h3>
-              <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                <li>Select text and use toolbar buttons for formatting</li>
-                <li>Drag and drop to rearrange content</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-2">Keyboard Shortcuts</h3>
-              <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                <li><code>Ctrl/Cmd + B</code> - Bold</li>
-                <li><code>Ctrl/Cmd + I</code> - Italic</li>
-                <li><code>Ctrl/Cmd + U</code> - Underline</li>
-                <li><code>Ctrl/Cmd + Z</code> - Undo</li>
-                <li><code>Ctrl/Cmd + Shift + Z</code> - Redo</li>
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </DashboardLayout>
   );

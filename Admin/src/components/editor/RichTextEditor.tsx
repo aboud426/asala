@@ -19,7 +19,7 @@ import { MenuBar } from './MenuBar';
 import { ResizableImage } from './ResizableImage';
 import './editor.css';
 import { cn } from '@/lib/utils';
-import { useImperativeHandle, forwardRef } from 'react';
+import { useImperativeHandle, forwardRef, useEffect } from 'react';
 
 interface RichTextEditorProps {
   content?: string;
@@ -41,13 +41,13 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
   onChange,
   placeholder = 'Start writing...',
   editable = true,
-  dir = 'auto',
+  dir,
 }, ref) => {
   const { direction, isRTL } = useDirection();
-  
+
   // Use provided dir or fall back to context direction
-  const editorDirection = dir === 'auto' ? direction : dir;
-  
+  const editorDirection = direction;
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -73,6 +73,7 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
       Underline,
       TextAlign.configure({
         types: ['heading', 'paragraph'],
+        defaultAlignment: 'left',
       }),
       Highlight.configure({
         multicolor: true,
@@ -101,11 +102,34 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
     },
   }, [editorDirection]);
 
+  // Set default text alignment based on direction when editor is ready or direction changes
+  useEffect(() => {
+    if (editor && !editor.isDestroyed) {
+      // Set the default text alignment based on direction
+      // For RTL (Arabic): default to left alignment (which visually appears on the right)
+      // For LTR (English): default to left alignment (which visually appears on the left)
+      const defaultAlignment = 'left';
+
+      // Only set alignment if no content exists or if it's the initial setup
+      if (!content || content.trim() === '') {
+        editor.chain().focus().setTextAlign(defaultAlignment).run();
+      }
+    }
+  }, [editor, editorDirection, content]);
+
   // Expose editor methods via ref
   useImperativeHandle(ref, () => ({
     getHTML: () => editor?.getHTML() || '',
     getEditor: () => editor,
-    clearContent: () => editor?.commands.clearContent(),
+    clearContent: () => {
+      editor?.commands.clearContent();
+      // Set default alignment after clearing content
+      setTimeout(() => {
+        if (editor && !editor.isDestroyed) {
+          editor.chain().focus().setTextAlign('left').run();
+        }
+      }, 0);
+    },
     setContent: (newContent: string) => editor?.commands.setContent(newContent),
   }));
 
