@@ -69,6 +69,7 @@ class EmployeeAuthService {
             method: 'POST',
             body: JSON.stringify(loginData),
         });
+        console.log(response);
 
         if (!response.success) {
             throw new Error(response.message || 'Login failed');

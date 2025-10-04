@@ -16,7 +16,9 @@ export class TokenManager {
      * Set a cookie with optional expiration
      */
     private static setCookie(name: string, value: string, expiresAt?: string): void {
-        let cookieString = `${name}=${encodeURIComponent(value)}; path=/; SameSite=Strict; Secure`;
+        // For HTTP sites, don't include Secure flag. For HTTPS, include it.
+        const isSecure = window.location.protocol === 'https:';
+        let cookieString = `${name}=${encodeURIComponent(value)}; path=/; SameSite=Lax${isSecure ? '; Secure' : ''}`;
 
         if (expiresAt) {
             cookieString += `; expires=${new Date(expiresAt).toUTCString()}`;
@@ -46,7 +48,8 @@ export class TokenManager {
      * Delete a cookie by name
      */
     private static deleteCookie(name: string): void {
-        document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict; Secure`;
+        const isSecure = window.location.protocol === 'https:';
+        document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax${isSecure ? '; Secure' : ''}`;
     }
 
     /**

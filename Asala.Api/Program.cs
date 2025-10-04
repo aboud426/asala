@@ -199,6 +199,7 @@ app.UseSwaggerUi(config =>
         options.Path = "/redoc";
     });
 });
+app.MapGet("/", () => "Welcome to Asala API");
 
 app.UseHttpsRedirection();
 
